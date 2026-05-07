@@ -1,0 +1,28 @@
+25.03.2026_12_35.jpg
+Хотя и пишет, что раскладка исправлена, раскладка фактически не изменилась в поле ввода и не сработала функция Auto (Enter = +1)
+12:40 25.03.2026
+GUI: сократить поле ввода до 35 знаков. Запретить ввод более 30 знаков (обрезать).
+25.03.2026_12_57.jpg
+Отладить парсинг накладных (предоставить примеры?) чтобы не парсился подвал таблицы ведомости.
+13:01 25.03.2026
+NameError: name 'CommandHandler' is not defined
+Exception in Tkinter callback
+Traceback (most recent call last):
+  File "C:\Users\User\AppData\Local\Programs\Python\Python313\Lib\tkinter\__init__.py", line 2068, in __call__
+    return self.func(*args)
+           ~~~~~~~~~^^^^^^^
+  File "C:\Users\User\Desktop\inventory_app\gui\widgets\article_entry.py", line 143, in _on_enter
+    if CommandHandler.is_command(normalized):
+       ^^^^^^^^^^^^^^
+NameError: name 'CommandHandler' is not defined
+13:02 25.03.2026
+2026-03-25 13:02:09,718 - __main__ - INFO - Запуск приложения InventoryApp
+[INFO] nomenclature.csv уже существует, пропускаем
+[INFO] addresses.csv уже существует, пропускаем
+2026-03-25 13:02:09,828 - core.nomenclature - INFO - Загружено товаров: 1628
+2026-03-25 13:02:09,830 - core.address_manager - INFO - Загружено адресов: 99
+После закрытия приложения, приложение запускает второй экземпляр.
+13:07 25.03.2026
+Добавить окно настроек "Файл"-"Настройки". Чекбокс-галочка "Автоисправление раскладки RU-EN", переключатель "Режим ввода: авто-вручную".
+13:42 25.03.2026
+Рабочее название/версия после/во время изменений ScanHead 1.2.0
