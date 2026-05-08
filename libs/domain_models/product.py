@@ -1,0 +1,38 @@
+"""Product - Доменная модель товара
+
+Модель представляет товар с артикулом, наименованием и штрих-кодами.
+"""
+
+from dataclasses import dataclass, field
+from typing import Optional, List
+
+
+@dataclass
+class Product:
+    """Модель товара
+    
+    Атрибуты:
+        article: Артикул товара
+        name: Наименование товара
+        barcodes: Список штрих-кодов
+        address: Адрес хранения (опционально)
+    """
+    
+    article: str
+    name: str
+    barcodes: List[str] = field(default_factory=list)
+    address: Optional[str] = None
+    
+    def matches_article_or_barcode(self, code: str) -> bool:
+        """Проверяет, соответствует ли код артикулу или штрих-коду
+        
+        Args:
+            code: Код для проверки (артикул или штрих-код)
+            
+        Returns:
+            True если код соответствует артикулу или одному из штрих-кодов
+        """
+        code_norm = code.strip()
+        if self.article == code_norm:
+            return True
+        return any(barcode == code_norm for barcode in self.barcodes)
