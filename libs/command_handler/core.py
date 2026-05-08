@@ -7,9 +7,10 @@
 """
 
 from typing import Optional
+from .data import COMMANDS as CMD_DATA, RUS_COMMANDS as RUS_CMD_DATA
 
 
-# Стандартные команды
+# Маппинг коротких кодов на полные имена команд
 COMMANDS = {
     'CMD_START_INV': {'code': '[CMD]START_INV', 'name': 'Начать инвентаризацию'},
     'CMD_FINISH_INV': {'code': '[CMD]FINISH_INV', 'name': 'Завершить инвентаризацию'},
@@ -28,7 +29,7 @@ COMMANDS = {
     'CMD_SHOW_STATS': {'code': '[CMD]SHOW_STATS', 'name': 'Показать статистику'},
 }
 
-# Команды в русской раскладке (для автоматического распознавания)
+# Маппинг русской раскладки на идентификаторы команд
 RUS_COMMANDS = {
     'хСЬВъЯУКЩ_ДФЫЕ': 'CMD_RESET_ACTUAL',
     'хСЬВъФВВ1': 'CMD_ADD1',
@@ -46,6 +47,10 @@ RUS_COMMANDS = {
     'хСЬВъЫГИ10': 'CMD_SUB10',
     'хСЬВъЫГИ100': 'CMD_SUB100',
 }
+
+# Объединяем с данными из внешних файлов для расширения
+COMMANDS.update(CMD_DATA)
+RUS_COMMANDS.update(RUS_CMD_DATA)
 
 
 class CommandHandler:
