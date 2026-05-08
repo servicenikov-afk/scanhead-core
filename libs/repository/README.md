@@ -1,0 +1,46 @@
+# Repository Module (libs/repository)
+
+Слой абстракции доступа к данным. Реализует паттерн Repository для отделения бизнес-логики от конкретной СУБД.
+
+## Состав
+
+### interfaces.py
+Абстрактные классы репозиториев:
+- `ProductRepository` — работа с номенклатурой
+- `InventoryRepository` — управление инвентаризациями
+- `AddressRepository` — адреса хранения
+- `CountRepository` — результаты подсчетов
+
+Определяют контракт CRUD-операций без привязки к SQL.
+
+### sqlite_impl.py
+SQLite-реализации всех репозиториев:
+- Автоматическая инициализация схемы БД
+- Контекстный менеджер для безопасной работы
+- Поддержка транзакций и отката при ошибках
+- Параметризованные запросы (защита от SQL-инъекций)
+
+## Пример использования
+
+```python
+from libs.repository import SqliteProductRepository
+
+repo = SqliteProductRepository("warehouse.db")
+
+# Получить продукт по артикулу
+product = repo.get_by_article("12345")
+if product:
+    print(product.name)
+
+# Сохранить новый продукт
+repo.save(Product(id=None, article="67890", name="New Item"))
+```
+
+## Зависимости
+- Стандартная библиотека Python (sqlite3, contextlib, typing)
+- Модуль `libs.domain_models` (модели данных)
+
+## Архитектурные преимущества
+- **DIP (Dependency Inversion Principle)**: Бизнес-логика зависит от абстракций
+- **Тестируемость**: Легко подменить репозиторий на mock для юнит-тестов
+- **Заменяемость**: Можно добавить реализацию для PostgreSQL без изменения бизнес-логики
