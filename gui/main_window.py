@@ -136,11 +136,14 @@ class MainWindow(ctk.CTkFrame):
     
     def _on_search_result(self, products: list) -> None:
         """Обработчик результатов поиска."""
+        logger.info(f"[MainWindow] Получены результаты поиска: {len(products)} товаров")
+        
+        # Всегда передаём результаты в вкладку поиска (независимо от активной вкладки)
+        self._search_tab.update_products(products)
+        
+        # Обновляем статус-бар
         if products:
             self._status_bar.configure(text=f"Найдено товаров: {len(products)}")
-            # Передаём результаты в активную вкладку
-            if self._notebook.index("current") == 0:
-                self._search_tab.update_products(products)
         else:
             self._status_bar.configure(text="Ничего не найдено")
     
