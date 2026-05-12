@@ -33,3 +33,16 @@ class StubSettingsService(ISettingsService):
 
     def load(self) -> None:
         logger.info(f"[StubSettingsService] Загрузка: {self._settings}")
+
+    def get_column_config(self) -> Dict[str, Any]:
+        """Возвращает конфигурацию колонок очереди."""
+        config = self._settings.get("queue_columns", ["article", "article2", "name", "address"])
+        order = self._settings.get("column_order", config)
+        logger.info(f"[StubSettingsService] get_column_config: columns={config}, order={order}")
+        return {"columns": config, "order": order}
+
+    def save_column_config(self, columns: list, order: list) -> None:
+        """Сохраняет конфигурацию колонок очереди."""
+        self._settings["queue_columns"] = columns
+        self._settings["column_order"] = order
+        logger.info(f"[StubSettingsService] save_column_config: columns={columns}, order={order}")
