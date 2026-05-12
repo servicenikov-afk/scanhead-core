@@ -4,13 +4,12 @@
 """
 
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import customtkinter as ctk
 from tkinter import ttk
 
-from services.di_container import DIContainer
-from services.interfaces import ISearchService, ISettingsService
+
 
 from gui.tabs.search_address_tab import SearchAddressTab
 from gui.tabs.inventory_tab import InventoryTab
@@ -37,13 +36,13 @@ class MainWindow(ctk.CTkFrame):
     └─────────────────────────────────────────┘
     """
     
-    def __init__(self, master: Any, container: DIContainer):
+    def __init__(self, master: Any, services: Dict[str, Any]):
         super().__init__(master)
-        self._container = container
+        self._services = services
         
-        # Получаем сервисы из контейнера
-        self._search_service = container.get(ISearchService)
-        self._settings_service = container.get(ISettingsService)
+        # Получаем сервисы из словаря
+        self._search_service = services.get("search_service")
+        self._settings_service = services.get("settings_service")
         
         logger.info("[MainWindow] Инициализация главного окна")
         
