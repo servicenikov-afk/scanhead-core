@@ -20,19 +20,16 @@ class StubSearchService(ISearchService):
     def __init__(self) -> None:
         self._test_products = [
             Product(
-                id=1,
                 article="ART-001",
                 name="Товар тестовый 1",
                 barcodes=["4600000000001", "4600000000002"],
             ),
             Product(
-                id=2,
                 article="ART-002",
                 name="Товар тестовый 2",
                 barcodes=["4600000000003"],
             ),
             Product(
-                id=3,
                 article="ART-003",
                 name="Товар тестовый 3",
                 barcodes=["4600000000004", "4600000000005"],
