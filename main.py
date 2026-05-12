@@ -13,7 +13,8 @@ from pathlib import Path
 sys.path.insert(0, '/workspace')
 
 # Импорт конфигурации
-CONFIG_PATH = Path("/workspace/config/app_config.json")
+# Используем относительный путь от текущего файла для кроссплатформенности
+CONFIG_PATH = Path(__file__).parent / "config" / "app_config.json"
 
 
 def load_config() -> dict:
@@ -72,6 +73,12 @@ def main() -> None:
 
     # Инициализация сервисов в зависимости от конфига
     use_mocks = config.get("use_mock_data", False)
+    
+    # Отладка: выводим путь и значение
+    logger.info(f"[DEBUG] CONFIG_PATH: {CONFIG_PATH}")
+    logger.info(f"[DEBUG] CONFIG_PATH exists: {CONFIG_PATH.exists()}")
+    logger.info(f"[DEBUG] Full config content: {config}")
+    logger.info(f"[DEBUG] use_mock_data value: {use_mocks} (type: {type(use_mocks)})")
 
     if use_mocks:
         logger.info("[Main] Использование моков для тестовых данных")
