@@ -10,7 +10,7 @@ import customtkinter as ctk
 from PIL import Image, ImageTk
 
 from services.interfaces import IPrinterService, ISettingsService
-from libs.domain_models.models import Product
+from libs.domain_models import Product
 from gui.dialogs.sticker_editor import StickerEditor
 
 logger = logging.getLogger(__name__)

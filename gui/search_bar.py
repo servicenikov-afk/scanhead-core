@@ -10,7 +10,7 @@ import time
 import customtkinter as ctk
 
 from services.interfaces import ISearchService
-from libs.domain_models.models import Product
+from libs.domain_models import Product
 
 logger = logging.getLogger(__name__)
 

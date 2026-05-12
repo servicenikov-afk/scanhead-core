@@ -10,7 +10,7 @@ import customtkinter as ctk
 
 from services.di_container import DIContainer
 from services.interfaces import ISearchService, IProductRepository, IPrinterService, ISettingsService
-from libs.domain_models.models import Product
+from libs.domain_models import Product
 
 from gui.product_details import ProductDetails
 from gui.print_queue import PrintQueue

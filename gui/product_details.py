@@ -10,7 +10,7 @@ import customtkinter as ctk
 from tkinter import ttk
 
 from services.interfaces import IProductRepository
-from libs.domain_models.models import Product, Address
+from libs.domain_models import Product, Address
 from gui.dialogs.field_editor import FieldEditor
 
 logger = logging.getLogger(__name__)
