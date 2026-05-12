@@ -4,12 +4,10 @@
 """
 
 import logging
-from typing import Any, List
+from typing import Any, Dict, List
 
 import customtkinter as ctk
 
-from services.di_container import DIContainer
-from services.interfaces import ISearchService, IProductRepository, IPrinterService, ISettingsService
 from libs.domain_models import Product
 
 from gui.product_details import ProductDetails
@@ -38,9 +36,9 @@ class SearchAddressTab(ctk.CTkFrame):
     └──────────────────┴─────────────────────────────┘
     """
     
-    def __init__(self, master: Any, container: DIContainer):
+    def __init__(self, master: Any, services: Dict[str, Any]):
         super().__init__(master)
-        self._container = container
+        self._services = services
         self._current_products: List[Product] = []
         
         logger.info("[SearchAddressTab] Инициализация вкладки")
@@ -68,7 +66,7 @@ class SearchAddressTab(ctk.CTkFrame):
         # Детали товара
         self._product_details = ProductDetails(
             left_frame,
-            product_repo=self._container.get(IProductRepository)
+            product_repo=self._services.get("product_repo")
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         
@@ -85,17 +83,17 @@ class SearchAddressTab(ctk.CTkFrame):
         # Превью стикера (верх)
         self._sticker_preview = StickerPreview(
             right_frame,
-            printer_service=self._container.get(IPrinterService),
-            settings_service=self._container.get(ISettingsService)
+            printer_service=self._services.get("printer_service"),
+            settings_service=self._services.get("settings_service")
         )
         self._sticker_preview.grid(row=0, column=0, sticky="nsew", padx=5, pady=(5, 2))
         
         # Очередь печати (низ)
         self._print_queue = PrintQueue(
             right_frame,
-            product_repo=self._container.get(IProductRepository),
-            printer_service=self._container.get(IPrinterService),
-            settings_service=self._container.get(ISettingsService)
+            product_repo=self._services.get("product_repo"),
+            printer_service=self._services.get("printer_service"),
+            settings_service=self._services.get("settings_service")
         )
         self._print_queue.grid(row=1, column=0, sticky="nsew", padx=5, pady=(2, 5))
         

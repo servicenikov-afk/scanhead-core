@@ -4,27 +4,22 @@
 """
 
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import customtkinter as ctk
-
-from services.di_container import DIContainer
-from services.interfaces import IInventoryService
 
 logger = logging.getLogger(__name__)
 
 
 class InventoryTab(ctk.CTkFrame):
     """
-    Вкладка "Инвентаризация".
-    
-    Пока заглушка: текст "Модуль в разработке" + кнопки-заглушки.
+    Вкладка "Инвентаризация" (заглушка).
+    Показывает сообщение о разработке и кнопки-заглушки.
     """
     
-    def __init__(self, master: Any, container: DIContainer):
+    def __init__(self, master: Any, services: Dict[str, Any]):
         super().__init__(master)
-        self._container = container
-        self._inventory_service = container.get(IInventoryService)
+        self._services = services
         
         logger.info("[InventoryTab] Инициализация вкладки-заглушки")
         
