@@ -7,11 +7,14 @@ import sys
 import logging
 
 # Инициализация Bootstrap ДО импорта остальных модулей
-from libs.core.bootstrap import Bootstrap
+from libs.core.bootstrap import Bootstrap, BootstrapConfig
 
 # Инициализируем логгер через Bootstrap
-Bootstrap.quick_bootstrap(level=logging.INFO)
-logger = logging.getLogger(__name__)
+config = BootstrapConfig(app_name="ScanHead Combine", log_level=logging.INFO)
+bootstrap = Bootstrap(config)
+bootstrap.run()
+
+logger = logging.getLogger("ScanHead Combine")
 
 # Теперь импортируем остальные модули
 import customtkinter as ctk

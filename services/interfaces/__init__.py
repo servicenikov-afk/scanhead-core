@@ -5,7 +5,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Callable, List, Optional, Any
-from libs.domain_models.models import Product, Address
+from libs.domain_models import Product, Address
 
 
 class ISearchService(ABC):
