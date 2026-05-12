@@ -109,14 +109,14 @@ class MainWindow(ctk.CTkFrame):
         # Вкладка "Поиск | Адрес"
         self._search_tab = SearchAddressTab(
             self._notebook,
-            container=self._container
+            services=self.services
         )
         self._notebook.add(self._search_tab, text="🔍 Поиск | Адрес")
         
         # Вкладка "Инвентаризация"
         self._inventory_tab = InventoryTab(
             self._notebook,
-            container=self._container
+            services=self.services
         )
         self._notebook.add(self._inventory_tab, text="📋 Инвентаризация")
         
