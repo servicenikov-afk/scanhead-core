@@ -11,9 +11,9 @@ import logging
 sys.path.insert(0, '/workspace')
 
 # Инициализация логгирования через Bootstrap
-from libs.core.bootstrap import Bootstrap
+from libs.core import quick_bootstrap
 
-Bootstrap.quick_bootstrap(level=logging.INFO)
+quick_bootstrap(app_name="ScanHead Combine", log_level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
