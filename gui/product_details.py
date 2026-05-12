@@ -155,9 +155,8 @@ class ProductDetails(ctk.CTkFrame):
             case "name":
                 return self._current_product.name
             case "address":
-                if self._current_product.addresses:
-                    addr = self._current_product.addresses[0]
-                    return f"{addr.code} — {addr.description}"
+                if self._current_product.address:
+                    return self._current_product.address
                 return "Не указан"
             case _:
                 return ""

@@ -37,9 +37,9 @@ class JsonMockLoader(IMockDataService):
         for item in data:
             product = Product(
                 article=item.get("article", ""),
-                article2=item.get("article2", ""),
                 name=item.get("name", ""),
                 barcodes=item.get("barcodes", []),
+                address=item.get("address"),
             )
             products.append(product)
 
@@ -75,7 +75,6 @@ class JsonMockLoader(IMockDataService):
         for product in self._products_cache:
             if (
                 (product.article and article_lower in product.article.lower())
-                or (product.article2 and article_lower in product.article2.lower())
                 or (product.name and article_lower in product.name.lower())
             ):
                 return product

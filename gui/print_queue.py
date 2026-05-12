@@ -238,13 +238,23 @@ class PrintQueue(ctk.CTkFrame):
         
         # Добавляем товары
         for i, product in enumerate(products, start=1):
+            # Формируем значения для колонок
+            article2_val = ""
+            if len(product.barcodes) > 1:
+                article2_val = product.barcodes[1]
+            
+            address_val = ""
+            if product.address:
+                address_val = product.address
+            
             values = (
+                i,  # № п/п
                 product.article,
-                product.barcodes[1] if len(product.barcodes) > 1 else "",
+                article2_val,
                 product.name,
-                product.addresses[0].description if product.addresses else ""
+                address_val
             )
-            self._tree.insert("", "end", iid=product.id, values=values)
+            self._tree.insert("", "end", iid=i, values=values)
     
     def clear(self) -> None:
         """Очистка очереди."""
