@@ -113,8 +113,12 @@ class StickerPreview(ctk.CTkFrame):
             logger.error(f"[StickerPreview] Ошибка генерации: {e}")
             self._show_placeholder("Ошибка генерации")
     
-    def _display_image(self, image: Image.Image) -> None:
+    def _display_image(self, image: Image.Image | None) -> None:
         """Отображение изображения в превью."""
+        if image is None:
+            self._show_placeholder("Нет изображения")
+            return
+            
         try:
             # Масштабируем под размер label
             label_width = self._image_label.winfo_reqwidth() or 300

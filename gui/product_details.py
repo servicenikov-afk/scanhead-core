@@ -129,11 +129,12 @@ class ProductDetails(ctk.CTkFrame):
         value = self._get_field_value(field_name)
         
         # Открываем диалог
+        # Используем article как идентификатор, т.к. в Product нет поля id
         dialog = FieldEditor(
             self,
             field_name=field_name,
             current_value=value,
-            product_id=self._current_product.id,
+            product_id=self._current_product.article,
             product_repo=self._product_repo,
             on_save=self._on_field_saved
         )
@@ -168,9 +169,9 @@ class ProductDetails(ctk.CTkFrame):
         
         logger.info(f"[ProductDetails] Поле {field_name} обновлено: {new_value}")
         
-        # Вызываем репозиторий для обновления
+        # Вызываем репозиторий для обновления (используем article как id)
         success = self._product_repo.update_field(
-            self._current_product.id,
+            self._current_product.article,
             field_name,
             new_value
         )

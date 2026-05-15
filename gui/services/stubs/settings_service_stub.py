@@ -33,6 +33,11 @@ class StubSettingsService(ISettingsService):
     def set(self, key: str, value: Any) -> None:
         self._settings[key] = value
 
+    def set_setting(self, key: str, value: Any) -> None:
+        """Алиас для set(). Установка значения настройки."""
+        self._settings[key] = value
+        logger.debug(f"[StubSettingsService] set_setting: {key} = {value}")
+
     def save(self) -> None:
         logger.info(f"[StubSettingsService] Сохранение: {self._settings}")
 
