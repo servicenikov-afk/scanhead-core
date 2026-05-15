@@ -52,11 +52,13 @@ class SearchServiceWithMocks(ISearchService):
 
         results = []
         for product in all_products:
-            if (
+            # Поиск по артикулу, наименованию и всем штрих-кодам
+            matches = (
                 (product.article and query_lower in product.article.lower())
-                or (product.article2 and query_lower in product.article2.lower())
                 or (product.name and query_lower in product.name.lower())
-            ):
+                or any(query_lower in barcode.lower() for barcode in product.barcodes)
+            )
+            if matches:
                 results.append(product)
 
         logger.info(f"[SearchServiceWithMocks] Найдено {len(results)} товаров по запросу '{query}'")

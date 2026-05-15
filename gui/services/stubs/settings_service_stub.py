@@ -19,11 +19,16 @@ class StubSettingsService(ISettingsService):
             "window_height": 800,
             "queue_columns": ["article", "article2", "name", "address"],
             "column_order": ["article", "article2", "name", "address"],
+            "current_preset": {},  # Пресет по умолчанию для превью стикера
         }
         logger.info("[StubSettingsService] Инициализация")
 
     def get(self, key: str, default: Any = None) -> Any:
         return self._settings.get(key, default)
+
+    def get_setting(self, key: str, default: Any = None) -> Any:
+        """Алиас для get(). Получение значения настройки."""
+        return self.get(key, default)
 
     def set(self, key: str, value: Any) -> None:
         self._settings[key] = value
