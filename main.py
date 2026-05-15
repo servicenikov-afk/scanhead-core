@@ -125,6 +125,7 @@ def main() -> None:
 
     # Создание MainWindow с DI
     app = MainWindow(root, services=services)
+    app.pack(fill="both", expand=True)  # Добавлено: растягиваем окно на весь root
     
     logger.info("Главное окно создано")
     logger.info("Запуск главного цикла...")
