@@ -4,6 +4,7 @@
 """
 
 import logging
+import os
 from typing import Any, Optional
 
 import customtkinter as ctk
@@ -34,8 +35,12 @@ class StickerPreview(ctk.CTkFrame):
         self._settings_service = settings_service
         self._current_product: Optional[Product] = None
         self._current_image: Optional[ImageTk.PhotoImage] = None
+        self._no_image: Optional[ctk.CTkImage] = None
         
         logger.debug("[StickerPreview] Инициализация")
+        
+        # Загрузка заглушки
+        self._load_no_image()
         
         # Заголовок с кнопкой редактора
         self._create_header()
@@ -44,6 +49,28 @@ class StickerPreview(ctk.CTkFrame):
         self._create_preview_area()
         
         logger.debug("[StickerPreview] Превью создано")
+    
+    def _load_no_image(self) -> None:
+        """Загрузка изображения-заглушки."""
+        try:
+            # Путь к файлу относительно корня проекта
+            base_dir = os.path.dirname(os.path.dirname(__file__))
+            img_path = os.path.join(base_dir, "data", "images", "noimage.png")
+            
+            if os.path.exists(img_path):
+                pil_image = Image.open(img_path)
+                self._no_image = ctk.CTkImage(
+                    light_image=pil_image,
+                    dark_image=pil_image,
+                    size=(200, 150)
+                )
+                logger.debug(f"[StickerPreview] Загружено изображение из {img_path}")
+            else:
+                logger.warning(f"[StickerPreview] Файл {img_path} не найден")
+                self._no_image = None
+        except Exception as e:
+            logger.error(f"[StickerPreview] Ошибка загрузки noimage.png: {e}")
+            self._no_image = None
     
     def _create_header(self) -> None:
         """Создание заголовка с кнопкой редактора."""
@@ -142,11 +169,21 @@ class StickerPreview(ctk.CTkFrame):
     def _show_placeholder(self, message: str) -> None:
         """Показ заглушки вместо изображения."""
         self._current_image = None
-        self._image_label.configure(
-            image="",
-            text=message,
-            text_color="#808080"
-        )
+        
+        # Если есть загруженное изображение-заглушка, показываем его
+        if self._no_image:
+            self._image_label.configure(
+                image=self._no_image,
+                text="",
+                text_color="#808080"
+            )
+        else:
+            # Фолбэк на текст, если картинка не загрузилась
+            self._image_label.configure(
+                image="",
+                text=message,
+                text_color="#808080"
+            )
     
     def clear(self) -> None:
         """Очистка превью."""
