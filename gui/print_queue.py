@@ -104,7 +104,7 @@ class PrintQueue(ctk.CTkFrame):
         """Создание таблицы Treeview."""
         # Контейнер для таблицы с прокруткой
         table_frame = ctk.CTkFrame(self)
-        table_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        table_frame.pack(fill="both", expand=True, padx=3, pady=3)
         
         # Создаём Treeview
         columns = ("article", "article2", "name", "address")

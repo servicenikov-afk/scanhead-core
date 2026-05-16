@@ -32,12 +32,6 @@ class ProductDetails(ctk.CTkFrame):
         logger.debug("[ProductDetails] Инициализация")
         
         # Заголовок
-        title_label = ctk.CTkLabel(
-            self,
-            text="📦 Детали товара",
-            font=ctk.CTkFont(size=16, weight="bold")
-        )
-        title_label.pack(pady=(10, 5), padx=10, anchor="w")
         
         # Контейнер для полей
         fields_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -102,7 +96,7 @@ class ProductDetails(ctk.CTkFrame):
             state="readonly",
             font=("Arial", 12)
         )
-        entry.grid(row=row, column=1, padx=5, pady=5, sticky="ew")
+        entry.grid(row=row, column=1, padx=3, pady=3, sticky="ew")
         
         # Кнопка "Изменить"
         btn_edit = ctk.CTkButton(
@@ -111,7 +105,7 @@ class ProductDetails(ctk.CTkFrame):
             width=40,
             command=lambda: self._open_editor(field_name)
         )
-        btn_edit.grid(row=row, column=2, padx=5, pady=5)
+        btn_edit.grid(row=row, column=2, padx=3, pady=3)
         
         # Сохраняем ссылки на виджеты
         setattr(self, f"_{field_name}_label", lbl)

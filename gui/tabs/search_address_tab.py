@@ -67,7 +67,7 @@ class SearchAddressTab(ctk.CTkFrame):
     def _create_search_bar(self) -> None:
         """Создание поисковой строки на вкладке."""
         search_frame = ctk.CTkFrame(self)
-        search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=5)
+        search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=3, pady=3)
         search_frame.grid_columnconfigure(0, weight=1)
         
         self._search_bar = SearchBar(
@@ -91,7 +91,7 @@ class SearchAddressTab(ctk.CTkFrame):
             details_frame,
             product_repo=self._services.get("product_repo")
         )
-        self._product_details.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         
         logger.debug("[SearchAddressTab] Панель деталей создана")
     
