@@ -42,3 +42,90 @@ class StickerPreview(ctk.CTkFrame):
         # Загрузка заглушки
         self._load_no_image()
         
+        self._create_ui()
+
+    def _load_no_image(self) -> None:
+        """Загрузить изображение-заглушку."""
+        try:
+            # Путь к изображению относительно корня проекта
+            script_dir = os.path.dirname(os.path.dirname(__file__))
+            img_path = os.path.join(script_dir, "data", "images", "noimage.png")
+            
+            if os.path.exists(img_path):
+                pil_image = Image.open(img_path)
+                self._no_image = ctk.CTkImage(
+                    light_image=pil_image,
+                    dark_image=pil_image,
+                    size=(200, 150)
+                )
+            else:
+                logger.warning(f"[StickerPreview] Файл {img_path} не найден")
+                self._no_image = None
+        except Exception as e:
+            logger.error(f"[StickerPreview] Ошибка загрузки noimage.png: {e}")
+            self._no_image = None
+
+    def _create_ui(self) -> None:
+        """Создание интерфейса превью."""
+        self.configure(fg_color="transparent")
+        
+        # Заголовок удален по ТЗ
+        
+        # Фрейм для превью
+        self._preview_frame = ctk.CTkFrame(self)
+        self._preview_frame.pack(fill="both", expand=True, padx=3, pady=3)
+        
+        # Метка для изображения/текста
+        self._image_label = ctk.CTkLabel(
+            self._preview_frame,
+            text="Нет данных",
+            font=ctk.CTkFont(size=14),
+            text_color="gray"
+        )
+        self._image_label.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Показываем заглушку сразу
+        self._show_placeholder()
+
+    def _show_placeholder(self, text: str = "Нет изображения") -> None:
+        """Показать заглушку вместо стикера."""
+        # Очищаем фрейм
+        for widget in self._preview_frame.winfo_children():
+            widget.destroy()
+        
+        # Если есть загруженная картинка-заглушка
+        if self._no_image:
+            img_label = ctk.CTkLabel(
+                self._preview_frame,
+                image=self._no_image,
+                text=""
+            )
+            img_label.place(relx=0.5, rely=0.45, anchor="center")
+            
+            txt_label = ctk.CTkLabel(
+                self._preview_frame,
+                text=text,
+                font=ctk.CTkFont(size=12),
+                text_color="gray"
+            )
+            txt_label.place(relx=0.5, rely=0.65, anchor="center")
+        else:
+            # Текстовая заглушка, если картинки нет
+            lbl = ctk.CTkLabel(
+                self._preview_frame,
+                text=text,
+                font=ctk.CTkFont(size=12),
+                text_color="gray"
+            )
+            lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+    def update_product(self, product: Optional[Product]) -> None:
+        """Обновить превью данными товара."""
+        self._current_product = product
+        if product:
+            logger.debug(f"[StickerPreview] Обновление превью для {product.article}")
+            # Здесь будет логика генерации реального превью
+            # Пока просто убираем заглушку или рисуем текст
+            self._show_placeholder(f"Товар: {product.article}")
+        else:
+            self._show_placeholder("Нет данных")
