@@ -46,19 +46,21 @@ class SearchAddressTab(ctk.CTkFrame):
         
         logger.info("[SearchAddressTab] Инициализация вкладки")
         
-        # Настраиваем сетку
-        self.grid_rowconfigure(1, weight=1)  # Основной контент растягивается
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=2)  # Правая часть шире
+        # Настраиваем сетку для новой компоновки
+        self.grid_rowconfigure(0, weight=0)  # Поиск - фиксированная высота
+        self.grid_rowconfigure(1, weight=3)  # Детали товара: 75% высоты
+        self.grid_rowconfigure(2, weight=1)  # Очередь+Превью: 25% высоты
+        self.grid_columnconfigure(0, weight=3)  # Очередь: 75% ширины
+        self.grid_columnconfigure(1, weight=1)  # Превью: 25% ширины
         
         # Поисковая строка (Row 0)
         self._create_search_bar()
         
-        # Левая панель: детали товара
-        self._create_left_panel()
+        # Детали товара (Row 1, на всю ширину)
+        self._create_details_panel()
         
-        # Правая панель: превью + очередь
-        self._create_right_panel()
+        # Нижняя панель: очередь + превью (Row 2)
+        self._create_bottom_panel()
         
         logger.info("[SearchAddressTab] Вкладка инициализирована")
     
@@ -77,59 +79,42 @@ class SearchAddressTab(ctk.CTkFrame):
         
         logger.debug("[SearchAddressTab] Поисковая строка создана")
     
-    def _create_left_panel(self) -> None:
-        """Создание левой панели с деталями товара."""
-        left_frame = ctk.CTkFrame(self)
-        left_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
-        left_frame.grid_rowconfigure(0, weight=1)
-        left_frame.grid_rowconfigure(1, weight=0)  # Для кнопки
-        left_frame.grid_columnconfigure(0, weight=1)
+    def _create_details_panel(self) -> None:
+        """Создание панели с деталями товара (на всю ширину)."""
+        details_frame = ctk.CTkFrame(self)
+        details_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=3, pady=3)
+        details_frame.grid_rowconfigure(0, weight=1)
+        details_frame.grid_columnconfigure(0, weight=1)
         
-        # Детали товара (верх)
+        # Детали товара
         self._product_details = ProductDetails(
-            left_frame,
+            details_frame,
             product_repo=self._services.get("product_repo")
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         
-        # Кнопка "В очередь печати" (низ)
-        add_to_queue_btn = ctk.CTkButton(
-            left_frame,
-            text="➕ В очередь печати",
-            command=self._add_current_to_queue,
-            height=40,
-            font=ctk.CTkFont(size=13, weight="bold")
-        )
-        add_to_queue_btn.grid(row=1, column=0, sticky="ew", padx=5, pady=(0, 5))
-        
-        logger.debug("[SearchAddressTab] Левая панель создана")
+        logger.debug("[SearchAddressTab] Панель деталей создана")
     
-    def _create_right_panel(self) -> None:
-        """Создание правой панели с превью и очередью."""
-        right_frame = ctk.CTkFrame(self)
-        right_frame.grid(row=1, column=1, sticky="nsew", padx=5, pady=5)
-        right_frame.grid_rowconfigure(0, weight=1)  # Превью
-        right_frame.grid_rowconfigure(1, weight=2)  # Очередь (больше места)
-        right_frame.grid_columnconfigure(0, weight=1)
-        
-        # Превью стикера (верх)
-        self._sticker_preview = StickerPreview(
-            right_frame,
-            printer_service=self._services.get("printer_service"),
-            settings_service=self._services.get("settings_service")
-        )
-        self._sticker_preview.grid(row=0, column=0, sticky="nsew", padx=5, pady=(5, 2))
-        
-        # Очередь печати (низ)
+    def _create_bottom_panel(self) -> None:
+        """Создание нижней панели: очередь (слева) + превью (справа)."""
+        # Очередь печати (Row 2, Col 0 - 75% ширины)
         self._print_queue = PrintQueue(
-            right_frame,
+            self,
             product_repo=self._services.get("product_repo"),
             printer_service=self._services.get("printer_service"),
             settings_service=self._services.get("settings_service")
         )
-        self._print_queue.grid(row=1, column=0, sticky="nsew", padx=5, pady=(2, 5))
+        self._print_queue.grid(row=2, column=0, sticky="nsew", padx=3, pady=3)
         
-        logger.debug("[SearchAddressTab] Правая панель создана")
+        # Превью стикера (Row 2, Col 1 - 25% ширины)
+        self._sticker_preview = StickerPreview(
+            self,
+            printer_service=self._services.get("printer_service"),
+            settings_service=self._services.get("settings_service")
+        )
+        self._sticker_preview.grid(row=2, column=1, sticky="nsew", padx=3, pady=3)
+        
+        logger.debug("[SearchAddressTab] Нижняя панель создана")
     
     def _on_search_result(self, products: List[Product]) -> None:
         """Обработчик результатов поиска от SearchBar."""

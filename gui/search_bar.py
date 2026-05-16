@@ -54,6 +54,7 @@ class SearchBar(ctk.CTkFrame):
         
         # Привязываем обработчик нажатий
         self._entry.bind("<KeyRelease>", self._on_key_release)
+        self._entry.bind("<Button-1>", self._on_entry_click)  # Обработка клика - не сбрасывать
         self._entry.bind("<FocusOut>", lambda e: self._hide_suggestions())
         
         logger.debug("[SearchBar] Поле поиска создано")
@@ -136,8 +137,6 @@ class SearchBar(ctk.CTkFrame):
     
     def _on_suggestion_select(self, display_text: str) -> None:
         """Обработка выбора подсказки."""
-        # Находим соответствующий товар по тексту
-        # (в реальном приложении лучше использовать ID)
         logger.info(f"[SearchBar] Выбрана подсказка: {display_text}")
         
         # Извлекаем артикул из текста (до " | ")
@@ -153,6 +152,11 @@ class SearchBar(ctk.CTkFrame):
         
         # Выполняем поиск по выбранному артикулу
         self._do_search(article)
+
+    def _on_entry_click(self, event) -> None:
+        """Обработка клика на поле поиска — НЕ сбрасывать содержимое."""
+        # Просто пропускаем событие, не очищаем поле
+        pass
     
     def get_query(self) -> str:
         """Получение текущего поискового запроса."""

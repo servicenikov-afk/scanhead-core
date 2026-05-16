@@ -59,14 +59,7 @@ class PrintQueue(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=5, pady=(5, 0))
         
-        # Заголовок
-        title_label = ctk.CTkLabel(
-            header_frame,
-            text="🖨️ Очередь печати",
-            font=ctk.CTkFont(size=16, weight="bold")
-        )
-        title_label.pack(side="left", padx=5)
-        
+        # Заголовок (удалён по ТЗ)
         # Кнопка выбора колонок
         btn_columns = ctk.CTkButton(
             header_frame,
@@ -75,6 +68,15 @@ class PrintQueue(ctk.CTkFrame):
             command=self._toggle_column_menu
         )
         btn_columns.pack(side="right", padx=5)
+        
+        # Кнопка "Импорт из файла"
+        btn_import = ctk.CTkButton(
+            header_frame,
+            text="📥 Импорт",
+            width=90,
+            command=self._import_from_file
+        )
+        btn_import.pack(side="right", padx=5)
         
         # Кнопка "Печатать все"
         btn_print_all = ctk.CTkButton(
@@ -272,3 +274,8 @@ class PrintQueue(ctk.CTkFrame):
         """Печать каждого товара отдельно."""
         logger.info("[PrintQueue] Печать по одному")
         self._printer_service.print_queue(self._products, one_by_one=True)
+    
+    def _import_from_file(self) -> None:
+        """Импорт списка из файла (заглушка)."""
+        logger.info("[PrintQueue] Импорт из файла (заглушка)")
+        # TODO: Открыть диалог выбора файла
