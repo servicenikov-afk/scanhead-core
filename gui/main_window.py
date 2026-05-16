@@ -53,11 +53,10 @@ class MainWindow(ctk.CTkFrame):
         """Создание верхней панели: кнопки слева, табы справа."""
         top_frame = ctk.CTkFrame(self)
         top_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        top_frame.grid_columnconfigure(1, weight=1)  # Табы занимают свободное место
 
-        # --- ЛЕВАЯ ЧАСТЬ: Кнопки ---
+        # --- ЛЕВАЯ ЧАСТЬ: Кнопки (используем pack) ---
         left_frame = ctk.CTkFrame(top_frame, fg_color="transparent")
-        left_frame.grid(row=0, column=0, sticky="w", padx=5)
+        left_frame.pack(side="left", fill="y", padx=5, pady=5)
 
         # Путь к иконкам
         icons_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "icons")
@@ -102,7 +101,8 @@ class MainWindow(ctk.CTkFrame):
         except Exception as e:
             logger.warning(f"[MainWindow] Не удалось загрузить иконку settings32.png: {e}")
             ctk.CTkButton(left_frame, text="Sett", width=40, command=self._open_settings).pack(side="left", padx=2)
-        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) ---
+        
+        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) - используем pack ---
         # Создаём CTkTabview с увеличенной высотой и скруглением
         self._notebook = ctk.CTkTabview(top_frame, height=50, corner_radius=10)
         self._notebook.pack(side="right", fill="both", expand=True, padx=5, pady=5)
