@@ -62,10 +62,10 @@ class MainWindow(ctk.CTkFrame):
         logger.info("[MainWindow] Главное окно инициализировано")
     
     def _create_top_panel(self) -> None:
-        """Создание верхней панели с поиском и настройками."""
+        """Создание верхней панели с настройками (поиск перенесён на вкладку)."""
         top_frame = ctk.CTkFrame(self)
         top_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
-        top_frame.grid_columnconfigure(1, weight=1)
+        top_frame.grid_columnconfigure(0, weight=1)
         
         # Логотип/название (слева)
         title_label = ctk.CTkLabel(
@@ -75,14 +75,6 @@ class MainWindow(ctk.CTkFrame):
         )
         title_label.grid(row=0, column=0, padx=(10, 20), pady=5)
         
-        # Поисковая строка (центр)
-        self._search_bar = SearchBar(
-            top_frame, 
-            search_service=self._search_service,
-            on_search_result=self._on_search_result
-        )
-        self._search_bar.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
-        
         # Кнопка настроек (справа)
         settings_btn = ctk.CTkButton(
             top_frame,
@@ -90,9 +82,9 @@ class MainWindow(ctk.CTkFrame):
             width=40,
             command=self._open_settings
         )
-        settings_btn.grid(row=0, column=2, padx=(5, 10), pady=5)
+        settings_btn.grid(row=0, column=1, padx=(5, 10), pady=5)
         
-        logger.debug("[MainWindow] Верхняя панель создана")
+        logger.debug("[MainWindow] Верхняя панель создана (без поиска)")
     
     def _create_notebook(self) -> None:
         """Создание notebook с вкладками."""
@@ -102,8 +94,13 @@ class MainWindow(ctk.CTkFrame):
         notebook_container.grid_rowconfigure(0, weight=1)
         notebook_container.grid_columnconfigure(0, weight=1)
         
-        # Создаём ttk.Notebook внутри CTkFrame
-        self._notebook = ttk.Notebook(notebook_container)
+        # Настраиваем стиль для крупных ярлыков табов
+        style = ttk.Style()
+        style.configure('Custom.Tab', font=('Arial', 14, 'bold'), padding=(20, 10))
+        style.map('Custom.Tab', foreground=[('active', '#1E90FF')])
+        
+        # Создаём ttk.Notebook внутри CTkFrame с кастомным стилем
+        self._notebook = ttk.Notebook(notebook_container, style='Custom.Tab')
         self._notebook.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         
         # Вкладка "Поиск | Адрес"
@@ -111,16 +108,16 @@ class MainWindow(ctk.CTkFrame):
             self._notebook,
             services=self._services
         )
-        self._notebook.add(self._search_tab, text="🔍 Поиск | Адрес")
+        self._notebook.add(self._search_tab, text="  🔍  Поиск | Адрес  ")
         
         # Вкладка "Инвентаризация"
         self._inventory_tab = InventoryTab(
             self._notebook,
             services=self._services
         )
-        self._notebook.add(self._inventory_tab, text="📋 Инвентаризация")
+        self._notebook.add(self._inventory_tab, text="  📋  Инвентаризация  ")
         
-        logger.debug("[MainWindow] Notebook с вкладками создан")
+        logger.debug("[MainWindow] Notebook с вкладками создан (крупные ярлыки)")
     
     def _create_status_bar(self) -> None:
         """Создание статус-бара."""
