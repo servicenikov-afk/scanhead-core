@@ -102,38 +102,21 @@ class MainWindow(ctk.CTkFrame):
         except Exception as e:
             logger.warning(f"[MainWindow] Не удалось загрузить иконку settings32.png: {e}")
             ctk.CTkButton(left_frame, text="Sett", width=40, command=self._open_settings).pack(side="left", padx=2)
+        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) ---
+        # Создаём CTkTabview с увеличенной высотой и скруглением
+        self._notebook = ctk.CTkTabview(top_frame, height=50, corner_radius=10)
+        self._notebook.pack(side="right", fill="both", expand=True, padx=5, pady=5)
 
-        # --- ПРАВАЯ ЧАСТЬ: Табы ---
-        # Настраиваем стиль для крупных ярлыков табов
-        style = ttk.Style()
-        style.configure('Custom.Tab', font=('Arial', 14, 'bold'), padding=(20, 10))
-        style.map('Custom.Tab', foreground=[('active', '#1E90FF')])
+        # ДОБАВЛЕНИЕ ВКЛАДОК: add() возвращает фрейм вкладки
+        search_frame = self._notebook.add("  🔍  Поиск | Адрес  ")
+        inventory_frame = self._notebook.add("  📋  Инвентаризация  ")
 
-        # Контейнер для notebook
-        notebook_container = ctk.CTkFrame(top_frame, fg_color="transparent")
-        notebook_container.grid(row=0, column=1, sticky="e", padx=5)
+        # СОЗДАНИЕ КОНТЕНТА ВНУТРИ ФРЕЙМОВ И ДОБАВЛЕНИЕ В ГЕОМЕТРИЮ
+        self._search_tab = SearchAddressTab(search_frame, services=self._services)
+        self._search_tab.pack(fill="both", expand=True)
 
-        # Создаём ttk.Notebook с кастомным стилем и увеличенной высотой
-        self._notebook = ttk.Notebook(notebook_container, style='Custom.Tab')
-        self._notebook.pack(side="right")
-        
-        # Устанавливаем высоту табов (требует обновления после pack)
-        self._notebook.configure(height=50)
-
-        # Вкладка "Поиск | Адрес"
-        self._search_tab = SearchAddressTab(
-            self._notebook,
-            services=self._services
-        )
-        self._notebook.add(self._search_tab, text="  🔍  Поиск | Адрес  ")
-
-        # Вкладка "Инвентаризация"
-        self._inventory_tab = InventoryTab(
-            self._notebook,
-            services=self._services
-        )
-        self._notebook.add(self._inventory_tab, text="  📋  Инвентаризация  ")
-
+        self._inventory_tab = InventoryTab(inventory_frame, services=self._services)
+        self._inventory_tab.pack(fill="both", expand=True)
         logger.debug("[MainWindow] Верхняя панель с кнопками и табами создана")
 
     def _on_search_result(self, products: list) -> None:
