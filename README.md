@@ -35,7 +35,17 @@
 │   ├── data_validator/     # Сквозная валидация бизнес-объектов
 │   └── data_enricher/      # Обогащение данных (подстановка названий, тегов)
 │
-├── gui/                    # [В разработке] GUI приложение на tkinter
+├── gui/                    # GUI приложение на customtkinter + ttk
+│   ├── main_window.py      # Корневое окно, DI-контейнер, табы
+│   ├── search_bar.py       # Поиск с debounce 300мс + автодополнение
+│   ├── product_details.py  # Детали товара + кнопки редактирования
+│   ├── print_queue.py      # Treeview очереди + toolbar + меню колонок
+│   ├── sticker_preview.py  # Превью стикера + noimage.png
+│   ├── tabs/               # Вкладки (search_address_tab, inventory_tab)
+│   ├── dialogs/            # Диалоги (settings, field_editor, sticker_editor)
+│   ├── services/           # Сервисы GUI (interfaces, adapters, stubs)
+│   ├── widgets/            # Кастомные виджеты
+│   └── windows/            # Дочерние окна (Toplevel)
 ├── services/               # Сервисный слой (бизнес-логика)
 ├── config/                 # Конфигурационные файлы
 ├── data/                   # Данные и ресурсы
@@ -74,6 +84,7 @@
 | `db_manager` | 0.1.0 | 🏗️ | Абстракция БД (SQLite готов, другие в разработке) |
 | `data_validator` | 0.1.0 | ✅ | Конвейер валидации данных |
 | `data_enricher` | 0.1.0 | ✅ | Преобразование сырых данных в бизнес-объекты |
+| `gui/framework` | 0.2.0 | 🚧 | GUI-каркас (customtkinter, DI, моки) |
 
 ## 🛡️ Правила разработки
 
