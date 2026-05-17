@@ -82,30 +82,45 @@ class NomenclatureAdapter:
 
     def search(self, query: str) -> List[Product]:
         """Поиск товаров по артикулу, названию или штрихкоду."""
-        conn = self._get_connection()
-        cursor = conn.cursor()
-
-        search_pattern = f"%{query}%"
-        # Поиск по canonical_article, name_ru и alternative_articles (JSON)
-        sql = """
-            SELECT DISTINCT n.canonical_article as article, n.name_ru as name, 
-                   n.alternative_articles as barcodes, n.unit
-            FROM nomenclature n
-            LEFT JOIN json_each(n.alternative_articles) as aliases
-            WHERE n.canonical_article LIKE ? 
-               OR n.name_ru LIKE ? 
-               OR aliases.value LIKE ?
-            LIMIT 50
-        """
-
+        # Создаём новое соединение в текущем потоке (потокобезопасность)
+        if not self.db_path.exists():
+            logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}")
+            return []
+        
+        conn = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        
         try:
+            # Динамически определяем имя таблицы
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1")
+            table_row = cursor.fetchone()
+            if not table_row:
+                logger.error("[NomenclatureAdapter] Таблицы в БД не найдены")
+                return []
+            table_name = table_row['name']
+            logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
+            
+            search_pattern = f"%{query}%"
+            # Поиск по canonical_article, name_ru и alternative_articles (JSON)
+            sql = f"""
+                SELECT DISTINCT n.canonical_article as article, n.name_ru as name, 
+                       n.alternative_articles as barcodes, n.unit
+                FROM {table_name} n
+                LEFT JOIN json_each(n.alternative_articles) as aliases
+                WHERE n.canonical_article LIKE ? 
+                   OR n.name_ru LIKE ? 
+                   OR aliases.value LIKE ?
+                LIMIT 50
+            """
+            
             cursor.execute(sql, (search_pattern, search_pattern, search_pattern))
             rows = cursor.fetchall()
             products = [
                 Product(
                     article=row['article'],
                     name=row['name'],
-                    barcodes=row['barcodes']
+                    barcodes=row['barcodes'] or ''
                 )
                 for row in rows
             ]
@@ -114,6 +129,8 @@ class NomenclatureAdapter:
         except Exception as e:
             logger.error(f"[NomenclatureAdapter] Ошибка поиска: {e}")
             return []
+        finally:
+            conn.close()
 
     def get_by_article(self, article: str) -> Optional[Product]:
         """Получить товар по точному артикулу."""
