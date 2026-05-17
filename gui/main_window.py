@@ -51,12 +51,14 @@ class MainWindow(ctk.CTkFrame):
 
     def _create_top_panel(self) -> None:
         """Создание верхней панели: кнопки слева, табы справа."""
-        top_frame = ctk.CTkFrame(self)
-        top_frame.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
+        # Единая прозрачная верхняя панель
+        top_bar = ctk.CTkFrame(self, fg_color="transparent")
+        top_bar.grid(row=0, column=0, sticky="ew", padx=2, pady=2)
+        top_bar.grid_columnconfigure(1, weight=1)
 
-        # --- ЛЕВАЯ ЧАСТЬ: Кнопки (используем pack) ---
-        left_frame = ctk.CTkFrame(top_frame, fg_color="transparent")
-        left_frame.pack(side="left", fill="y", padx=5, pady=5)
+        # --- ЛЕВАЯ ЧАСТЬ: Кнопки ---
+        left_frame = ctk.CTkFrame(top_bar, fg_color="transparent")
+        left_frame.grid(row=0, column=0, sticky="w", padx=2, pady=2)
 
         # Путь к иконкам
         icons_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "icons")
@@ -66,7 +68,7 @@ class MainWindow(ctk.CTkFrame):
             help_img = ctk.CTkImage(
                 light_image=Image.open(os.path.join(icons_dir, "help32.png")),
                 dark_image=Image.open(os.path.join(icons_dir, "help32.png")),
-                size=(28, 28)
+                size=(32, 32)
             )
             self._help_btn = ctk.CTkButton(
                 left_frame,
@@ -86,7 +88,7 @@ class MainWindow(ctk.CTkFrame):
             settings_img = ctk.CTkImage(
                 light_image=Image.open(os.path.join(icons_dir, "settings32.png")),
                 dark_image=Image.open(os.path.join(icons_dir, "settings32.png")),
-                size=(28, 28)
+                size=(32, 32)
             )
             self._settings_btn = ctk.CTkButton(
                 left_frame,
@@ -102,8 +104,8 @@ class MainWindow(ctk.CTkFrame):
             ctk.CTkButton(left_frame, text="Sett", width=40, command=self._open_settings).pack(side="left", padx=2)
 
         # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) ---
-        self._notebook = ctk.CTkTabview(top_frame, height=50, corner_radius=10)
-        self._notebook.pack(side="right", fill="both", expand=True, padx=5, pady=5)
+        self._notebook = ctk.CTkTabview(top_bar, height=50, corner_radius=10)
+        self._notebook.grid(row=0, column=1, sticky="e", padx=2, pady=2)
 
         # Добавление вкладок
         search_frame = self._notebook.add("  🔍  Поиск | Адрес  ")

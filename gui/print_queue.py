@@ -224,6 +224,33 @@ class PrintQueue(ctk.CTkFrame):
         edit_entry.bind("<FocusOut>", save)
         edit_entry.bind("<Escape>", cancel)
     
+    def add_item(self, product: Product) -> None:
+        """Добавить товар в очередь."""
+        logger.info(f"[PrintQueue] Добавление товара {product.article} в очередь")
+        
+        # Генерируем новый ID
+        item_id = len(self._products) + 1
+        
+        # Формируем значения для колонок
+        article2_val = ""
+        if len(product.barcodes) > 1:
+            article2_val = product.barcodes[1]
+        
+        address_val = ""
+        if product.address:
+            address_val = product.address
+        
+        values = (
+            item_id,
+            product.article,
+            article2_val,
+            product.name,
+            address_val
+        )
+        
+        self._tree.insert("", "end", iid=item_id, values=values)
+        self._products.append(product)
+    
     def set_products(self, products: List[Product]) -> None:
         """
         Установка списка товаров в очередь.

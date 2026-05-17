@@ -24,14 +24,20 @@ class ProductDetails(ctk.CTkFrame):
     Все поля только для чтения, изменение через диалог.
     """
     
-    def __init__(self, master: Any, product_repo: IProductRepository):
+    def __init__(
+        self, 
+        master: Any, 
+        product_repo: IProductRepository,
+        on_add_to_queue: callable = None
+    ):
         super().__init__(master)
         self._product_repo = product_repo
+        self._on_add_to_queue = on_add_to_queue
         self._current_product: Optional[Product] = None
         
         logger.debug("[ProductDetails] Инициализация")
         
-        # Контейнер для полей
+        # Контейнер для полей и кнопки
         fields_frame = ctk.CTkFrame(self, fg_color="transparent")
         fields_frame.pack(fill="both", expand=True, padx=3, pady=3)
         fields_frame.grid_columnconfigure(1, weight=1)
@@ -68,7 +74,17 @@ class ProductDetails(ctk.CTkFrame):
             field_name="address"
         )
         
-        logger.debug("[ProductDetails] Поля созданы")
+        # Кнопка "➕ В список" (справа от полей)
+        btn_add = ctk.CTkButton(
+            fields_frame,
+            text="➕ В список",
+            width=120,
+            height=30,
+            command=self._on_add_to_queue_click
+        )
+        btn_add.grid(row=4, column=1, padx=3, pady=5, sticky="e")
+        
+        logger.debug("[ProductDetails] Поля и кнопка созданы")
     
     def _create_field_row(
         self, 
@@ -108,6 +124,18 @@ class ProductDetails(ctk.CTkFrame):
         # Сохраняем ссылки на виджеты
         setattr(self, f"_{field_name}_label", lbl)
         setattr(self, f"_{field_name}_entry", entry)
+    
+    def _on_add_to_queue_click(self) -> None:
+        """Обработчик нажатия кнопки 'В список'."""
+        if not self._current_product:
+            logger.warning("[ProductDetails] Нет товара для добавления в очередь")
+            return
+        
+        if self._on_add_to_queue:
+            logger.info(f"[ProductDetails] Добавление товара {self._current_product.article} в очередь")
+            self._on_add_to_queue(self._current_product)
+        else:
+            logger.warning("[ProductDetails] Callback on_add_to_queue не установлен")
     
     def _open_editor(self, field_name: str) -> None:
         """Открытие диалога редактирования поля."""

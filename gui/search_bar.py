@@ -98,8 +98,14 @@ class SearchBar(ctk.CTkFrame):
         """Обработчик завершения поиска (вызывается в главном потоке)."""
         logger.info(f"[SearchBar] Поиск завершён, найдено: {len(products)} товаров")
         
-        # Показываем подсказки, если найдено больше 0 и введено 3+ символа
-        if len(products) > 0 and len(self._last_query) >= 3:
+        # Если нет результатов - скрываем список и выходим
+        if not products:
+            self._hide_suggestions()
+            self._on_search_result([])
+            return
+        
+        # Показываем подсказки, если введено 3+ символа
+        if len(self._last_query) >= 3:
             self._show_suggestions(products)
         
         # Вызываем callback для обновления UI
@@ -142,13 +148,12 @@ class SearchBar(ctk.CTkFrame):
         # Извлекаем артикул из текста (до " | ")
         article = display_text.split(" | ")[0].strip()
         
-        # Устанавливаем значение в поле
-        self._entry.delete(0, "end")
-        self._entry.insert(0, article)
-        self._last_query = article
-        
         # Скрываем подсказки
         self._hide_suggestions()
+        
+        # Очищаем поле поиска
+        self._entry.delete(0, "end")
+        self._last_query = ""
         
         # Выполняем поиск по выбранному артикулу
         self._do_search(article)

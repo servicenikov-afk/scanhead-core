@@ -87,37 +87,20 @@ class StickerPreview(ctk.CTkFrame):
         # Показываем заглушку сразу
         self._show_placeholder()
 
-    def _show_placeholder(self, text: str = "Нет изображения") -> None:
+    def _show_placeholder(self, text: str = "") -> None:
         """Показать заглушку вместо стикера."""
         # Очищаем фрейм
         for widget in self._preview_frame.winfo_children():
             widget.destroy()
         
-        # Если есть загруженная картинка-заглушка
+        # Если есть загруженная картинка-заглушка - показываем только её
         if self._no_image:
             img_label = ctk.CTkLabel(
                 self._preview_frame,
                 image=self._no_image,
                 text=""
             )
-            img_label.place(relx=0.5, rely=0.45, anchor="center")
-            
-            txt_label = ctk.CTkLabel(
-                self._preview_frame,
-                text=text,
-                font=ctk.CTkFont(size=12),
-                text_color="gray"
-            )
-            txt_label.place(relx=0.5, rely=0.65, anchor="center")
-        else:
-            # Текстовая заглушка, если картинки нет
-            lbl = ctk.CTkLabel(
-                self._preview_frame,
-                text=text,
-                font=ctk.CTkFont(size=12),
-                text_color="gray"
-            )
-            lbl.place(relx=0.5, rely=0.5, anchor="center")
+            img_label.place(relx=0.5, rely=0.5, anchor="center")
 
     def update_product(self, product: Optional[Product]) -> None:
         """Обновить превью данными товара."""

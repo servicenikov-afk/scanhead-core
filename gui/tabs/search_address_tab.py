@@ -89,7 +89,8 @@ class SearchAddressTab(ctk.CTkFrame):
         # Детали товара
         self._product_details = ProductDetails(
             details_frame,
-            product_repo=self._services.get("product_repo")
+            product_repo=self._services.get("product_repo"),
+            on_add_to_queue=self._add_product_to_queue
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         
@@ -120,10 +121,10 @@ class SearchAddressTab(ctk.CTkFrame):
         """Обработчик результатов поиска от SearchBar."""
         self.update_products(products)
     
-    def _add_current_to_queue(self) -> None:
-        """Добавить текущий товар в очередь печати (заглушка)."""
-        logger.info("[SearchAddressTab] Кнопка 'В очередь' нажата (заглушка)")
-        # TODO: Реализовать добавление в PrintQueue
+    def _add_product_to_queue(self, product: Product) -> None:
+        """Добавить товар в очередь печати."""
+        logger.info(f"[SearchAddressTab] Добавление товара {product.article} в очередь")
+        self._print_queue.add_item(product)
     
     def update_products(self, products: List[Product]) -> None:
         """
