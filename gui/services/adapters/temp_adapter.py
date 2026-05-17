@@ -10,30 +10,15 @@ logger = logging.getLogger(__name__)
 
 class TempQueueAdapter:
     """Адаптер для управления временной очередью печати."""
-    
+
     def __init__(self, db_path: str = "temp/temp.db"):
-        # Пробуем несколько путей: указанный, корень проекта, data/db/
-        self.db_path: Optional[Path] = None
-        candidates = [
-            Path(db_path),
-            Path(__file__).parent.parent.parent.parent / db_path,
-            Path("data/db") / db_path
-        ]
-        for candidate in candidates:
-            # Для существующих БД проверяем наличие
-            if candidate.exists():
-                self.db_path = candidate
-                break
-        
-        if self.db_path is None:
-            # Если БД не найдена, создаём в корне проекта
-            self.db_path = Path(db_path)
-        
+        # Путь относительно корня проекта
+        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
         # Авто-создание директории
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._connection: Optional[sqlite3.Connection] = None
         self._ensure_schema()
-        
+
     def _get_connection(self) -> sqlite3.Connection:
         """Получить соединение с БД."""
         if self._connection is None:
@@ -42,7 +27,7 @@ class TempQueueAdapter:
             self._connection.row_factory = sqlite3.Row
             logger.info(f"[TempQueueAdapter] Подключено к {self.db_path}")
         return self._connection
-    
+
     def _ensure_schema(self):
         """Создать таблицу если не существует."""
         conn = self._get_connection()
@@ -59,22 +44,22 @@ class TempQueueAdapter:
         """)
         conn.commit()
         logger.info("[TempQueueAdapter] Схема БД проверена")
-    
+
     def add_or_increment(self, article: str, name: str, address: str = "") -> bool:
         """Добавить товар в очередь или увеличить количество."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         # Проверка существования
         cursor.execute("SELECT quantity FROM print_queue WHERE article = ?", (article,))
         row = cursor.fetchone()
-        
+
         if row:
             # Увеличить количество
             new_qty = row['quantity'] + 1
             sql = """
-                UPDATE print_queue 
-                SET quantity = ?, updated_at = CURRENT_TIMESTAMP 
+                UPDATE print_queue
+                SET quantity = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE article = ?
             """
             cursor.execute(sql, (new_qty, article))
@@ -87,21 +72,21 @@ class TempQueueAdapter:
             """
             cursor.execute(sql, (article, name, address))
             logger.info(f"[TempQueueAdapter] Добавлен товар {article} в очередь")
-        
+
         conn.commit()
         return True
-    
+
     def get_all(self) -> List[Dict[str, Any]]:
         """Получить все товары из очереди."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         sql = """
             SELECT article, name, address, quantity, added_at, updated_at
             FROM print_queue
             ORDER BY added_at DESC
         """
-        
+
         try:
             cursor.execute(sql)
             rows = cursor.fetchall()
@@ -121,14 +106,14 @@ class TempQueueAdapter:
         except Exception as e:
             logger.error(f"[TempQueueAdapter] Ошибка получения очереди: {e}")
             return []
-    
+
     def remove(self, article: str) -> bool:
         """Удалить товар из очереди."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         sql = "DELETE FROM print_queue WHERE article = ?"
-        
+
         try:
             cursor.execute(sql, (article,))
             conn.commit()
@@ -138,14 +123,14 @@ class TempQueueAdapter:
             logger.error(f"[TempQueueAdapter] Ошибка удаления: {e}")
             conn.rollback()
             return False
-    
+
     def clear(self) -> bool:
         """Очистить всю очередь."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         sql = "DELETE FROM print_queue"
-        
+
         try:
             cursor.execute(sql)
             conn.commit()
@@ -155,7 +140,7 @@ class TempQueueAdapter:
             logger.error(f"[TempQueueAdapter] Ошибка очистки: {e}")
             conn.rollback()
             return False
-    
+
     def close(self):
         """Закрыть соединение с БД."""
         if self._connection:

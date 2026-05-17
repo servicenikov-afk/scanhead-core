@@ -16,10 +16,9 @@ class Product:
     article2: Optional[str] = None
     address: Optional[str] = None
     barcodes: Optional[str] = None
-    # Дополнительные поля из css_export
     description: Optional[str] = None
     category: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return {
             'article': self.article,
@@ -34,79 +33,43 @@ class Product:
 
 class NomenclatureAdapter:
     """Адаптер для поиска товаров в nomenclature.db."""
-    
-    def __init__(self, db_path: str = "nomenclature.db"):
-        # Пробуем несколько путей: указанный, корень проекта, data/db/
-        self.db_path: Optional[Path] = None
-        candidates = [
-            Path(db_path),
-            Path(__file__).parent.parent.parent.parent / db_path,
-            Path("data/db") / db_path
-        ]
-        for candidate in candidates:
-            if candidate.exists():
-                self.db_path = candidate
-                break
-        
-        if self.db_path is None:
-            self.db_path = candidates[0]  # Используем первый как fallback
-            
+
+    def __init__(self, db_path: str = "data/databases/nomenclature/nomenclature.db"):
+        # Путь относительно корня проекта
+        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
         self._connection: Optional[sqlite3.Connection] = None
-        
+
     def _get_connection(self) -> sqlite3.Connection:
         """Получить соединение с БД (ленивая инициализация)."""
         if self._connection is None:
             if not self.db_path.exists():
-                logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}, используем моки")
-                return self._create_mock_connection()
-            
+                logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}")
+                raise FileNotFoundError(f"Database not found: {self.db_path}")
+
             self._connection = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
             self._connection.row_factory = sqlite3.Row
             logger.info(f"[NomenclatureAdapter] Подключено к {self.db_path} (read-only)")
-        
+
         return self._connection
-    
-    def _create_mock_connection(self) -> sqlite3.Connection:
-        """Создать временную БД с моками для тестов."""
-        conn = sqlite3.connect(":memory:")
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS products (
-                article TEXT PRIMARY KEY,
-                name TEXT,
-                article2 TEXT,
-                barcodes TEXT
-            )
-        """)
-        # Тестовые данные
-        test_data = [
-            ('560.0000.309', 'Распределитель выдачи молока для к/м A200', '', '460001'),
-            ('560.0004.669', 'Уплотнительное кольцо 3,4x1,9 мм для к/м Flair', '', '460002'),
-            ('560.0004.907', 'Уплотнение верхнего поршня 36,09x3,53 для к/м Flai', '', '460003'),
-            ('560.0005.123', 'Тестовый товар', '', '460004'),
-        ]
-        cursor.executemany(
-            "INSERT OR REPLACE INTO products (article, name, article2, barcodes) VALUES (?, ?, ?, ?)",
-            test_data
-        )
-        conn.commit()
-        logger.info("[NomenclatureAdapter] Создана тестовая БД в памяти")
-        return conn
-    
+
     def search(self, query: str) -> List[Product]:
         """Поиск товаров по артикулу, названию или штрихкоду."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         search_pattern = f"%{query}%"
+        # Поиск по canonical_article, name_ru и alternative_articles (JSON)
         sql = """
-            SELECT article, name, article2, barcodes
-            FROM products
-            WHERE article LIKE ? OR name LIKE ? OR barcodes LIKE ?
+            SELECT DISTINCT n.canonical_article as article, n.name_ru as name, 
+                   n.alternative_articles as barcodes, n.unit
+            FROM nomenclature n
+            LEFT JOIN json_each(n.alternative_articles) as aliases
+            WHERE n.canonical_article LIKE ? 
+               OR n.name_ru LIKE ? 
+               OR aliases.value LIKE ?
             LIMIT 50
         """
-        
+
         try:
             cursor.execute(sql, (search_pattern, search_pattern, search_pattern))
             rows = cursor.fetchall()
@@ -114,7 +77,6 @@ class NomenclatureAdapter:
                 Product(
                     article=row['article'],
                     name=row['name'],
-                    article2=row['article2'],
                     barcodes=row['barcodes']
                 )
                 for row in rows
@@ -124,18 +86,19 @@ class NomenclatureAdapter:
         except Exception as e:
             logger.error(f"[NomenclatureAdapter] Ошибка поиска: {e}")
             return []
-    
+
     def get_by_article(self, article: str) -> Optional[Product]:
         """Получить товар по точному артикулу."""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         sql = """
-            SELECT article, name, article2, barcodes
-            FROM products
-            WHERE article = ?
+            SELECT canonical_article as article, name_ru as name, 
+                   alternative_articles as barcodes, unit
+            FROM nomenclature
+            WHERE canonical_article = ?
         """
-        
+
         try:
             cursor.execute(sql, (article,))
             row = cursor.fetchone()
@@ -143,14 +106,13 @@ class NomenclatureAdapter:
                 return Product(
                     article=row['article'],
                     name=row['name'],
-                    article2=row['article2'],
                     barcodes=row['barcodes']
                 )
             return None
         except Exception as e:
             logger.error(f"[NomenclatureAdapter] Ошибка получения товара: {e}")
             return None
-    
+
     def close(self):
         """Закрыть соединение с БД."""
         if self._connection:
