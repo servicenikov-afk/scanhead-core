@@ -66,32 +66,46 @@ class ProductDetails(ctk.CTkFrame):
             field_name="name"
         )
         
-        # Поле: Адрес хранения
+        # Поле: Адрес хранения (с кнопкой редактирования)
         self._create_field_row(
             fields_frame, 
             row=3, 
             label="Адрес:", 
-            field_name="address"
+            field_name="address",
+            show_edit_btn=True
         )
         
-        # Кнопка "➕ В список" (справа от полей)
+        # Кнопки под полями: [ℹ️] и [⤵️]
+        buttons_row = ctk.CTkFrame(fields_frame, fg_color="transparent")
+        buttons_row.grid(row=4, column=1, padx=2, pady=2, sticky="w")
+        
+        btn_info = ctk.CTkButton(
+            buttons_row,
+            text="ℹ️",
+            width=28,
+            height=28,
+            command=self._on_info_click
+        )
+        btn_info.pack(side="left", padx=2)
+        
         btn_add = ctk.CTkButton(
-            fields_frame,
-            text="➕ В список",
-            width=120,
+            buttons_row,
+            text="⤵️",
+            width=28,
             height=28,
             command=self._on_add_to_queue_click
         )
-        btn_add.grid(row=4, column=1, padx=2, pady=2, sticky="e")
+        btn_add.pack(side="left", padx=2)
         
-        logger.debug("[ProductDetails] Поля и кнопка созданы")
+        logger.debug("[ProductDetails] Поля и кнопки созданы")
     
     def _create_field_row(
         self, 
         parent: Any, 
         row: int, 
         label: str, 
-        field_name: str
+        field_name: str,
+        show_edit_btn: bool = False
     ) -> None:
         """Создание строки с полем и кнопкой редактирования."""
         # Метка
@@ -112,22 +126,31 @@ class ProductDetails(ctk.CTkFrame):
         )
         entry.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
         
-        # Кнопка "Изменить"
-        btn_edit = ctk.CTkButton(
-            parent,
-            text="✏️",
-            width=40,
-            height=28,
-            command=lambda: self._open_editor(field_name)
-        )
-        btn_edit.grid(row=row, column=2, padx=2, pady=2)
+        # Кнопка "Изменить" (только если show_edit_btn=True)
+        if show_edit_btn:
+            btn_edit = ctk.CTkButton(
+                parent,
+                text="✏️",
+                width=40,
+                height=28,
+                command=lambda: self._open_editor(field_name)
+            )
+            btn_edit.grid(row=row, column=2, padx=2, pady=2)
         
         # Сохраняем ссылки на виджеты
         setattr(self, f"_{field_name}_label", lbl)
         setattr(self, f"_{field_name}_entry", entry)
     
+    def _on_info_click(self) -> None:
+        """Обработчик нажатия кнопки 'ℹ️' (детальная информация)."""
+        if not self._current_product:
+            logger.warning("[ProductDetails] Нет товара для отображения детальной информации")
+            return
+        logger.info(f"[ProductDetails] Запрос детальной информации по {self._current_product.article}")
+        # TODO: открыть диалог с подробной информацией
+    
     def _on_add_to_queue_click(self) -> None:
-        """Обработчик нажатия кнопки 'В список'."""
+        """Обработчик нажатия кнопки '⤵️' (добавить в очередь)."""
         if not self._current_product:
             logger.warning("[ProductDetails] Нет товара для добавления в очередь")
             return
