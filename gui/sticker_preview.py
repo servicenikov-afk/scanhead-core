@@ -93,7 +93,7 @@ class StickerPreview(ctk.CTkFrame):
         for widget in self._preview_frame.winfo_children():
             widget.destroy()
         
-        # Если есть загруженная картинка-заглушка - показываем только её
+        # Если есть загруженная картинка-заглушка - показываем только её (без текста)
         if self._no_image:
             img_label = ctk.CTkLabel(
                 self._preview_frame,

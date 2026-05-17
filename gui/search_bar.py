@@ -107,6 +107,9 @@ class SearchBar(ctk.CTkFrame):
         # Показываем подсказки, если введено 3+ символа
         if len(self._last_query) >= 3:
             self._show_suggestions(products)
+        else:
+            # Если меньше 3 символов - скрываем список
+            self._hide_suggestions()
         
         # Вызываем callback для обновления UI
         self.after(0, lambda: self._on_search_result(products))
@@ -155,7 +158,7 @@ class SearchBar(ctk.CTkFrame):
         self._entry.delete(0, "end")
         self._last_query = ""
         
-        # Выполняем поиск по выбранному артикулу
+        # Выполняем поиск по выбранному артикулу (для заполнения полей)
         self._do_search(article)
 
     def _on_entry_click(self, event) -> None:

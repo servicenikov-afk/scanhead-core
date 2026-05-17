@@ -1,6 +1,7 @@
 """
 Главное окно приложения.
-Содержит: кнопки управления слева, ttk.Notebook с вкладками справа.
+Содержит: кнопки управления слева, CTkTabview с вкладками справа.
+Использует pack() для геометрии.
 """
 
 import logging
@@ -8,7 +9,6 @@ from typing import Any, Dict
 import os
 
 import customtkinter as ctk
-from tkinter import ttk
 from PIL import Image
 
 from gui.tabs.search_address_tab import SearchAddressTab
@@ -26,7 +26,7 @@ class MainWindow(ctk.CTkFrame):
     ┌─────────────────────────────────────────┐
     │  [Help] [Settings]      [Табы справа]   │
     ├─────────────────────────────────────────┤
-    │  Вкладка (Поиск | Инвентаризация)       │
+    │  Контент вкладки (растягивается)        │
     └─────────────────────────────────────────┘
     """
 
@@ -40,85 +40,98 @@ class MainWindow(ctk.CTkFrame):
 
         logger.info("[MainWindow] Инициализация главного окна")
 
-        # Настраиваем сетку
-        self.grid_rowconfigure(0, weight=1)  # Вкладки растягиваются
-        self.grid_columnconfigure(0, weight=1)
+        # Загружаем иконки заранее
+        self._img_help = self._load_icon("help32.png")
+        self._img_settings = self._load_icon("settings32.png")
 
-        # Создаём верхнюю панель с кнопками и табами
-        self._create_top_panel()
+        # Создаём UI
+        self._create_ui()
 
         logger.info("[MainWindow] Главное окно инициализировано")
 
-    def _create_top_panel(self) -> None:
-        """Создание верхней панели: кнопки слева, табы справа."""
-        # Единая прозрачная верхняя панель
+    def _load_icon(self, filename: str) -> ctk.CTkImage | None:
+        """Загрузить иконку или вернуть None."""
+        try:
+            icons_dir = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "data", "icons"
+            )
+            img_path = os.path.join(icons_dir, filename)
+            if os.path.exists(img_path):
+                return ctk.CTkImage(
+                    light_image=Image.open(img_path),
+                    dark_image=Image.open(img_path),
+                    size=(32, 32)
+                )
+        except Exception as e:
+            logger.warning(f"[MainWindow] Не удалось загрузить {filename}: {e}")
+        return None
+
+    def _create_ui(self) -> None:
+        """Создание интерфейса с правильной геометрией."""
+        # 1. Верхняя панель (фиксированная высота)
         top_bar = ctk.CTkFrame(self, fg_color="transparent")
-        top_bar.grid(row=0, column=0, sticky="ew", padx=2, pady=2)
-        top_bar.grid_columnconfigure(1, weight=1)
+        top_bar.pack(side="top", fill="x", padx=2, pady=2)
 
-        # --- ЛЕВАЯ ЧАСТЬ: Кнопки ---
-        left_frame = ctk.CTkFrame(top_bar, fg_color="transparent")
-        left_frame.grid(row=0, column=0, sticky="w", padx=2, pady=2)
+        # 2. Кнопки слева
+        left_btns = ctk.CTkFrame(top_bar, fg_color="transparent")
+        left_btns.pack(side="left")
+        
+        self._btn_help = ctk.CTkButton(
+            left_btns,
+            text="",
+            image=self._img_help,
+            width=36,
+            height=36,
+            command=self._open_help
+        )
+        self._btn_help.pack(side="left", padx=2)
+        
+        self._btn_settings = ctk.CTkButton(
+            left_btns,
+            text="",
+            image=self._img_settings,
+            width=36,
+            height=36,
+            command=self._open_settings
+        )
+        self._btn_settings.pack(side="left", padx=2)
 
-        # Путь к иконкам
-        icons_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "icons")
+        # 3. Табы справа (прижимаем pack(side="right"))
+        self._notebook = ctk.CTkTabview(top_bar, height=36, corner_radius=8)
+        self._notebook.pack(side="right")
+        
+        # Добавляем вкладки
+        self._notebook.add("  🔍 Поиск | Адрес  ")
+        self._notebook.add("  📋 Инвентаризация  ")
 
-        # Кнопка "Справка"
-        try:
-            help_img = ctk.CTkImage(
-                light_image=Image.open(os.path.join(icons_dir, "help32.png")),
-                dark_image=Image.open(os.path.join(icons_dir, "help32.png")),
-                size=(32, 32)
-            )
-            self._help_btn = ctk.CTkButton(
-                left_frame,
-                text="",
-                image=help_img,
-                width=40,
-                height=40,
-                command=self._open_help
-            )
-            self._help_btn.pack(side="left", padx=2)
-        except Exception as e:
-            logger.warning(f"[MainWindow] Не удалось загрузить иконку help32.png: {e}")
-            ctk.CTkButton(left_frame, text="Help", width=40, command=self._open_help).pack(side="left", padx=2)
+        # 4. Основной контент (растягивается на всё окно)
+        self._content = ctk.CTkFrame(self, fg_color="transparent")
+        self._content.pack(side="top", fill="both", expand=True, padx=2, pady=2)
 
-        # Кнопка "Настройки"
-        try:
-            settings_img = ctk.CTkImage(
-                light_image=Image.open(os.path.join(icons_dir, "settings32.png")),
-                dark_image=Image.open(os.path.join(icons_dir, "settings32.png")),
-                size=(32, 32)
-            )
-            self._settings_btn = ctk.CTkButton(
-                left_frame,
-                text="",
-                image=settings_img,
-                width=40,
-                height=40,
-                command=self._open_settings
-            )
-            self._settings_btn.pack(side="left", padx=2)
-        except Exception as e:
-            logger.warning(f"[MainWindow] Не удалось загрузить иконку settings32.png: {e}")
-            ctk.CTkButton(left_frame, text="Sett", width=40, command=self._open_settings).pack(side="left", padx=2)
-
-        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) ---
-        self._notebook = ctk.CTkTabview(top_bar, height=50, corner_radius=10)
-        self._notebook.grid(row=0, column=1, sticky="e", padx=2, pady=2)
-
-        # Добавление вкладок
-        search_frame = self._notebook.add("  🔍  Поиск | Адрес  ")
-        inventory_frame = self._notebook.add("  📋  Инвентаризация  ")
-
-        # Создание контента внутри фреймов
-        self._search_tab = SearchAddressTab(search_frame, services=self._services)
+        # 5. Инициализация вкладок ВНУТРИ контента
+        self._search_tab = SearchAddressTab(self._content, self._services)
         self._search_tab.pack(fill="both", expand=True)
+        
+        self._inventory_tab = InventoryTab(self._content, self._services)
+        # Скрываем инвентаризацию по умолчанию (пока не переключена)
+        self._inventory_tab.pack_forget()
 
-        self._inventory_tab = InventoryTab(inventory_frame, services=self._services)
-        self._inventory_tab.pack(fill="both", expand=True)
+        # Привязка переключения табов
+        self._notebook.configure(command=self._on_tab_change)
 
-        logger.debug("[MainWindow] Верхняя панель с кнопками и табами создана")
+        logger.debug("[MainWindow] UI создан")
+
+    def _on_tab_change(self) -> None:
+        """Обработчик переключения вкладок."""
+        selected = self._notebook.get()
+        if "Поиск" in selected:
+            self._search_tab.pack(fill="both", expand=True)
+            self._inventory_tab.pack_forget()
+        elif "Инвентаризация" in selected:
+            self._inventory_tab.pack(fill="both", expand=True)
+            self._search_tab.pack_forget()
+        logger.debug(f"[MainWindow] Переключена вкладка: {selected}")
 
     def _on_search_result(self, products: list) -> None:
         """Обработчик результатов поиска."""
