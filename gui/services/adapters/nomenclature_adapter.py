@@ -1,7 +1,8 @@
 """Адаптер для работы с основной базой номенклатуры."""
 import sqlite3
+import threading
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Callable
 from dataclasses import dataclass
 import logging
 
@@ -51,6 +52,17 @@ class NomenclatureAdapter:
             logger.info(f"[NomenclatureAdapter] Подключено к {self.db_path} (read-only)")
 
         return self._connection
+
+    def search_async(self, query: str, callback: Callable[[List['Product']], None]) -> None:
+        """Асинхронный поиск товаров по запросу."""
+        def _search_thread():
+            results = self.search(query)
+            # Вызываем callback в главном потоке через after, если возможно
+            # Или просто вызываем напрямую - search_bar обрабатывает
+            callback(results)
+        
+        thread = threading.Thread(target=_search_thread, daemon=True)
+        thread.start()
 
     def search(self, query: str) -> List[Product]:
         """Поиск товаров по артикулу, названию или штрихкоду."""
