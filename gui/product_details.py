@@ -31,11 +31,9 @@ class ProductDetails(ctk.CTkFrame):
         
         logger.debug("[ProductDetails] Инициализация")
         
-        # Заголовок
-        
         # Контейнер для полей
         fields_frame = ctk.CTkFrame(self, fg_color="transparent")
-        fields_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        fields_frame.pack(fill="both", expand=True, padx=3, pady=3)
         fields_frame.grid_columnconfigure(1, weight=1)
         
         # Поле: Артикул
