@@ -1,8 +1,14 @@
 {
   "app_name": "ScanHead Combine",
   "version": "0.2.2",
-  "use_mock_data": true,
+  "use_mock_data": false,
   "mock_data_path": "data/mocks",
   "log_level": "INFO",
-  "log_file": "app.log"
+  "log_file": "app.log",
+  "db_paths": {
+    "nomenclature": "nomenclature.db",
+    "store": "store.db",
+    "temp": "temp/temp.db",
+    "css_export": "css_export.db"
+  }
 }

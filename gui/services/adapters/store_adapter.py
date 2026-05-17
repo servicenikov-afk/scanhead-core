@@ -10,8 +10,24 @@ logger = logging.getLogger(__name__)
 class StoreAdapter:
     """Адаптер для управления адресами хранения товаров."""
     
-    def __init__(self, db_path: str = "data/db/store.db"):
-        self.db_path = Path(db_path)
+    def __init__(self, db_path: str = "store.db"):
+        # Пробуем несколько путей: указанный, корень проекта, data/db/
+        self.db_path: Optional[Path] = None
+        candidates = [
+            Path(db_path),
+            Path(__file__).parent.parent.parent.parent / db_path,
+            Path("data/db") / db_path
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                self.db_path = candidate
+                break
+        
+        if self.db_path is None:
+            # Если БД не найдена, создаём в корне проекта
+            self.db_path = Path(db_path)
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            
         self._connection: Optional[sqlite3.Connection] = None
         self._ensure_schema()
         

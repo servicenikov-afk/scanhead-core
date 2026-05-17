@@ -35,15 +35,29 @@ class Product:
 class NomenclatureAdapter:
     """Адаптер для поиска товаров в nomenclature.db."""
     
-    def __init__(self, db_path: str = "data/db/nomenclature.db"):
-        self.db_path = Path(db_path)
+    def __init__(self, db_path: str = "nomenclature.db"):
+        # Пробуем несколько путей: указанный, корень проекта, data/db/
+        self.db_path: Optional[Path] = None
+        candidates = [
+            Path(db_path),
+            Path(__file__).parent.parent.parent.parent / db_path,
+            Path("data/db") / db_path
+        ]
+        for candidate in candidates:
+            if candidate.exists():
+                self.db_path = candidate
+                break
+        
+        if self.db_path is None:
+            self.db_path = candidates[0]  # Используем первый как fallback
+            
         self._connection: Optional[sqlite3.Connection] = None
         
     def _get_connection(self) -> sqlite3.Connection:
         """Получить соединение с БД (ленивая инициализация)."""
         if self._connection is None:
             if not self.db_path.exists():
-                logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}")
+                logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}, используем моки")
                 return self._create_mock_connection()
             
             self._connection = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
