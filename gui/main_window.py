@@ -79,7 +79,6 @@ class MainWindow(ctk.CTkFrame):
             self._help_btn.pack(side="left", padx=2)
         except Exception as e:
             logger.warning(f"[MainWindow] Не удалось загрузить иконку help32.png: {e}")
-            # Фолбэк на текст
             ctk.CTkButton(left_frame, text="Help", width=40, command=self._open_help).pack(side="left", padx=2)
 
         # Кнопка "Настройки"
@@ -101,22 +100,22 @@ class MainWindow(ctk.CTkFrame):
         except Exception as e:
             logger.warning(f"[MainWindow] Не удалось загрузить иконку settings32.png: {e}")
             ctk.CTkButton(left_frame, text="Sett", width=40, command=self._open_settings).pack(side="left", padx=2)
-        
-        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) - используем pack ---
-        # Создаём CTkTabview с увеличенной высотой и скруглением
+
+        # --- ПРАВАЯ ЧАСТЬ: Табы (CTkTabview) ---
         self._notebook = ctk.CTkTabview(top_frame, height=50, corner_radius=10)
         self._notebook.pack(side="right", fill="both", expand=True, padx=5, pady=5)
 
-        # ДОБАВЛЕНИЕ ВКЛАДОК: add() возвращает фрейм вкладки
+        # Добавление вкладок
         search_frame = self._notebook.add("  🔍  Поиск | Адрес  ")
         inventory_frame = self._notebook.add("  📋  Инвентаризация  ")
 
-        # СОЗДАНИЕ КОНТЕНТА ВНУТРИ ФРЕЙМОВ И ДОБАВЛЕНИЕ В ГЕОМЕТРИЮ
+        # Создание контента внутри фреймов
         self._search_tab = SearchAddressTab(search_frame, services=self._services)
         self._search_tab.pack(fill="both", expand=True)
 
         self._inventory_tab = InventoryTab(inventory_frame, services=self._services)
         self._inventory_tab.pack(fill="both", expand=True)
+
         logger.debug("[MainWindow] Верхняя панель с кнопками и табами создана")
 
     def _on_search_result(self, products: list) -> None:
