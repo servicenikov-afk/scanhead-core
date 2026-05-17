@@ -57,9 +57,8 @@ class PrintQueue(ctk.CTkFrame):
     def _create_header(self) -> None:
         """Создание заголовка с кнопками управления."""
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
-        header_frame.pack(fill="x", padx=5, pady=(5, 0))
+        header_frame.pack(fill="x", padx=3, pady=3)
         
-        # Заголовок (удалён по ТЗ)
         # Кнопка выбора колонок
         btn_columns = ctk.CTkButton(
             header_frame,
