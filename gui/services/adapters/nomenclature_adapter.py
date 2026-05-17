@@ -37,8 +37,10 @@ class NomenclatureAdapter:
 
     def __init__(self, db_path: str = "data/databases/nomenclature/nomenclature.db"):
         # Путь относительно корня проекта
-        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
+        project_root = Path(__file__).parent.parent.parent.parent
+        self.db_path = project_root / db_path
         self._connection: Optional[sqlite3.Connection] = None
+        logger.info(f"[NomenclatureAdapter] Инициализация, путь к БД: {self.db_path}")
 
     def _get_connection(self) -> sqlite3.Connection:
         """Получить соединение с БД (ленивая инициализация)."""

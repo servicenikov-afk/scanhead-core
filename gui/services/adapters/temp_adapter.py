@@ -13,10 +13,12 @@ class TempQueueAdapter:
 
     def __init__(self, db_path: str = "temp/temp.db"):
         # Путь относительно корня проекта
-        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
+        project_root = Path(__file__).parent.parent.parent.parent
+        self.db_path = project_root / db_path
         # Авто-создание директории
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._connection: Optional[sqlite3.Connection] = None
+        logger.info(f"[TempQueueAdapter] Инициализация, путь к БД: {self.db_path}")
         self._ensure_schema()
 
     def _get_connection(self) -> sqlite3.Connection:

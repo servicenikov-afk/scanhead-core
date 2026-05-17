@@ -13,9 +13,12 @@ class StoreAdapter:
 
     def __init__(self, db_path: str = "data/databases/store/store.db"):
         # Путь относительно корня проекта
-        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
+        project_root = Path(__file__).parent.parent.parent.parent
+        self.db_path = project_root / db_path
         self._connection: Optional[sqlite3.Connection] = None
-        self._ensure_schema()
+        logger.info(f"[StoreAdapter] Инициализация, путь к БД: {self.db_path}")
+        # Не создаём схему автоматически - БД должна существовать
+        # self._ensure_schema()
 
     def _get_connection(self) -> sqlite3.Connection:
         """Получить соединение с БД."""
