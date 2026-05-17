@@ -93,14 +93,16 @@ def main() -> None:
         mock_loader = JsonMockLoader(mock_path)
         search_service = SearchServiceWithMocks(mock_loader)
     else:
-        logger.info("[Main] Использование заглушек без моков")
-        from gui.services.stubs.search_service_stub import StubSearchService
+        logger.info("[Main] Использование реальных баз данных")
+        from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
         from gui.services.stubs.product_repo_stub import StubProductRepository
         from gui.services.stubs.image_service_stub import StubImageService
         from gui.services.stubs.settings_service_stub import StubSettingsService
         from gui.services.stubs.printer_service_stub import StubPrinterService
 
-        search_service = StubSearchService()
+        # Инициализация адаптера номенклатуры с правильным путём
+        db_path = config.get("db_paths", {}).get("nomenclature", "nomenclature.db")
+        search_service = NomenclatureAdapter(db_path)
 
     # Создание DI-контейнера (сервисы)
     services = {
