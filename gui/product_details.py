@@ -39,7 +39,7 @@ class ProductDetails(ctk.CTkFrame):
         
         # Контейнер для полей и кнопки
         fields_frame = ctk.CTkFrame(self, fg_color="transparent")
-        fields_frame.pack(fill="both", expand=True, padx=3, pady=3)
+        fields_frame.pack(fill="both", expand=True, padx=2, pady=2)
         fields_frame.grid_columnconfigure(1, weight=1)
         
         # Поле: Артикул
@@ -79,10 +79,10 @@ class ProductDetails(ctk.CTkFrame):
             fields_frame,
             text="➕ В список",
             width=120,
-            height=30,
+            height=28,
             command=self._on_add_to_queue_click
         )
-        btn_add.grid(row=4, column=1, padx=3, pady=5, sticky="e")
+        btn_add.grid(row=4, column=1, padx=2, pady=2, sticky="e")
         
         logger.debug("[ProductDetails] Поля и кнопка созданы")
     
@@ -102,7 +102,7 @@ class ProductDetails(ctk.CTkFrame):
             anchor="e",
             font=ctk.CTkFont(size=13)
         )
-        lbl.grid(row=row, column=0, padx=(5, 10), pady=5, sticky="e")
+        lbl.grid(row=row, column=0, padx=(5, 10), pady=2, sticky="e")
         
         # Поле ввода (readonly)
         entry = ttk.Entry(
@@ -110,16 +110,17 @@ class ProductDetails(ctk.CTkFrame):
             state="readonly",
             font=("Arial", 12)
         )
-        entry.grid(row=row, column=1, padx=3, pady=3, sticky="ew")
+        entry.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
         
         # Кнопка "Изменить"
         btn_edit = ctk.CTkButton(
             parent,
             text="✏️",
             width=40,
+            height=28,
             command=lambda: self._open_editor(field_name)
         )
-        btn_edit.grid(row=row, column=2, padx=3, pady=3)
+        btn_edit.grid(row=row, column=2, padx=2, pady=2)
         
         # Сохраняем ссылки на виджеты
         setattr(self, f"_{field_name}_label", lbl)

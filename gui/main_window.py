@@ -40,16 +40,16 @@ class MainWindow(ctk.CTkFrame):
 
         logger.info("[MainWindow] Инициализация главного окна")
 
-        # Загружаем иконки заранее
-        self._img_help = self._load_icon("help32.png")
-        self._img_settings = self._load_icon("settings32.png")
+        # Загружаем иконки заранее (уменьшенный размер)
+        self._img_help = self._load_icon("help32.png", size=(20, 20))
+        self._img_settings = self._load_icon("settings32.png", size=(20, 20))
 
         # Создаём UI
         self._create_ui()
 
         logger.info("[MainWindow] Главное окно инициализировано")
 
-    def _load_icon(self, filename: str) -> ctk.CTkImage | None:
+    def _load_icon(self, filename: str, size: tuple = (20, 20)) -> ctk.CTkImage | None:
         """Загрузить иконку или вернуть None."""
         try:
             icons_dir = os.path.join(
@@ -61,7 +61,7 @@ class MainWindow(ctk.CTkFrame):
                 return ctk.CTkImage(
                     light_image=Image.open(img_path),
                     dark_image=Image.open(img_path),
-                    size=(32, 32)
+                    size=size
                 )
         except Exception as e:
             logger.warning(f"[MainWindow] Не удалось загрузить {filename}: {e}")
@@ -81,8 +81,8 @@ class MainWindow(ctk.CTkFrame):
             left_btns,
             text="",
             image=self._img_help,
-            width=36,
-            height=36,
+            width=28,
+            height=28,
             command=self._open_help
         )
         self._btn_help.pack(side="left", padx=2)
@@ -91,8 +91,8 @@ class MainWindow(ctk.CTkFrame):
             left_btns,
             text="",
             image=self._img_settings,
-            width=36,
-            height=36,
+            width=28,
+            height=28,
             command=self._open_settings
         )
         self._btn_settings.pack(side="left", padx=2)

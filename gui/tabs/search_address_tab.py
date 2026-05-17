@@ -66,8 +66,8 @@ class SearchAddressTab(ctk.CTkFrame):
     
     def _create_search_bar(self) -> None:
         """Создание поисковой строки на вкладке."""
-        search_frame = ctk.CTkFrame(self)
-        search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=3, pady=3)
+        search_frame = ctk.CTkFrame(self, fg_color="transparent")
+        search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=2, pady=(2, 5))
         search_frame.grid_columnconfigure(0, weight=1)
         
         self._search_bar = SearchBar(
