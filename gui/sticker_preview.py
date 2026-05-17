@@ -102,6 +102,14 @@ class StickerPreview(ctk.CTkFrame):
             )
             img_label.place(relx=0.5, rely=0.5, anchor="center")
 
+    def set_product(self, product: Optional[Product]) -> None:
+        """Установить товар для отображения в превью."""
+        self.update_product(product)
+
+    def clear(self) -> None:
+        """Очистить превью."""
+        self.update_product(None)
+
     def update_product(self, product: Optional[Product]) -> None:
         """Обновить превью данными товара."""
         self._current_product = product
