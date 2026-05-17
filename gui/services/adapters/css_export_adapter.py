@@ -12,7 +12,22 @@ class CssExportAdapter:
 
     def __init__(self, db_path: str = "data/databases/css_export/css_export.db"):
         # Путь относительно корня проекта
-        self.db_path = Path(__file__).parent.parent.parent.parent / db_path
+        project_root = Path(__file__).parent.parent.parent.parent
+        self.db_path = project_root / db_path
+        
+        # Проверка наличия файла
+        if not self.db_path.exists():
+            logger.error(f"[CssExportAdapter] БД НЕ НАЙДЕНА: {self.db_path}")
+            logger.error(f"[CssExportAdapter] Текущая директория: {Path.cwd()}")
+            logger.error(f"[CssExportAdapter] project_root: {project_root}")
+            # Пробуем альтернативный путь (относительно cwd)
+            alt_path = Path(db_path)
+            if alt_path.exists():
+                self.db_path = alt_path
+                logger.warning(f"[CssExportAdapter] Используется альтернативный путь: {self.db_path}")
+            else:
+                logger.error(f"[CssExportAdapter] Альтернативный путь тоже не найден: {alt_path}")
+        
         self._connection: Optional[sqlite3.Connection] = None
 
     def _get_connection(self) -> sqlite3.Connection:

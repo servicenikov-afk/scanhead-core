@@ -39,6 +39,20 @@ class NomenclatureAdapter:
         # Путь относительно корня проекта
         project_root = Path(__file__).parent.parent.parent.parent
         self.db_path = project_root / db_path
+        
+        # Проверка наличия файла
+        if not self.db_path.exists():
+            logger.error(f"[NomenclatureAdapter] БД НЕ НАЙДЕНА: {self.db_path}")
+            logger.error(f"[NomenclatureAdapter] Текущая директория: {Path.cwd()}")
+            logger.error(f"[NomenclatureAdapter] project_root: {project_root}")
+            # Пробуем альтернативный путь (относительно cwd)
+            alt_path = Path(db_path)
+            if alt_path.exists():
+                self.db_path = alt_path
+                logger.warning(f"[NomenclatureAdapter] Используется альтернативный путь: {self.db_path}")
+            else:
+                logger.error(f"[NomenclatureAdapter] Альтернативный путь тоже не найден: {alt_path}")
+        
         self._connection: Optional[sqlite3.Connection] = None
         logger.info(f"[NomenclatureAdapter] Инициализация, путь к БД: {self.db_path}")
 
