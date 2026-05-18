@@ -50,6 +50,7 @@ class SuggestionList(ctk.CTkToplevel):
         
         # Хранилище ID отложенных событий для кнопок
         self._button_after_ids: dict = {}
+        self._destroy_after_id: Optional[int] = None
 
     def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
         """Отобразить список подсказок в указанных координатах."""
@@ -92,23 +93,15 @@ class SuggestionList(ctk.CTkToplevel):
                 pass
         self._button_after_ids.clear()
         
-        # Скрываем кнопки сначала (чтобы остановить новые события перерисовки)
-        for btn in self.buttons:
+        # Отменяем предыдущее отложенное уничтожение
+        if self._destroy_after_id is not None:
             try:
-                if btn.winfo_exists():
-                    btn.pack_forget()
+                self.after_cancel(self._destroy_after_id)
             except Exception:
                 pass
+            self._destroy_after_id = None
         
-        # Даём событиям обработаться перед уничтожением
-        # Это предотвращает гонку: события перерисовки не успевают сработать
-        if self.buttons:
-            self.after(100, self._delayed_destroy)
-        else:
-            self.buttons.clear()
-    
-    def _delayed_destroy(self) -> None:
-        """Отложенное уничтожение кнопок после обработки очереди событий."""
+        # Немедленное уничтожение кнопок
         for btn in self.buttons:
             try:
                 if btn.winfo_exists():
