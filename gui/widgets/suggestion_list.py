@@ -83,7 +83,11 @@ class SuggestionList(ctk.CTkToplevel):
 
     def hide(self) -> None:
         """Скрыть список."""
-        self.withdraw()
+        try:
+            if self.winfo_exists():
+                self.withdraw()
+        except Exception:
+            pass  # Виджет уже уничтожен
 
     def _select(self, value: str) -> None:
         """Обработка выбора элемента."""
@@ -91,3 +95,11 @@ class SuggestionList(ctk.CTkToplevel):
         self.hide()
         if self.on_select:
             self.on_select(value)
+    
+    def destroy(self) -> None:
+        """Безопасное уничтожение виджета."""
+        try:
+            if self.winfo_exists():
+                super().destroy()
+        except Exception:
+            pass

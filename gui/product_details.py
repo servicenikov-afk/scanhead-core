@@ -146,8 +146,29 @@ class ProductDetails(ctk.CTkFrame):
         if not self._current_product:
             logger.warning("[ProductDetails] Нет товара для отображения детальной информации")
             return
+        
         logger.info(f"[ProductDetails] Запрос детальной информации по {self._current_product.article}")
-        # TODO: открыть диалог с подробной информацией
+        
+        # Открываем диалог с подробной информацией
+        from gui.dialogs.product_info_dialog import ProductInfoDialog
+        
+        # Формируем словарь данных для диалога
+        product_data = {
+            'article': self._current_product.article,
+            'article2': self._current_product.barcodes[1] if len(self._current_product.barcodes) > 1 else '',
+            'name': self._current_product.name,
+            'barcodes': ', '.join(self._current_product.barcodes),
+            'description': getattr(self._current_product, 'description', 'Нет описания'),
+            'category': getattr(self._current_product, 'category', 'Нет категории')
+        }
+        
+        dialog = ProductInfoDialog(
+            self,
+            product=product_data,
+            nomenclature_adapter=self._product_repo,
+            store_adapter=self._product_repo,
+            css_adapter=None
+        )
     
     def _on_add_to_queue_click(self) -> None:
         """Обработчик нажатия кнопки '⤵️' (добавить в очередь)."""
