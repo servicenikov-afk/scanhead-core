@@ -40,6 +40,7 @@ class SearchBar(ctk.CTkFrame):
         self._timer: Optional[threading.Timer] = None
         self._last_query = ""
         self._suggestion_window: Optional[SuggestionList] = None
+        self._update_geometry_after_id: Optional[str] = None
         
         logger.debug("[SearchBar] Инициализация")
         
@@ -56,6 +57,9 @@ class SearchBar(ctk.CTkFrame):
         self._entry.bind("<KeyRelease>", self._on_key_release)
         self._entry.bind("<Button-1>", self._on_entry_click)  # Обработка клика - не сбрасывать
         self._entry.bind("<FocusOut>", lambda e: self._hide_suggestions())
+        
+        # Привязка изменения размера entry для обновления геометрии dropdown
+        self._entry.bind("<Configure>", self._on_entry_configure)
         
         logger.debug("[SearchBar] Поле поиска создано")
     
@@ -135,9 +139,48 @@ class SearchBar(ctk.CTkFrame):
                 width=self._entry.winfo_width()
             )
         
+        # Обновляем геометрию dropdown (ширина + позиция)
+        self._update_dropdown_geometry(x, y)
+        
         # Извлекаем только текст для отображения
         suggestion_texts = [s[0] for s in suggestions]
         self._suggestion_window.show_suggestions(suggestion_texts, x, y)
+    
+    def _update_dropdown_geometry(self, x: int = None, y: int = None) -> None:
+        """Обновить позицию и ширину dropdown относительно entry."""
+        if self._suggestion_window is None or not self._suggestion_window.winfo_exists():
+            return
+        
+        # Если координаты не переданы - получаем текущие
+        if x is None:
+            x = self._entry.winfo_rootx()
+        if y is None:
+            y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
+        
+        # Устанавливаем ширину dropdown = ширине entry
+        entry_width = self._entry.winfo_width()
+        self._suggestion_window.frame.configure(width=entry_width)
+        
+        # Обновляем позицию
+        self._suggestion_window.geometry(f"+{x}+{y}")
+    
+    def _on_entry_configure(self, event=None) -> None:
+        """Обработчик изменения размера entry - обновляем ширину dropdown."""
+        # Отменяем предыдущее отложенное событие
+        if self._update_geometry_after_id is not None:
+            try:
+                self.after_cancel(self._update_geometry_after_id)
+            except Exception:
+                pass
+        
+        # Планируем обновление геометрии с небольшой задержкой
+        self._update_geometry_after_id = self.after(50, self._delayed_update_dropdown)
+    
+    def _delayed_update_dropdown(self) -> None:
+        """Отложенное обновление геометрии dropdown."""
+        self._update_geometry_after_id = None
+        if self._suggestion_window and self._suggestion_window.winfo_exists():
+            self._update_dropdown_geometry()
     
     def _hide_suggestions(self) -> None:
         """Скрытие выпадающего списка."""
@@ -178,3 +221,11 @@ class SearchBar(ctk.CTkFrame):
         if self._timer:
             self._timer.cancel()
             self._timer = None
+        
+        # Отменяем отложенное событие обновления геометрии
+        if self._update_geometry_after_id is not None:
+            try:
+                self.after_cancel(self._update_geometry_after_id)
+            except Exception:
+                pass
+            self._update_geometry_after_id = None

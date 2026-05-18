@@ -47,13 +47,14 @@ class SuggestionList(ctk.CTkToplevel):
         # Привязка событий для закрытия
         self.bind("<FocusOut>", lambda e: self.hide())
         self.frame.bind("<FocusOut>", lambda e: self.hide())
+        
+        # Хранилище ID отложенных событий для кнопок
+        self._button_after_ids: dict = {}
 
     def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
         """Отобразить список подсказок в указанных координатах."""
-        # Очистка старых кнопок
-        for btn in self.buttons:
-            btn.destroy()
-        self.buttons.clear()
+        # Очистка старых кнопок с отменой отложенных событий
+        self._cleanup_buttons()
         
         if not suggestions:
             self.withdraw()
@@ -80,6 +81,25 @@ class SuggestionList(ctk.CTkToplevel):
         self.geometry(f"+{x}+{y}")
         self.deiconify()  # Показать
         self.lift()  # Поднять наверх
+    
+    def _cleanup_buttons(self) -> None:
+        """Очистка кнопок с отменой всех отложенных событий."""
+        # Отменяем все отложенные события для кнопок
+        for btn_id in list(self._button_after_ids.keys()):
+            try:
+                self.after_cancel(btn_id)
+            except Exception:
+                pass
+        self._button_after_ids.clear()
+        
+        # Уничтожаем кнопки
+        for btn in self.buttons:
+            try:
+                if btn.winfo_exists():
+                    btn.destroy()
+            except Exception:
+                pass
+        self.buttons.clear()
 
     def hide(self) -> None:
         """Скрыть список."""
@@ -97,7 +117,10 @@ class SuggestionList(ctk.CTkToplevel):
             self.on_select(value)
     
     def destroy(self) -> None:
-        """Безопасное уничтожение виджета."""
+        """Безопасное уничтожение виджета с очисткой событий."""
+        # Сначала отменяем все отложенные события
+        self._cleanup_buttons()
+        
         try:
             if self.winfo_exists():
                 super().destroy()
