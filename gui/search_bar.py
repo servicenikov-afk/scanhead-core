@@ -1,28 +1,28 @@
 """
-Поисковая строка с debounce (задержкой) и выпадающим списком подсказок.
+Поисковая строка с debounce (задержкой) и автодополнением через ttk.Combobox.
 """
 
 import logging
 from typing import Callable, Any, Optional, List
 import threading
-import time
+import tkinter as tk
+from tkinter import ttk
 
 import customtkinter as ctk
 
 from services.interfaces import ISearchService
 from libs.domain_models import Product
-from gui.widgets.suggestion_list import SuggestionList
 
 logger = logging.getLogger(__name__)
 
 
 class SearchBar(ctk.CTkFrame):
     """
-    Поле поиска с debounce 300мс и автодополнением.
+    Поле поиска с debounce 300мс и автодополнением через Combobox.
     
     При вводе текста запускается таймер. Если пользователь продолжает ввод,
     таймер сбрасывается. Поиск выполняется только после паузы в 300мс.
-    После ввода 3+ символов показывается выпадающий список подсказок.
+    Combobox показывает отфильтрованные подсказки при вводе.
     """
     
     def __init__(
@@ -39,33 +39,30 @@ class SearchBar(ctk.CTkFrame):
         
         self._timer: Optional[threading.Timer] = None
         self._last_query = ""
-        self._suggestion_window: Optional[SuggestionList] = None
-        self._update_geometry_after_id: Optional[str] = None
+        self._combobox: Optional[ttk.Combobox] = None
+        self._products_cache: List[Product] = []
         
-        logger.debug("[SearchBar] Инициализация")
+        logger.info("[SearchBar] Инициализация с ttk.Combobox")
         
-        # Создаём поле ввода
-        self._entry = ctk.CTkEntry(
+        # Создаём поле ввода (Combobox)
+        self._combobox = ttk.Combobox(
             self,
-            placeholder_text="🔍 Поиск по артикулу, названию или штрих-коду...",
-            height=40,
-            font=ctk.CTkFont(size=14)
+            font=("Arial", 14),
+            height=10,
+            poststyle="combo"
         )
-        self._entry.pack(fill="both", expand=True, padx=5, pady=5)
+        self._combobox.pack(fill="both", expand=True, padx=5, pady=5)
         
-        # Привязываем обработчик нажатий
-        self._entry.bind("<KeyRelease>", self._on_key_release)
-        self._entry.bind("<Button-1>", self._on_entry_click)  # Обработка клика - не сбрасывать
-        self._entry.bind("<FocusOut>", lambda e: self._hide_suggestions())
+        # Привязываем обработчики
+        self._combobox.bind("<KeyRelease>", self._on_key_release)
+        self._combobox.bind("<<ComboboxSelected>>", self._on_combobox_selected)
+        self._combobox.bind("<FocusOut>", lambda e: self._clear_values())
         
-        # Привязка изменения размера entry для обновления геометрии dropdown
-        self._entry.bind("<Configure>", self._on_entry_configure)
-        
-        logger.debug("[SearchBar] Поле поиска создано")
+        logger.info("[SearchBar] Combobox инициализирован")
     
     def _on_key_release(self, event) -> None:
         """Обработчик отпускания клавиши."""
-        query = self._entry.get().strip()
+        query = self._combobox.get().strip()
         
         # Если запрос не изменился - игнорируем
         if query == self._last_query:
@@ -79,7 +76,7 @@ class SearchBar(ctk.CTkFrame):
         
         # Если поле пустое - сразу очищаем результаты
         if not query:
-            self._hide_suggestions()
+            self._clear_values()
             self._on_search_result([])
             return
         
@@ -102,130 +99,57 @@ class SearchBar(ctk.CTkFrame):
         """Обработчик завершения поиска (вызывается в главном потоке)."""
         logger.info(f"[SearchBar] Поиск завершён, найдено: {len(products)} товаров")
         
+        # Кэшируем продукты
+        self._products_cache = products
+        
         # Если нет результатов - скрываем список и выходим
         if not products:
-            self._hide_suggestions()
+            self._clear_values()
             self._on_search_result([])
             return
         
-        # Показываем подсказки, если введено 3+ символа
-        if len(self._last_query) >= 3:
-            self._show_suggestions(products)
-        else:
-            # Если меньше 3 символов - скрываем список
-            self._hide_suggestions()
+        # Формируем список строк для отображения в Combobox
+        suggestions = []
+        for p in products:
+            text = f"{p.article} | {p.name[:50]}..." if len(p.name) > 50 else f"{p.article} | {p.name}"
+            suggestions.append(text)
+        
+        # Обновляем значения combobox
+        self._combobox['values'] = suggestions
         
         # Вызываем callback для обновления UI
         self.after(0, lambda: self._on_search_result(products))
     
-    def _show_suggestions(self, products: List[Product]) -> None:
-        """Показ выпадающего списка подсказок."""
-        # Формируем список строк для отображения
-        suggestions = []
-        for p in products:
-            # Формат: "Артикул | Наименование"
-            text = f"{p.article} | {p.name[:50]}..." if len(p.name) > 50 else f"{p.article} | {p.name}"
-            suggestions.append((text, p.article))
-        
-        # Получаем координаты поля ввода
-        x = self._entry.winfo_rootx()
-        y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
-        
-        # Создаём или обновляем окно подсказок
-        if self._suggestion_window is None:
-            self._suggestion_window = SuggestionList(
-                self._entry,
-                on_select=self._on_suggestion_select,
-                width=self._entry.winfo_width()
-            )
-        
-        # Обновляем геометрию dropdown (ширина + позиция)
-        self._update_dropdown_geometry(x, y)
-        
-        # Извлекаем только текст для отображения
-        suggestion_texts = [s[0] for s in suggestions]
-        self._suggestion_window.show_suggestions(suggestion_texts, x, y)
-    
-    def _update_dropdown_geometry(self, x: int = None, y: int = None) -> None:
-        """Обновить позицию и ширину dropdown относительно entry."""
-        if self._suggestion_window is None or not self._suggestion_window.winfo_exists():
-            return
-        
-        # Если координаты не переданы - получаем текущие
-        if x is None:
-            x = self._entry.winfo_rootx()
-        if y is None:
-            y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
-        
-        # Устанавливаем ширину dropdown = ширине entry
-        entry_width = self._entry.winfo_width()
-        self._suggestion_window.frame.configure(width=entry_width)
-        
-        # Обновляем позицию
-        self._suggestion_window.geometry(f"+{x}+{y}")
-    
-    def _on_entry_configure(self, event=None) -> None:
-        """Обработчик изменения размера entry - обновляем ширину dropdown."""
-        # Отменяем предыдущее отложенное событие
-        if self._update_geometry_after_id is not None:
-            try:
-                self.after_cancel(self._update_geometry_after_id)
-            except Exception:
-                pass
-        
-        # Планируем обновление геометрии с небольшой задержкой
-        self._update_geometry_after_id = self.after(50, self._delayed_update_dropdown)
-    
-    def _delayed_update_dropdown(self) -> None:
-        """Отложенное обновление геометрии dropdown."""
-        self._update_geometry_after_id = None
-        if self._suggestion_window and self._suggestion_window.winfo_exists():
-            self._update_dropdown_geometry()
-    
-    def _hide_suggestions(self) -> None:
-        """Скрытие выпадающего списка."""
-        if self._suggestion_window:
-            self._suggestion_window.hide()
-    
-    def _on_suggestion_select(self, display_text: str) -> None:
-        """Обработка выбора подсказки."""
-        logger.info(f"[SearchBar] Выбрана подсказка: {display_text}")
+    def _on_combobox_selected(self, event) -> None:
+        """Обработка выбора элемента из Combobox."""
+        selected_text = self._combobox.get()
+        logger.info(f"[SearchBar] Выбран: {selected_text}")
         
         # Извлекаем артикул из текста (до " | ")
-        article = display_text.split(" | ")[0].strip()
-        
-        # Скрываем подсказки
-        self._hide_suggestions()
+        article = selected_text.split(" | ")[0].strip()
         
         # Очищаем поле поиска
-        self._entry.delete(0, "end")
+        self._combobox.set("")
         self._last_query = ""
+        self._clear_values()
         
         # Выполняем поиск по выбранному артикулу (для заполнения полей)
         self._do_search(article)
-
-    def _on_entry_click(self, event) -> None:
-        """Обработка клика на поле поиска — НЕ сбрасывать содержимое."""
-        # Просто пропускаем событие, не очищаем поле
-        pass
+    
+    def _clear_values(self) -> None:
+        """Очистка значений combobox."""
+        self._combobox['values'] = []
+        self._products_cache = []
     
     def get_query(self) -> str:
         """Получение текущего поискового запроса."""
-        return self._entry.get().strip()
+        return self._combobox.get().strip()
     
     def clear(self) -> None:
         """Очистка поля поиска."""
-        self._entry.delete(0, "end")
+        self._combobox.set("")
         self._last_query = ""
-        self._hide_suggestions()
+        self._clear_values()
         if self._timer:
             self._timer.cancel()
             self._timer = None
-        
-        # Отменяем отложенное событие обновления геометрии
-        if self._update_geometry_after_id is not None:
-            try:
-                self.after_cancel(self._update_geometry_after_id)
-            except Exception:
-                pass
-            self._update_geometry_after_id = None
