@@ -95,7 +95,7 @@ def main() -> None:
     else:
         logger.info("[Main] Использование реальных баз данных")
         from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
-        from gui.services.stubs.product_repo_stub import StubProductRepository
+        from gui.services.adapters.store_adapter import StoreAdapter
         from gui.services.stubs.image_service_stub import StubImageService
         from gui.services.stubs.settings_service_stub import StubSettingsService
         from gui.services.stubs.printer_service_stub import StubPrinterService
@@ -103,11 +103,15 @@ def main() -> None:
         # Инициализация адаптера номенклатуры с правильным путём
         db_path = config.get("db_paths", {}).get("nomenclature", "nomenclature.db")
         search_service = NomenclatureAdapter(db_path)
+        
+        # Инициализация адаптера хранилища
+        store_db_path = config.get("db_paths", {}).get("store", "store.db")
+        store_adapter = StoreAdapter(store_db_path)
 
     # Создание DI-контейнера (сервисы)
     services = {
         "search_service": search_service,
-        "product_repo": StubProductRepository(),
+        "product_repo": store_adapter if not use_mocks else StubProductRepository(),
         "image_service": StubImageService(),
         "settings_service": StubSettingsService(),
         "printer_service": StubPrinterService(),
