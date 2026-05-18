@@ -44,11 +44,17 @@ class SearchBar(ctk.CTkFrame):
         
         logger.info("[SearchBar] Инициализация с ttk.Combobox")
         
+        # Настраиваем стиль для шрифта в выпадающем списке
+        _style = ttk.Style()
+        _style.configure("TCombobox", font=("Arial", 21))
+        _style.configure("TLabelframe.Label", font=("Arial", 21))
+        
         # Создаём поле ввода (Combobox)
         self._combobox = ttk.Combobox(
             self,
             font=("Arial", 21),
-            height=15
+            height=15,
+            state="normal"  # Явно разрешаем ввод и выбор
         )
         self._combobox.pack(fill="both", expand=True, padx=5, pady=5)
         
@@ -117,12 +123,15 @@ class SearchBar(ctk.CTkFrame):
         # Обновляем значения combobox
         self._combobox['values'] = suggestions
         
-        # Принудительно открываем выпадающий список и возвращаем фокус в поле ввода
-        def _open_and_focus():
+        # Принудительно открываем выпадающий список, сохраняя фокус в поле ввода
+        def _open_dropdown():
+            # Открываем список программно
             self._combobox.event_generate('<Button-1>')
+            # Возвращаем фокус в поле ввода и ставим курсор в конец
             self._combobox.focus_set()
+            self._combobox.icursor(tk.END)
         
-        self.after(0, _open_and_focus)
+        self.after(10, _open_dropdown)
         
         # Вызываем callback для обновления UI (таблицы), но не очищаем поле
         self.after(0, lambda: self._on_search_result(products))
