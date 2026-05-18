@@ -83,8 +83,8 @@ class SuggestionList(ctk.CTkToplevel):
         self.lift()  # Поднять наверх
     
     def _cleanup_buttons(self) -> None:
-        """Очистка кнопок с отменой всех отложенных событий."""
-        # Отменяем все отложенные события для кнопок
+        """Очистка кнопок с безопасным уничтожением."""
+        # Отменяем все отслеживаемые отложенные события
         for btn_id in list(self._button_after_ids.keys()):
             try:
                 self.after_cancel(btn_id)
@@ -92,22 +92,26 @@ class SuggestionList(ctk.CTkToplevel):
                 pass
         self._button_after_ids.clear()
         
-        # Уничтожаем кнопки с предварительной отменой их внутренних after-событий
+        # Скрываем кнопки сначала (чтобы остановить новые события перерисовки)
         for btn in self.buttons:
             try:
                 if btn.winfo_exists():
-                    # Отменяем внутренние after-события CTkButton (перерисовка и т.д.)
-                    if hasattr(btn, '_after_id') and btn._after_id is not None:
-                        try:
-                            self.after_cancel(btn._after_id)
-                        except Exception:
-                            pass
-                    # Также проверяем _draw_after_id (если есть)
-                    if hasattr(btn, '_draw_after_id') and btn._draw_after_id is not None:
-                        try:
-                            self.after_cancel(btn._draw_after_id)
-                        except Exception:
-                            pass
+                    btn.pack_forget()
+            except Exception:
+                pass
+        
+        # Даём событиям обработаться перед уничтожением
+        # Это предотвращает гонку: события перерисовки не успевают сработать
+        if self.buttons:
+            self.after(100, self._delayed_destroy)
+        else:
+            self.buttons.clear()
+    
+    def _delayed_destroy(self) -> None:
+        """Отложенное уничтожение кнопок после обработки очереди событий."""
+        for btn in self.buttons:
+            try:
+                if btn.winfo_exists():
                     btn.destroy()
             except Exception:
                 pass
