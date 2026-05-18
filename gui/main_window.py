@@ -143,8 +143,21 @@ class MainWindow(ctk.CTkFrame):
     def _open_settings(self) -> None:
         """Открытие диалога настроек."""
         logger.info("[MainWindow] Открытие настроек")
-        dialog = SettingsDialog(self, self._settings_service)
+        
+        # Создаём диалог с колбэком для обработки изменений настроек
+        dialog = SettingsDialog(
+            self,
+            settings_service=self._settings_service,
+            on_settings_changed=self._on_setting_changed
+        )
         dialog.grab_set()  # Модальное окно
+    
+    def _on_setting_changed(self, key: str, value: Any) -> None:
+        """Обработчик изменения настроек из диалога."""
+        logger.info(f"[MainWindow] Изменена настройка {key}={value}")
+        # Передаём изменение во вкладку поиска
+        if hasattr(self, '_search_tab'):
+            self._search_tab.on_setting_changed(key, value)
 
     def _open_help(self) -> None:
         """Открытие справки (заглушка)."""

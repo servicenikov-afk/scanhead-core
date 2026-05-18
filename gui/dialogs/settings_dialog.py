@@ -4,7 +4,7 @@
 """
 
 import logging
-from typing import Any
+from typing import Any, Callable, Optional
 
 import customtkinter as ctk
 
@@ -20,9 +20,15 @@ class SettingsDialog(ctk.CTkToplevel):
     Настройки: тема, язык, конфигурация колонок таблицы.
     """
     
-    def __init__(self, master: Any, settings_service: ISettingsService):
+    def __init__(
+        self,
+        master: Any,
+        settings_service: ISettingsService,
+        on_settings_changed: Optional[Callable[[str, Any], None]] = None
+    ):
         super().__init__(master)
         self._settings_service = settings_service
+        self._on_settings_changed = on_settings_changed
         
         logger.debug("[SettingsDialog] Открытие диалога настроек")
         
@@ -128,6 +134,84 @@ class SettingsDialog(ctk.CTkToplevel):
         )
         self._lang_combo.grid(row=row, column=1, padx=10, pady=10, sticky="w")
         self._lang_combo.set(current_lang)
+        
+        # === СЕКЦИЯ: Шрифт поиска ===
+        row += 1
+        ctk.CTkLabel(
+            parent,
+            text="Шрифт поиска",
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).grid(row=row, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
+        
+        self._font_slider = ctk.CTkSlider(
+            parent,
+            from_=12, to=24, number_of_steps=12,
+            command=lambda v: self._font_val_label.configure(text=f"{int(v)} pt")
+        )
+        self._font_slider.grid(row=row + 1, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
+        
+        self._font_val_label = ctk.CTkLabel(parent, text="18 pt")
+        self._font_val_label.grid(row=row + 2, column=1, padx=10, pady=5, sticky="e")
+        
+        # === СЕКЦИЯ: Автофокус ===
+        row += 3
+        ctk.CTkLabel(
+            parent,
+            text="Фокус",
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).grid(row=row, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
+        
+        self._autofocus_var = ctk.BooleanVar(value=True)
+        self._autofocus_checkbox = ctk.CTkCheckBox(
+            parent,
+            text="Авто фокус в поле «Поиск»",
+            variable=self._autofocus_var,
+            command=self._toggle_focus_delay
+        )
+        self._autofocus_checkbox.grid(row=row + 1, column=0, columnspan=2, padx=10, pady=5, sticky="w")
+        
+        # === СЕКЦИЯ: Задержка автофокуса ===
+        row += 2
+        focus_delay_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        focus_delay_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="w")
+        
+        ctk.CTkLabel(focus_delay_frame, text="Задержка автофокуса").pack(side="left")
+        
+        self._focus_delay_slider = ctk.CTkSlider(
+            focus_delay_frame,
+            from_=0.0, to=3.0, number_of_steps=30,  # Шаг 0.1 сек
+            width=150,
+            command=lambda v: self._focus_delay_val_label.configure(text=f"{v:.1f} сек")
+        )
+        self._focus_delay_slider.pack(side="left", padx=10)
+        
+        self._focus_delay_val_label = ctk.CTkLabel(focus_delay_frame, text="1.0 сек")
+        self._focus_delay_val_label.pack(side="left")
+        
+        # Загрузка текущих значений настроек
+        self._load_search_settings()
+    
+    def _load_search_settings(self) -> None:
+        """Загрузка настроек поиска из сервиса настроек."""
+        font_size = self._settings_service.get_setting("search_font_size", 18)
+        autofocus = self._settings_service.get_setting("search_autofocus", True)
+        focus_delay = self._settings_service.get_setting("search_autofocus_delay", 1.0)
+        
+        self._font_slider.set(font_size)
+        self._autofocus_var.set(autofocus)
+        self._focus_delay_slider.set(focus_delay)
+        
+        # Обновить текстовые метки
+        self._font_val_label.configure(text=f"{int(font_size)} pt")
+        self._focus_delay_val_label.configure(text=f"{focus_delay:.1f} сек")
+        
+        # Обновить состояние слайдера задержки
+        self._toggle_focus_delay()
+    
+    def _toggle_focus_delay(self) -> None:
+        """Блокировка слайдера задержки, если автофокус выключен."""
+        state = "normal" if self._autofocus_var.get() else "disabled"
+        self._focus_delay_slider.configure(state=state)
     
     def _create_address_tab(self, parent: Any) -> None:
         """Создание вкладки 'Адрес' (заглушка)."""
@@ -163,5 +247,21 @@ class SettingsDialog(ctk.CTkToplevel):
         lang = self._lang_combo.get()
         self._settings_service.set_setting('language', lang)
         
-        logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}")
+        # Сохраняем настройки поиска
+        font_size = int(self._font_slider.get())
+        autofocus = self._autofocus_var.get()
+        focus_delay = float(self._focus_delay_slider.get())
+        
+        self._settings_service.set_setting("search_font_size", font_size)
+        self._settings_service.set_setting("search_autofocus", autofocus)
+        self._settings_service.set_setting("search_autofocus_delay", focus_delay)
+        
+        logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}")
+        
+        # Уведомляем об изменениях через колбэк
+        if self._on_settings_changed:
+            self._on_settings_changed("search_font_size", font_size)
+            self._on_settings_changed("search_autofocus", autofocus)
+            self._on_settings_changed("search_autofocus_delay", focus_delay)
+        
         self.destroy()

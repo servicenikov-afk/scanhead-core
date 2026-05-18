@@ -70,14 +70,23 @@ class SearchAddressTab(ctk.CTkFrame):
         search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=2, pady=(2, 5))
         search_frame.grid_columnconfigure(0, weight=1)
         
+        # Получаем настройки из сервиса настроек
+        settings_service = self._services.get("settings_service")
+        config = {
+            "search_font_size": settings_service.get_setting("search_font_size", 18) if settings_service else 18,
+            "search_autofocus": settings_service.get_setting("search_autofocus", True) if settings_service else True,
+            "search_autofocus_delay": settings_service.get_setting("search_autofocus_delay", 1.0) if settings_service else 1.0,
+        }
+        
         self._search_bar = SearchBar(
             search_frame,
             search_service=self._services.get("search_service"),
-            on_search_result=self._on_search_result
+            on_search_result=self._on_search_result,
+            config=config
         )
         self._search_bar.grid(row=0, column=0, sticky="ew")
         
-        logger.debug("[SearchAddressTab] Поисковая строка создана")
+        logger.debug(f"[SearchAddressTab] Поисковая строка создана с конфигом: {config}")
     
     def _create_details_panel(self) -> None:
         """Создание панели с деталями товара (на всю ширину)."""
@@ -153,3 +162,10 @@ class SearchAddressTab(ctk.CTkFrame):
     def get_current_product(self) -> Product | None:
         """Получение текущего отображаемого товара."""
         return self._product_details.get_current_product()
+    
+    def on_setting_changed(self, key: str, value: Any) -> None:
+        """Обработчик изменения настроек."""
+        if key.startswith("search_"):
+            # Обновить конфиг и применить в SearchBar
+            self._search_bar.apply_settings({key: value})
+            logger.info(f"[SearchAddressTab] Применена настройка {key}={value}")

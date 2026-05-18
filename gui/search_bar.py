@@ -39,9 +39,12 @@ class SearchBar(ctk.CTkFrame):
         self._search_service = search_service
         self._on_search_result = on_search_result
         self._debounce_ms = debounce_ms
-        self._font_size = font_size
-        self._auto_focus = auto_focus
         self._config = config or {}
+        
+        # Получаем настройки из конфига или используем значения по умолчанию
+        self._font_size = self._config.get("search_font_size", font_size)
+        self._auto_focus = self._config.get("search_autofocus", auto_focus)
+        self._focus_delay = self._config.get("search_autofocus_delay", 1.0)  # секунды
         
         self._timer: Optional[threading.Timer] = None
         self._last_query = ""
@@ -49,7 +52,7 @@ class SearchBar(ctk.CTkFrame):
         self._update_geometry_after_id: Optional[str] = None
         self._pending_update_id: Optional[str] = None
         
-        logger.debug(f"[SearchBar] Инициализация (font_size={font_size}, auto_focus={auto_focus})")
+        logger.debug(f"[SearchBar] Инициализация (font_size={self._font_size}, auto_focus={self._auto_focus}, focus_delay={self._focus_delay})")
         
         # Создаём поле ввода с крупным шрифтом
         self._entry = ctk.CTkEntry(
@@ -68,9 +71,10 @@ class SearchBar(ctk.CTkFrame):
         # Привязка изменения размера entry для обновления геометрии dropdown
         self._entry.bind("<Configure>", self._on_entry_configure)
         
-        # Автофокус при создании
+        # Автофокус с задержкой при создании
         if self._auto_focus:
-            self.after(50, self._set_initial_focus)
+            delay_ms = int(self._focus_delay * 1000)
+            self.after(delay_ms, self._set_initial_focus)
         
         logger.debug("[SearchBar] Поле поиска создано")
     
@@ -254,6 +258,24 @@ class SearchBar(ctk.CTkFrame):
                 self._entry.focus_set()
         except Exception as e:
             logger.warning(f"[SearchBar] Не удалось восстановить фокус: {e}")
+    
+    def apply_settings(self, config: dict) -> None:
+        """Применить изменённые настройки без пересоздания."""
+        # Шрифт
+        if "search_font_size" in config:
+            self._font_size = config["search_font_size"]
+            new_font = ctk.CTkFont(size=self._font_size, family="Arial")
+            self._entry.configure(font=new_font)
+            # Обновить шрифт в списке подсказок если он существует
+            if hasattr(self, '_suggestion_window') and self._suggestion_window is not None:
+                if hasattr(self._suggestion_window, 'update_font_size'):
+                    self._suggestion_window.update_font_size(self._font_size)
+        
+        # Автофокус (применится при следующем переключении вкладки или создании)
+        if "search_autofocus" in config:
+            self._auto_focus = config["search_autofocus"]
+        if "search_autofocus_delay" in config:
+            self._focus_delay = config["search_autofocus_delay"]
 
     def _on_entry_click(self, event) -> None:
         """Обработка клика на поле поиска — НЕ сбрасывать содержимое."""

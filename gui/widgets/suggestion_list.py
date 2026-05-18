@@ -172,6 +172,19 @@ class SuggestionList(ctk.CTkToplevel):
         if self.on_select:
             self.on_select(value)
     
+    def update_font_size(self, font_size: int) -> None:
+        """Обновить размер шрифта для всех кнопок подсказок."""
+        self._font_size = font_size
+        new_font = ctk.CTkFont(size=self._font_size, family="Arial")
+        
+        # Обновляем шрифт у всех существующих кнопок
+        for btn in self.buttons:
+            try:
+                if btn.winfo_exists():
+                    btn.configure(font=new_font)
+            except Exception:
+                pass
+    
     def destroy(self) -> None:
         """Безопасное уничтожение виджета с очисткой событий."""
         # Отменяем все отложенные события
