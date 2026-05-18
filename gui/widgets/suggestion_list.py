@@ -92,10 +92,22 @@ class SuggestionList(ctk.CTkToplevel):
                 pass
         self._button_after_ids.clear()
         
-        # Уничтожаем кнопки
+        # Уничтожаем кнопки с предварительной отменой их внутренних after-событий
         for btn in self.buttons:
             try:
                 if btn.winfo_exists():
+                    # Отменяем внутренние after-события CTkButton (перерисовка и т.д.)
+                    if hasattr(btn, '_after_id') and btn._after_id is not None:
+                        try:
+                            self.after_cancel(btn._after_id)
+                        except Exception:
+                            pass
+                    # Также проверяем _draw_after_id (если есть)
+                    if hasattr(btn, '_draw_after_id') and btn._draw_after_id is not None:
+                        try:
+                            self.after_cancel(btn._draw_after_id)
+                        except Exception:
+                            pass
                     btn.destroy()
             except Exception:
                 pass
