@@ -86,12 +86,15 @@ class SuggestionList(ctk.CTkToplevel):
             return
         
         # Создание кнопок с крупным шрифтом
+        # Высота кнопки = шрифт + 14px (отступы) для рационального использования пространства
+        button_height = self._font_size + 14
+        
         for text in suggestions:
             btn = ctk.CTkButton(
                 self.frame,
                 text=text,
                 anchor="w",
-                height=40,  # Увеличенная высота для крупного шрифта
+                height=button_height,
                 command=lambda t=text: self._select(t),
                 hover_color=("gray80", "gray20"),
                 font=ctk.CTkFont(size=self._font_size, family="Arial")
@@ -100,7 +103,8 @@ class SuggestionList(ctk.CTkToplevel):
             self.buttons.append(btn)
         
         # Авто-высота (но не больше max_height)
-        content_height = min(len(suggestions) * 46 + 4, self.max_height)
+        # content_height = высота кнопки + отступы * количество + рамки
+        content_height = min(len(suggestions) * (button_height + 4) + 4, self.max_height)
         self.frame.configure(height=content_height)
         
         # Позиционирование с проверкой winfo_exists
@@ -177,13 +181,19 @@ class SuggestionList(ctk.CTkToplevel):
         self._font_size = font_size
         new_font = ctk.CTkFont(size=self._font_size, family="Arial")
         
-        # Обновляем шрифт у всех существующих кнопок
+        # Обновляем шрифт и высоту у всех существующих кнопок
+        button_height = self._font_size + 14
         for btn in self.buttons:
             try:
                 if btn.winfo_exists():
-                    btn.configure(font=new_font)
+                    btn.configure(font=new_font, height=button_height)
             except Exception:
                 pass
+        
+        # Пересчитать высоту контента если есть кнопки
+        if self.buttons:
+            content_height = min(len(self.buttons) * (button_height + 4) + 4, self.max_height)
+            self.frame.configure(height=content_height)
     
     def destroy(self) -> None:
         """Безопасное уничтожение виджета с очисткой событий."""

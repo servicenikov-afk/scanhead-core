@@ -7,7 +7,6 @@ import logging
 from typing import Any, Optional
 
 import customtkinter as ctk
-from tkinter import ttk
 
 from services.interfaces import IProductRepository
 from libs.domain_models import Product, Address
@@ -28,14 +27,16 @@ class ProductDetails(ctk.CTkFrame):
         self, 
         master: Any, 
         product_repo: IProductRepository,
-        on_add_to_queue: callable = None
+        on_add_to_queue: callable = None,
+        font_size: int = 14
     ):
         super().__init__(master)
         self._product_repo = product_repo
         self._on_add_to_queue = on_add_to_queue
         self._current_product: Optional[Product] = None
+        self._font_size = font_size
         
-        logger.debug("[ProductDetails] Инициализация")
+        logger.debug(f"[ProductDetails] Инициализация (font_size={self._font_size})")
         
         # Контейнер для полей и кнопки
         fields_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -114,15 +115,16 @@ class ProductDetails(ctk.CTkFrame):
             text=label,
             width=100,
             anchor="e",
-            font=ctk.CTkFont(size=13)
+            font=ctk.CTkFont(size=self._font_size)
         )
         lbl.grid(row=row, column=0, padx=(5, 10), pady=2, sticky="e")
         
-        # Поле ввода (readonly)
-        entry = ttk.Entry(
+        # Поле ввода (readonly) - используем CTkEntry вместо ttk для консистентности
+        entry = ctk.CTkEntry(
             parent,
-            state="readonly",
-            font=("Arial", 12)
+            state="disabled",  # readonly эквивалент в CTk
+            height=self._font_size + 16,  # Высота = шрифт + отступы
+            font=ctk.CTkFont(size=self._font_size, family="Arial")
         )
         entry.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
         
@@ -132,7 +134,7 @@ class ProductDetails(ctk.CTkFrame):
                 parent,
                 text="✏️",
                 width=40,
-                height=28,
+                height=self._font_size + 14,  # Высота кнопки = шрифт + отступы
                 command=lambda: self._open_editor(field_name)
             )
             btn_edit.grid(row=row, column=2, padx=2, pady=2)
@@ -167,7 +169,8 @@ class ProductDetails(ctk.CTkFrame):
             product=product_data,
             nomenclature_adapter=self._product_repo,
             store_adapter=self._product_repo,
-            css_adapter=None
+            css_adapter=None,
+            font_size=self._font_size
         )
     
     def _on_add_to_queue_click(self) -> None:
@@ -259,10 +262,11 @@ class ProductDetails(ctk.CTkFrame):
             entry = getattr(self, f"_{field_name}_entry")
             value = self._get_field_value(field_name)
             
-            entry.config(state="normal")
+            # CTkEntry: state="normal" для редактирования, state="disabled" для readonly
+            entry.configure(state="normal")
             entry.delete(0, "end")
             entry.insert(0, value)
-            entry.config(state="readonly")
+            entry.configure(state="disabled")
     
     def clear(self) -> None:
         """Очистка всех полей."""
@@ -271,9 +275,9 @@ class ProductDetails(ctk.CTkFrame):
         
         for field_name in ["article", "article2", "name", "address"]:
             entry = getattr(self, f"_{field_name}_entry")
-            entry.config(state="normal")
+            entry.configure(state="normal")
             entry.delete(0, "end")
-            entry.config(state="readonly")
+            entry.configure(state="disabled")
     
     def get_current_product(self) -> Optional[Product]:
         """Получение текущего товара."""

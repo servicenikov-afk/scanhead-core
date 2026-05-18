@@ -55,10 +55,13 @@ class SearchBar(ctk.CTkFrame):
         logger.debug(f"[SearchBar] Инициализация (font_size={self._font_size}, auto_focus={self._auto_focus}, focus_delay={self._focus_delay})")
         
         # Создаём поле ввода с крупным шрифтом
+        # Высота поля = шрифт + 20px (отступы) для рационального использования пространства
+        entry_height = self._font_size + 20
+        
         self._entry = ctk.CTkEntry(
             self,
             placeholder_text="🔍 Поиск по артикулу, названию или штрих-коду...",
-            height=44,
+            height=entry_height,
             font=ctk.CTkFont(size=self._font_size, family="Arial")
         )
         self._entry.pack(fill="both", expand=True, padx=5, pady=5)

@@ -16,7 +16,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
         product: Dict[str, Any],
         nomenclature_adapter: Any = None,
         store_adapter: Any = None,
-        css_adapter: Any = None
+        css_adapter: Any = None,
+        font_size: int = 14
     ):
         super().__init__(master)
         
@@ -24,6 +25,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._nomenclature_adapter = nomenclature_adapter
         self._store_adapter = store_adapter
         self._css_adapter = css_adapter
+        self._font_size = font_size
         
         self.title(f"📦 {product.get('article', 'Товар')}")
         self.geometry("700x500")
@@ -86,46 +88,48 @@ class ProductInfoDialog(ctk.CTkToplevel):
         parent.grid_columnconfigure(0, weight=0)
         parent.grid_columnconfigure(1, weight=1)
         
-        # Артикул
-        ctk.CTkLabel(parent, text="Артикул:", font=ctk.CTkFont(weight="bold")).grid(
+        # Артикул - высота = шрифт + 20
+        field_height = self._font_size + 20
+        
+        ctk.CTkLabel(parent, text="Артикул:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=0, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_article = ctk.CTkLabel(parent, text="", anchor="w")
+        self._lbl_article = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_article.grid(row=0, column=1, sticky="ew", pady=5, padx=5)
         
         # Альт. артикул
-        ctk.CTkLabel(parent, text="Альт. артикул:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(parent, text="Альт. артикул:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=1, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_article2 = ctk.CTkLabel(parent, text="", anchor="w")
+        self._lbl_article2 = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_article2.grid(row=1, column=1, sticky="ew", pady=5, padx=5)
         
         # Наименование
-        ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=2, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400)
+        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_name.grid(row=2, column=1, sticky="ew", pady=5, padx=5)
         
         # Штрихкоды
-        ctk.CTkLabel(parent, text="Штрихкоды:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(parent, text="Штрихкоды:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=3, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_barcodes = ctk.CTkLabel(parent, text="", anchor="w")
+        self._lbl_barcodes = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_barcodes.grid(row=3, column=1, sticky="ew", pady=5, padx=5)
         
         # Описание (если есть)
-        ctk.CTkLabel(parent, text="Описание:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(parent, text="Описание:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=4, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_description = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400)
+        self._lbl_description = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_description.grid(row=4, column=1, sticky="ew", pady=5, padx=5)
         
         # Категория
-        ctk.CTkLabel(parent, text="Категория:", font=ctk.CTkFont(weight="bold")).grid(
+        ctk.CTkLabel(parent, text="Категория:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=5, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_category = ctk.CTkLabel(parent, text="", anchor="w")
+        self._lbl_category = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_category.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
@@ -141,14 +145,15 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(
             info_frame,
             text="Текущий адрес хранения:",
-            font=ctk.CTkFont(weight="bold", size=14)
+            font=ctk.CTkFont(weight="bold", size=self._font_size)
         ).pack(anchor="w")
         
         self._lbl_location = ctk.CTkLabel(
             info_frame,
             text="Загрузка...",
-            font=ctk.CTkFont(size=18),
-            text_color="green"
+            font=ctk.CTkFont(size=self._font_size + 4),
+            text_color="green",
+            height=self._font_size + 20
         )
         self._lbl_location.pack(anchor="w", pady=10)
         
@@ -156,17 +161,24 @@ class ProductInfoDialog(ctk.CTkToplevel):
         edit_frame = ctk.CTkFrame(parent, fg_color="transparent")
         edit_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
         
-        ctk.CTkLabel(edit_frame, text="Изменить адрес:").pack(anchor="w")
+        ctk.CTkLabel(edit_frame, text="Изменить адрес:", font=ctk.CTkFont(size=self._font_size)).pack(anchor="w")
         
         entry_frame = ctk.CTkFrame(edit_frame, fg_color="transparent")
         entry_frame.pack(fill="x", pady=5)
         
-        self._entry_location = ctk.CTkEntry(entry_frame, placeholder_text="Новый адрес")
+        self._entry_location = ctk.CTkEntry(
+            entry_frame,
+            placeholder_text="Новый адрес",
+            height=self._font_size + 16,
+            font=ctk.CTkFont(size=self._font_size, family="Arial")
+        )
         self._entry_location.pack(side="left", fill="x", expand=True, padx=(0, 5))
         
         ctk.CTkButton(
             entry_frame,
             text="💾 Сохранить",
+            height=self._font_size + 14,
+            font=ctk.CTkFont(size=self._font_size),
             command=self._save_location
         ).pack(side="left")
     

@@ -95,15 +95,20 @@ class SearchAddressTab(ctk.CTkFrame):
         details_frame.grid_rowconfigure(0, weight=1)
         details_frame.grid_columnconfigure(0, weight=1)
         
+        # Получаем размер шрифта из настроек
+        settings_service = self._services.get("settings_service")
+        font_size = settings_service.get_setting("search_font_size", 18) if settings_service else 18
+        
         # Детали товара
         self._product_details = ProductDetails(
             details_frame,
             product_repo=self._services.get("product_repo"),
-            on_add_to_queue=self._add_product_to_queue
+            on_add_to_queue=self._add_product_to_queue,
+            font_size=font_size
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         
-        logger.debug("[SearchAddressTab] Панель деталей создана")
+        logger.debug(f"[SearchAddressTab] Панель деталей создана (font_size={font_size})")
     
     def _create_bottom_panel(self) -> None:
         """Создание нижней панели: очередь (слева) + превью (справа)."""
