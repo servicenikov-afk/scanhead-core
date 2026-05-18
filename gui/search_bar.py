@@ -48,8 +48,7 @@ class SearchBar(ctk.CTkFrame):
         self._combobox = ttk.Combobox(
             self,
             font=("Arial", 14),
-            height=10,
-            poststyle="combo"
+            height=10
         )
         self._combobox.pack(fill="both", expand=True, padx=5, pady=5)
         
