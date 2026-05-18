@@ -51,6 +51,7 @@ class SuggestionList(ctk.CTkToplevel):
         # Хранилище ID отложенных событий для кнопок
         self._button_after_ids: dict = {}
         self._destroy_after_id: Optional[int] = None
+        self._pending_suggestions: Optional[tuple] = None  # (suggestions, x, y)
 
     def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
         """Отобразить список подсказок в указанных координатах."""
@@ -58,7 +59,8 @@ class SuggestionList(ctk.CTkToplevel):
         self._cleanup_buttons()
         
         if not suggestions:
-            self.withdraw()
+            # Если нет подсказок - скрываем окно полностью
+            self.hide()
             return
         
         # Создание кнопок
@@ -118,7 +120,55 @@ class SuggestionList(ctk.CTkToplevel):
             except Exception:
                 pass
         self.buttons.clear()
-
+        
+        # Если были отложенные подсказки - показываем их сейчас
+        if self._pending_suggestions is not None:
+            suggestions, x, y = self._pending_suggestions
+            self._pending_suggestions = None
+            if suggestions:  # Показываем только если есть подсказки
+                self._show_suggestions_internal(suggestions, x, y)
+            else:
+                self.hide()
+    
+    def _show_suggestions_internal(self, suggestions: List[str], x: int, y: int) -> None:
+        """Внутренний метод показа подсказок (вызывается после очистки)."""
+        # Создание кнопок
+        for text in suggestions:
+            btn = ctk.CTkButton(
+                self.frame,
+                text=text,
+                anchor="w",
+                height=30,
+                command=lambda t=text: self._select(t),
+                hover_color=("gray80", "gray20")
+            )
+            btn.pack(fill="x", padx=2, pady=2)
+            self.buttons.append(btn)
+        
+        # Авто-высота (но не больше max_height)
+        content_height = min(len(suggestions) * 34 + 4, self.max_height)
+        self.frame.configure(height=content_height)
+        
+        # Позиционирование
+        self.geometry(f"+{x}+{y}")
+        self.deiconify()  # Показать
+        self.lift()  # Поднять наверх
+    
+    def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
+        """Отобразить список подсказок в указанных координатах."""
+        # Если есть активные кнопки - откладываем показ до их удаления
+        if self.buttons:
+            self._pending_suggestions = (suggestions, x, y)
+            return
+        
+        # Если нет подсказок - скрываем окно полностью
+        if not suggestions:
+            self.hide()
+            return
+        
+        # Иначе показываем сразу
+        self._show_suggestions_internal(suggestions, x, y)
+    
     def hide(self) -> None:
         """Скрыть список."""
         try:
