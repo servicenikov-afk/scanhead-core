@@ -85,15 +85,10 @@ class SuggestionList(ctk.CTkToplevel):
     
     def _cleanup_buttons(self) -> None:
         """Очистка кнопок с безопасным уничтожением."""
-        # Отменяем все отслеживаемые отложенные события
-        for btn_id in list(self._button_after_ids.keys()):
-            try:
-                self.after_cancel(btn_id)
-            except Exception:
-                pass
-        self._button_after_ids.clear()
+        if not self.buttons:
+            return
         
-        # Отменяем предыдущее отложенное уничтожение
+        # Отменяем предыдущее отложенное уничтожение если есть
         if self._destroy_after_id is not None:
             try:
                 self.after_cancel(self._destroy_after_id)
@@ -101,7 +96,21 @@ class SuggestionList(ctk.CTkToplevel):
                 pass
             self._destroy_after_id = None
         
-        # Немедленное уничтожение кнопок
+        # Скрываем кнопки немедленно (чтобы пользователь не видел старое содержимое)
+        for btn in self.buttons:
+            try:
+                if btn.winfo_exists():
+                    btn.pack_forget()
+            except Exception:
+                pass
+        
+        # Отложенное уничтожение кнопок (100мс для завершения всех внутренних _draw событий)
+        self._destroy_after_id = self.after(100, self._delayed_destroy_buttons)
+    
+    def _delayed_destroy_buttons(self) -> None:
+        """Отложенное уничтожение кнопок после завершения всех внутренних событий."""
+        self._destroy_after_id = None
+        
         for btn in self.buttons:
             try:
                 if btn.winfo_exists():
