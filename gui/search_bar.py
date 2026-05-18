@@ -116,24 +116,38 @@ class SearchBar(ctk.CTkFrame):
         # Обновляем значения combobox
         self._combobox['values'] = suggestions
         
-        # Вызываем callback для обновления UI
+        # Принудительно открываем выпадающий список
+        self.after(0, lambda: self._combobox.event_generate('<Button-1>'))
+        
+        # Вызываем callback для обновления UI (таблицы), но не очищаем поле
         self.after(0, lambda: self._on_search_result(products))
     
     def _on_combobox_selected(self, event) -> None:
         """Обработка выбора элемента из Combobox."""
         selected_text = self._combobox.get()
-        logger.info(f"[SearchBar] Выбран: {selected_text}")
+        logger.info(f"[SearchBar] Выбор из списка: {selected_text}")
         
         # Извлекаем артикул из текста (до " | ")
         article = selected_text.split(" | ")[0].strip()
         
-        # Очищаем поле поиска
+        # Находим полный объект продукта в кэше
+        selected_product = None
+        for p in self._products_cache:
+            if p.article == article:
+                selected_product = p
+                break
+        
+        # Очищаем поле поиска и список подсказок
         self._combobox.set("")
         self._last_query = ""
         self._clear_values()
         
-        # Выполняем поиск по выбранному артикулу (для заполнения полей)
-        self._do_search(article)
+        # Если продукт найден - передаём его в callback (одним элементом)
+        if selected_product:
+            self._on_search_result([selected_product])
+        else:
+            # Фолбэк: если не нашли в кэше, ищем заново по артикулу
+            self._do_search(article)
     
     def _clear_values(self) -> None:
         """Очистка значений combobox."""
