@@ -18,6 +18,7 @@ class SuggestionList(ctk.CTkToplevel):
         on_select: Callable[[str], None],
         width: int = 400,
         max_height: int = 200,
+        font_size: int = 18,
         **kwargs
     ):
         super().__init__(master, **kwargs)
@@ -25,13 +26,14 @@ class SuggestionList(ctk.CTkToplevel):
         self.on_select = on_select
         self.width = width
         self.max_height = max_height
+        self._font_size = font_size
         
         # Настройка окна
         self.overrideredirect(True)  # Без рамок и заголовка
         self.attributes('-topmost', True)  # Поверх всех окон
         self.withdraw()  # Скрыто по умолчанию
         
-        # Основной фрейм
+        # Основной фрейм с крупным шрифтом
         self.frame = ctk.CTkScrollableFrame(
             self,
             width=self.width,
@@ -52,9 +54,25 @@ class SuggestionList(ctk.CTkToplevel):
         self._button_after_ids: dict = {}
         self._destroy_after_id: Optional[int] = None
         self._pending_suggestions: Optional[tuple] = None  # (suggestions, x, y)
+        self._show_after_id: Optional[int] = None
 
     def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
         """Отобразить список подсказок в указанных координатах."""
+        # Отменяем предыдущее отложенное событие показа если есть
+        if self._show_after_id is not None:
+            try:
+                self.after_cancel(self._show_after_id)
+            except Exception:
+                pass
+            self._show_after_id = None
+        
+        # Показываем подсказки через after(1, ...) для стабильности
+        self._show_after_id = self.after(1, lambda: self._do_show_suggestions(suggestions, x, y))
+    
+    def _do_show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
+        """Внутренний метод показа подсказок (вызывается через after)."""
+        self._show_after_id = None
+        
         # Очистка старых кнопок с отменой отложенных событий
         self._cleanup_buttons()
         
@@ -63,27 +81,36 @@ class SuggestionList(ctk.CTkToplevel):
             self.hide()
             return
         
-        # Создание кнопок
+        # Проверка существования виджета перед созданием кнопок
+        if not self.winfo_exists() or not self.frame.winfo_exists():
+            return
+        
+        # Создание кнопок с крупным шрифтом
         for text in suggestions:
             btn = ctk.CTkButton(
                 self.frame,
                 text=text,
                 anchor="w",
-                height=30,
+                height=40,  # Увеличенная высота для крупного шрифта
                 command=lambda t=text: self._select(t),
-                hover_color=("gray80", "gray20")
+                hover_color=("gray80", "gray20"),
+                font=ctk.CTkFont(size=self._font_size, family="Arial")
             )
             btn.pack(fill="x", padx=2, pady=2)
             self.buttons.append(btn)
         
         # Авто-высота (но не больше max_height)
-        content_height = min(len(suggestions) * 34 + 4, self.max_height)
+        content_height = min(len(suggestions) * 46 + 4, self.max_height)
         self.frame.configure(height=content_height)
         
-        # Позиционирование
-        self.geometry(f"+{x}+{y}")
-        self.deiconify()  # Показать
-        self.lift()  # Поднять наверх
+        # Позиционирование с проверкой winfo_exists
+        try:
+            if self.winfo_exists():
+                self.geometry(f"+{x}+{y}")
+                self.deiconify()  # Показать
+                self.lift()  # Поднять наверх
+        except Exception as e:
+            logger.warning(f"[SuggestionList] Не удалось обновить геометрию: {e}")
     
     def _cleanup_buttons(self) -> None:
         """Очистка кнопок с безопасным уничтожением."""
@@ -126,48 +153,9 @@ class SuggestionList(ctk.CTkToplevel):
             suggestions, x, y = self._pending_suggestions
             self._pending_suggestions = None
             if suggestions:  # Показываем только если есть подсказки
-                self._show_suggestions_internal(suggestions, x, y)
+                self._do_show_suggestions(suggestions, x, y)
             else:
                 self.hide()
-    
-    def _show_suggestions_internal(self, suggestions: List[str], x: int, y: int) -> None:
-        """Внутренний метод показа подсказок (вызывается после очистки)."""
-        # Создание кнопок
-        for text in suggestions:
-            btn = ctk.CTkButton(
-                self.frame,
-                text=text,
-                anchor="w",
-                height=30,
-                command=lambda t=text: self._select(t),
-                hover_color=("gray80", "gray20")
-            )
-            btn.pack(fill="x", padx=2, pady=2)
-            self.buttons.append(btn)
-        
-        # Авто-высота (но не больше max_height)
-        content_height = min(len(suggestions) * 34 + 4, self.max_height)
-        self.frame.configure(height=content_height)
-        
-        # Позиционирование
-        self.geometry(f"+{x}+{y}")
-        self.deiconify()  # Показать
-        self.lift()  # Поднять наверх
-    
-    def show_suggestions(self, suggestions: List[str], x: int, y: int) -> None:
-        """Отобразить список подсказок в указанных координатах."""
-        # Если есть активные кнопки - откладываем показ до их удаления
-        if self.buttons:
-            self._pending_suggestions = (suggestions, x, y)
-            return
-        
-        # Если нет подсказок - скрываем окно полностью
-        if not suggestions:
-            self.hide()
-            return
-        
-        # Иначе показываем сразу
-        self._show_suggestions_internal(suggestions, x, y)
     
     def hide(self) -> None:
         """Скрыть список."""
@@ -186,6 +174,14 @@ class SuggestionList(ctk.CTkToplevel):
     
     def destroy(self) -> None:
         """Безопасное уничтожение виджета с очисткой событий."""
+        # Отменяем все отложенные события
+        if self._show_after_id is not None:
+            try:
+                self.after_cancel(self._show_after_id)
+            except Exception:
+                pass
+            self._show_after_id = None
+        
         # Сначала отменяем все отложенные события
         self._cleanup_buttons()
         

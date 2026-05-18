@@ -3,7 +3,7 @@
 """
 
 import logging
-from typing import Callable, Any, Optional, List
+from typing import Callable, Any, Optional, List, Dict
 import threading
 import time
 
@@ -30,26 +30,33 @@ class SearchBar(ctk.CTkFrame):
         master: Any, 
         search_service: ISearchService,
         on_search_result: Callable[[list], None],
-        debounce_ms: int = 300
+        debounce_ms: int = 300,
+        font_size: int = 18,
+        auto_focus: bool = True,
+        config: Optional[Dict[str, Any]] = None
     ):
         super().__init__(master)
         self._search_service = search_service
         self._on_search_result = on_search_result
         self._debounce_ms = debounce_ms
+        self._font_size = font_size
+        self._auto_focus = auto_focus
+        self._config = config or {}
         
         self._timer: Optional[threading.Timer] = None
         self._last_query = ""
         self._suggestion_window: Optional[SuggestionList] = None
         self._update_geometry_after_id: Optional[str] = None
+        self._pending_update_id: Optional[str] = None
         
-        logger.debug("[SearchBar] Инициализация")
+        logger.debug(f"[SearchBar] Инициализация (font_size={font_size}, auto_focus={auto_focus})")
         
-        # Создаём поле ввода
+        # Создаём поле ввода с крупным шрифтом
         self._entry = ctk.CTkEntry(
             self,
             placeholder_text="🔍 Поиск по артикулу, названию или штрих-коду...",
-            height=40,
-            font=ctk.CTkFont(size=14)
+            height=44,
+            font=ctk.CTkFont(size=self._font_size, family="Arial")
         )
         self._entry.pack(fill="both", expand=True, padx=5, pady=5)
         
@@ -61,7 +68,19 @@ class SearchBar(ctk.CTkFrame):
         # Привязка изменения размера entry для обновления геометрии dropdown
         self._entry.bind("<Configure>", self._on_entry_configure)
         
+        # Автофокус при создании
+        if self._auto_focus:
+            self.after(50, self._set_initial_focus)
+        
         logger.debug("[SearchBar] Поле поиска создано")
+    
+    def _set_initial_focus(self) -> None:
+        """Установка начального фокуса на поле ввода."""
+        try:
+            if self._entry.winfo_exists():
+                self._entry.focus_set()
+        except Exception as e:
+            logger.warning(f"[SearchBar] Не удалось установить фокус: {e}")
     
     def _on_key_release(self, event) -> None:
         """Обработчик отпускания клавиши."""
@@ -127,23 +146,43 @@ class SearchBar(ctk.CTkFrame):
             text = f"{p.article} | {p.name[:50]}..." if len(p.name) > 50 else f"{p.article} | {p.name}"
             suggestions.append((text, p.article))
         
+        # Извлекаем только текст для отображения
+        suggestion_texts = [s[0] for s in suggestions]
+        
+        # Обновление списка подсказок только через self.after(1, ...) для стабильности
+        self._pending_update_id = self.after(1, lambda: self._do_show_suggestions(suggestion_texts))
+    
+    def _do_show_suggestions(self, suggestion_texts: List[str]) -> None:
+        """Внутренний метод показа подсказок (вызывается через after)."""
+        self._pending_update_id = None
+        
+        if not suggestion_texts:
+            self._hide_suggestions()
+            return
+        
         # Получаем координаты поля ввода
-        x = self._entry.winfo_rootx()
-        y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
+        try:
+            if not self._entry.winfo_exists():
+                return
+            x = self._entry.winfo_rootx()
+            y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
+        except Exception as e:
+            logger.warning(f"[SearchBar] Не удалось получить координаты entry: {e}")
+            return
         
         # Создаём или обновляем окно подсказок
-        if self._suggestion_window is None:
+        if self._suggestion_window is None or not self._suggestion_window.winfo_exists():
             self._suggestion_window = SuggestionList(
                 self._entry,
                 on_select=self._on_suggestion_select,
-                width=self._entry.winfo_width()
+                width=self._entry.winfo_width() if self._entry.winfo_exists() else 400,
+                font_size=self._font_size
             )
         
         # Обновляем геометрию dropdown (ширина + позиция)
         self._update_dropdown_geometry(x, y)
         
-        # Извлекаем только текст для отображения
-        suggestion_texts = [s[0] for s in suggestions]
+        # Показываем подсказки
         self._suggestion_window.show_suggestions(suggestion_texts, x, y)
     
     def _update_dropdown_geometry(self, x: int = None, y: int = None) -> None:
@@ -197,12 +236,24 @@ class SearchBar(ctk.CTkFrame):
         # Скрываем подсказки
         self._hide_suggestions()
         
-        # Очищаем поле поиска
+        # Устанавливаем текст в поле (артикул)
         self._entry.delete(0, "end")
-        self._last_query = ""
+        self._entry.insert(0, article)
+        self._last_query = article
+        
+        # Возвращаем фокус в поле после выбора с задержкой для предотвращения гонок
+        self.after(50, lambda: self._restore_focus_after_select())
         
         # Выполняем поиск по выбранному артикулу (для заполнения полей)
         self._do_search(article)
+    
+    def _restore_focus_after_select(self) -> None:
+        """Восстановление фокуса на поле после выбора подсказки."""
+        try:
+            if self._entry.winfo_exists():
+                self._entry.focus_set()
+        except Exception as e:
+            logger.warning(f"[SearchBar] Не удалось восстановить фокус: {e}")
 
     def _on_entry_click(self, event) -> None:
         """Обработка клика на поле поиска — НЕ сбрасывать содержимое."""
@@ -229,3 +280,11 @@ class SearchBar(ctk.CTkFrame):
             except Exception:
                 pass
             self._update_geometry_after_id = None
+        
+        # Отменяем отложенное событие обновления подсказок
+        if self._pending_update_id is not None:
+            try:
+                self.after_cancel(self._pending_update_id)
+            except Exception:
+                pass
+            self._pending_update_id = None
