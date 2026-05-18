@@ -102,15 +102,13 @@ class NomenclatureAdapter:
             logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
             
             search_pattern = f"%{query}%"
-            # Поиск по canonical_article, name_ru и alternative_articles (JSON)
+            # Поиск по article, name и barcodes (простая схема)
             sql = f"""
-                SELECT DISTINCT n.canonical_article as article, n.name_ru as name, 
-                       n.alternative_articles as barcodes, n.unit
-                FROM {table_name} n
-                LEFT JOIN json_each(n.alternative_articles) as aliases
-                WHERE n.canonical_article LIKE ? 
-                   OR n.name_ru LIKE ? 
-                   OR aliases.value LIKE ?
+                SELECT DISTINCT article, name, barcodes
+                FROM {table_name}
+                WHERE article LIKE ? 
+                   OR name LIKE ? 
+                   OR barcodes LIKE ?
                 LIMIT 50
             """
             
@@ -138,10 +136,9 @@ class NomenclatureAdapter:
         cursor = conn.cursor()
 
         sql = """
-            SELECT canonical_article as article, name_ru as name, 
-                   alternative_articles as barcodes, unit
+            SELECT article, name, barcodes
             FROM nomenclature
-            WHERE canonical_article = ?
+            WHERE article = ?
         """
 
         try:
