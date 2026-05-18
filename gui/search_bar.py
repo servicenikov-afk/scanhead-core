@@ -47,15 +47,16 @@ class SearchBar(ctk.CTkFrame):
         # Создаём поле ввода (Combobox)
         self._combobox = ttk.Combobox(
             self,
-            font=("Arial", 14),
-            height=10
+            font=("Arial", 21),
+            height=15
         )
         self._combobox.pack(fill="both", expand=True, padx=5, pady=5)
         
         # Привязываем обработчики
         self._combobox.bind("<KeyRelease>", self._on_key_release)
         self._combobox.bind("<<ComboboxSelected>>", self._on_combobox_selected)
-        self._combobox.bind("<FocusOut>", lambda e: self._clear_values())
+        # Убрали FocusOut, который мешал выбору, теперь очищаем только при явном уходе фокуса с виджета
+        self._combobox.bind("<FocusOut>", lambda e: self.after(200, self._clear_values))
         
         logger.info("[SearchBar] Combobox инициализирован")
     
@@ -116,8 +117,12 @@ class SearchBar(ctk.CTkFrame):
         # Обновляем значения combobox
         self._combobox['values'] = suggestions
         
-        # Принудительно открываем выпадающий список
-        self.after(0, lambda: self._combobox.event_generate('<Button-1>'))
+        # Принудительно открываем выпадающий список и возвращаем фокус в поле ввода
+        def _open_and_focus():
+            self._combobox.event_generate('<Button-1>')
+            self._combobox.focus_set()
+        
+        self.after(0, _open_and_focus)
         
         # Вызываем callback для обновления UI (таблицы), но не очищаем поле
         self.after(0, lambda: self._on_search_result(products))
