@@ -258,17 +258,14 @@ class SearchBar(ctk.CTkFrame):
         # 4. Теперь безопасно очистить поле
         self._entry.delete(0, "end")
         
-        # 5. Вставить артикул в поле (это вызовет KeyRelease, но _last_query="" защитит)
-        self._entry.insert(0, article)
-        
-        # 6. Скрыть список подсказок
+        # 5. Скрыть список подсказок
         self._hide_suggestions()
         
-        # 7. Обновить UI с выбранным продуктом
+        # 6. Обновить UI с выбранным продуктом
         #    Выполняем поиск по артикулу для заполнения полей
         self._do_search(article)
         
-        # 8. Вернуть фокус с задержкой (если включено)
+        # 7. Вернуть фокус с задержкой (если включено)
         if self._auto_focus:
             delay_ms = int(self._focus_delay * 1000)
             self.after(delay_ms, self._restore_focus_after_select)
