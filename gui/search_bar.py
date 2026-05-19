@@ -93,6 +93,16 @@ class SearchBar(ctk.CTkFrame):
         """Обработчик отпускания клавиши."""
         query = self._entry.get().strip()
         
+        # Если поле пустое — очистить результаты и выйти
+        if not query:
+            if self._timer:
+                self._timer.cancel()
+                self._timer = None
+            self._hide_suggestions()
+            self._on_search_result([])
+            self._last_query = ""
+            return
+        
         # Если запрос не изменился - игнорируем
         if query == self._last_query:
             return
@@ -102,12 +112,6 @@ class SearchBar(ctk.CTkFrame):
         # Отменяем предыдущий таймер
         if self._timer is not None:
             self._timer.cancel()
-        
-        # Если поле пустое - сразу очищаем результаты
-        if not query:
-            self._hide_suggestions()
-            self._on_search_result([])
-            return
         
         # Запускаем новый таймер
         self._timer = threading.Timer(
@@ -233,25 +237,41 @@ class SearchBar(ctk.CTkFrame):
             self._suggestion_window.hide()
     
     def _on_suggestion_select(self, display_text: str) -> None:
-        """Обработка выбора подсказки."""
+        """Обработка выбора подсказки — с корректной очисткой поля."""
         logger.info(f"[SearchBar] Выбрана подсказка: {display_text}")
         
         # Извлекаем артикул из текста (до " | ")
         article = display_text.split(" | ")[0].strip()
         
-        # Скрываем подсказки
+        # 1. Сначала обновить UI (ProductDetails, PrintQueue, etc.)
+        #    Но не выполняем поиск сразу - сделаем это после очистки поля
+        
+        # 2. СБРОСИТЬ _last_query ПЕРЕД очисткой поля
+        #    Это предотвратит запуск нового поиска при delete()
+        self._last_query = ""
+        
+        # 3. Отменить любой отложенный поиск (на всякий случай)
+        if self._timer:
+            self._timer.cancel()
+            self._timer = None
+        
+        # 4. Теперь безопасно очистить поле
+        self._entry.delete(0, "end")
+        
+        # 5. Вставить артикул в поле (это вызовет KeyRelease, но _last_query="" защитит)
+        self._entry.insert(0, article)
+        
+        # 6. Скрыть список подсказок
         self._hide_suggestions()
         
-        # Устанавливаем текст в поле (артикул)
-        self._entry.delete(0, "end")
-        self._entry.insert(0, article)
-        self._last_query = article
-        
-        # Возвращаем фокус в поле после выбора с задержкой для предотвращения гонок
-        self.after(50, lambda: self._restore_focus_after_select())
-        
-        # Выполняем поиск по выбранному артикулу (для заполнения полей)
+        # 7. Обновить UI с выбранным продуктом
+        #    Выполняем поиск по артикулу для заполнения полей
         self._do_search(article)
+        
+        # 8. Вернуть фокус с задержкой (если включено)
+        if self._auto_focus:
+            delay_ms = int(self._focus_delay * 1000)
+            self.after(delay_ms, self._restore_focus_after_select)
     
     def _restore_focus_after_select(self) -> None:
         """Восстановление фокуса на поле после выбора подсказки."""
