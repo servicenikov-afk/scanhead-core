@@ -265,7 +265,8 @@ class ProductDetails(ctk.CTkFrame):
             # CTkEntry: state="normal" для редактирования, state="disabled" для readonly
             entry.configure(state="normal")
             entry.delete(0, "end")
-            entry.insert(0, value)
+            if value:  # Вставляем только непустые значения
+                entry.insert(0, value)
             entry.configure(state="disabled")
     
     def clear(self) -> None:

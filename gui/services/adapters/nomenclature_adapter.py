@@ -1,5 +1,6 @@
 """Адаптер для работы с основной базой номенклатуры."""
 import sqlite3
+import json
 import threading
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Callable
@@ -92,14 +93,23 @@ class NomenclatureAdapter:
             
             cursor.execute(sql, (search_pattern, search_pattern, search_pattern))
             rows = cursor.fetchall()
-            products = [
-                Product(
+            products = []
+            for row in rows:
+                # barcodes хранится как JSON-строка в БД, нужно распарсить
+                barcodes_raw = row['barcodes']
+                if barcodes_raw:
+                    try:
+                        barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
+                    except (json.JSONDecodeError, TypeError):
+                        barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
+                else:
+                    barcodes = []
+                
+                products.append(Product(
                     article=row['article'],
                     name=row['name'],
-                    barcodes=row['barcodes'] or ''
-                )
-                for row in rows
-            ]
+                    barcodes=barcodes
+                ))
             logger.info(f"[NomenclatureAdapter] Найдено {len(products)} товаров по запросу '{query}'")
             return products
         except Exception as e:
@@ -123,10 +133,20 @@ class NomenclatureAdapter:
             cursor.execute(sql, (article,))
             row = cursor.fetchone()
             if row:
+                # barcodes хранится как JSON-строка в БД, нужно распарсить
+                barcodes_raw = row['barcodes']
+                if barcodes_raw:
+                    try:
+                        barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
+                    except (json.JSONDecodeError, TypeError):
+                        barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
+                else:
+                    barcodes = []
+                
                 return Product(
                     article=row['article'],
                     name=row['name'],
-                    barcodes=row['barcodes']
+                    barcodes=barcodes
                 )
             return None
         except Exception as e:
