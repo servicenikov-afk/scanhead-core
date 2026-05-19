@@ -60,7 +60,7 @@ class NomenclatureAdapter:
         thread.start()
 
     def search(self, query: str) -> List[Product]:
-        """Поиск товаров по артикулу, названию или штрихкоду."""
+        """Поиск товаров по артикулу, названию или штрихкоду (регистронезависимый)."""
         # Создаём новое соединение в текущем потоке (потокобезопасность)
         if not self.db_path.exists():
             logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}")
@@ -80,14 +80,17 @@ class NomenclatureAdapter:
             table_name = table_row['name']
             logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
             
-            search_pattern = f"%{query}%"
-            # Поиск по article, name и barcodes (регистронезависимый поиск через COLLATE NOCASE)
+            # Для регистронезависимого поиска с кириллицей используем LOWER()
+            # Это более надёжно, чем COLLATE NOCASE для русских букв
+            query_lower = query.lower()
+            search_pattern = f"%{query_lower}%"
+            
             sql = f"""
                 SELECT DISTINCT article, name, barcodes
                 FROM {table_name}
-                WHERE article LIKE ? COLLATE NOCASE
-                   OR name LIKE ? COLLATE NOCASE
-                   OR barcodes LIKE ? COLLATE NOCASE
+                WHERE LOWER(article) LIKE ?
+                   OR LOWER(name) LIKE ?
+                   OR LOWER(barcodes) LIKE ?
                 LIMIT 50
             """
             
