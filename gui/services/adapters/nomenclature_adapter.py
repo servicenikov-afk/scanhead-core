@@ -80,39 +80,46 @@ class NomenclatureAdapter:
             table_name = table_row['name']
             logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
             
-            # Для регистронезависимого поиска с кириллицей используем LOWER()
-            # Это более надёжно, чем COLLATE NOCASE для русских букв
-            query_lower = query.lower()
-            search_pattern = f"%{query_lower}%"
-            
+            # Регистронезависимый поиск через загрузку данных и фильтрацию в Python
+            # Это гарантирует корректную работу с кириллицей и спецсимволами (дефис, %)
             sql = f"""
                 SELECT DISTINCT article, name, barcodes
                 FROM {table_name}
-                WHERE LOWER(article) LIKE ?
-                   OR LOWER(name) LIKE ?
-                   OR LOWER(barcodes) LIKE ?
-                LIMIT 50
+                LIMIT 1000
             """
             
-            cursor.execute(sql, (search_pattern, search_pattern, search_pattern))
+            cursor.execute(sql)
             rows = cursor.fetchall()
+            
+            query_lower = query.lower()
             products = []
             for row in rows:
-                # barcodes хранится как JSON-строка в БД, нужно распарсить
-                barcodes_raw = row['barcodes']
-                if barcodes_raw:
-                    try:
-                        barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
-                    except (json.JSONDecodeError, TypeError):
-                        barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
-                else:
-                    barcodes = []
+                article = row['article'] or ''
+                name = row['name'] or ''
+                barcodes_raw = row['barcodes'] or ''
                 
-                products.append(Product(
-                    article=row['article'],
-                    name=row['name'],
-                    barcodes=barcodes
-                ))
+                # Проверяем совпадение по article, name или barcodes (регистронезависимо)
+                if (query_lower in article.lower() or 
+                    query_lower in name.lower() or 
+                    query_lower in barcodes_raw.lower()):
+                    # barcodes хранится как JSON-строка в БД, нужно распарсить
+                    if barcodes_raw:
+                        try:
+                            barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
+                        except (json.JSONDecodeError, TypeError):
+                            barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
+                    else:
+                        barcodes = []
+                    
+                    products.append(Product(
+                        article=article,
+                        name=name,
+                        barcodes=barcodes
+                    ))
+                    
+                    if len(products) >= 50:
+                        break
+
             logger.info(f"[NomenclatureAdapter] Найдено {len(products)} товаров по запросу '{query}'")
             return products
         except Exception as e:
