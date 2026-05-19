@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import List, Optional
 
 from libs.domain_models import Product, Address
-from ..interfaces.mock_data_service import IMockDataService
 
 
-class JsonMockLoader(IMockDataService):
+class JsonMockLoader:
     """Загрузка тестовых данных из JSON-файлов."""
 
     def __init__(self, data_dir: Path | str = "data/mocks"):

@@ -5,7 +5,7 @@
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 import os
 
 import customtkinter as ctk
@@ -14,6 +14,8 @@ from PIL import Image
 from gui.tabs.search_address_tab import SearchAddressTab
 from gui.tabs.inventory_tab import InventoryTab
 from gui.dialogs.settings_dialog import SettingsDialog
+from services.di_container import DIContainer
+from services.interfaces import ISearchService, ISettingsService
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +32,13 @@ class MainWindow(ctk.CTkFrame):
     └─────────────────────────────────────────┘
     """
 
-    def __init__(self, master: Any, services: Dict[str, Any]):
+    def __init__(self, master: Any, di_container: DIContainer):
         super().__init__(master)
-        self._services = services
+        self._container = di_container
 
-        # Получаем сервисы из словаря
-        self._search_service = services.get("search_service")
-        self._settings_service = services.get("settings_service")
+        # Получаем сервисы из DI-контейнера
+        self._search_service = self._container.get(ISearchService)
+        self._settings_service = self._container.get(ISettingsService)
 
         logger.info("[MainWindow] Инициализация главного окна")
 
@@ -110,10 +112,10 @@ class MainWindow(ctk.CTkFrame):
         self._content.pack(side="top", fill="both", expand=True, padx=2, pady=2)
 
         # 5. Инициализация вкладок ВНУТРИ контента
-        self._search_tab = SearchAddressTab(self._content, self._services)
+        self._search_tab = SearchAddressTab(self._content, self._container)
         self._search_tab.pack(fill="both", expand=True)
         
-        self._inventory_tab = InventoryTab(self._content, self._services)
+        self._inventory_tab = InventoryTab(self._content, self._container)
         # Скрываем инвентаризацию по умолчанию (пока не переключена)
         self._inventory_tab.pack_forget()
 

@@ -3,33 +3,11 @@ import sqlite3
 import threading
 from pathlib import Path
 from typing import List, Optional, Dict, Any, Callable
-from dataclasses import dataclass
 import logging
 
+from libs.domain_models import Product
+
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Product:
-    """Модель товара."""
-    article: str
-    name: str
-    article2: Optional[str] = None
-    address: Optional[str] = None
-    barcodes: Optional[str] = None
-    description: Optional[str] = None
-    category: Optional[str] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            'article': self.article,
-            'name': self.name,
-            'article2': self.article2 or '',
-            'address': self.address or '',
-            'barcodes': self.barcodes or '',
-            'description': self.description or '',
-            'category': self.category or ''
-        }
 
 
 class NomenclatureAdapter:
