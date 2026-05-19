@@ -150,9 +150,10 @@ class SearchServiceWithMocks:
             time.sleep(0.1)
             results = []
             if query:
+                query_lower = query.lower()
                 for product in self._mock_loader.load_products():
-                    if (query.lower() in (product.article or "").lower() or 
-                        query.lower() in (product.name or "").lower()):
+                    if (query_lower in (product.article or "").lower() or 
+                        query_lower in (product.name or "").lower()):
                         results.append(product)
             callback(results)
         

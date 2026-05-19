@@ -81,13 +81,13 @@ class NomenclatureAdapter:
             logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
             
             search_pattern = f"%{query}%"
-            # Поиск по article, name и barcodes (простая схема)
+            # Поиск по article, name и barcodes (регистронезависимый поиск через COLLATE NOCASE)
             sql = f"""
                 SELECT DISTINCT article, name, barcodes
                 FROM {table_name}
-                WHERE article LIKE ? 
-                   OR name LIKE ? 
-                   OR barcodes LIKE ?
+                WHERE article LIKE ? COLLATE NOCASE
+                   OR name LIKE ? COLLATE NOCASE
+                   OR barcodes LIKE ? COLLATE NOCASE
                 LIMIT 50
             """
             
