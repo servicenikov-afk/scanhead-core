@@ -55,8 +55,8 @@ class SearchBar(ctk.CTkFrame):
         logger.debug(f"[SearchBar] Инициализация (font_size={self._font_size}, auto_focus={self._auto_focus}, focus_delay={self._focus_delay})")
         
         # Создаём поле ввода с крупным шрифтом
-        # Высота поля = шрифт + 20px (отступы) для рационального использования пространства
-        entry_height = self._font_size + 20
+        # Высота поля = шрифт + 8px (отступы) для рационального использования пространства
+        entry_height = self._font_size + 8
         
         self._entry = ctk.CTkEntry(
             self,
@@ -150,7 +150,7 @@ class SearchBar(ctk.CTkFrame):
         suggestions = []
         for p in products:
             # Формат: "Артикул | Наименование"
-            text = f"{p.article} | {p.name[:50]}..." if len(p.name) > 50 else f"{p.article} | {p.name}"
+            text = f"{p.article} | {p.name[:80]}..." if len(p.name) > 80 else f"{p.article} | {p.name}"
             suggestions.append((text, p.article))
         
         # Извлекаем только текст для отображения
