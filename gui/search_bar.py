@@ -173,6 +173,7 @@ class SearchBar(ctk.CTkFrame):
                 return
             x = self._entry.winfo_rootx()
             y = self._entry.winfo_rooty() + self._entry.winfo_height() + 2
+            entry_width = self._entry.winfo_width()
         except Exception as e:
             logger.warning(f"[SearchBar] Не удалось получить координаты entry: {e}")
             return
@@ -182,14 +183,12 @@ class SearchBar(ctk.CTkFrame):
             self._suggestion_window = SuggestionList(
                 self._entry,
                 on_select=self._on_suggestion_select,
-                width=self._entry.winfo_width() if self._entry.winfo_exists() else 400,
+                width=entry_width + 30,  # Ширина = ширина entry + 30px
+                max_height=200,
                 font_size=self._font_size
             )
         
-        # Обновляем геометрию dropdown (ширина + позиция)
-        self._update_dropdown_geometry(x, y)
-        
-        # Показываем подсказки
+        # Показываем подсказки (внутри show_suggestions вызывается _update_position)
         self._suggestion_window.show_suggestions(suggestion_texts, x, y)
     
     def _update_dropdown_geometry(self, x: int = None, y: int = None) -> None:
