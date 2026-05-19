@@ -154,10 +154,14 @@ class ProductDetails(ctk.CTkFrame):
         # Открываем диалог с подробной информацией
         from gui.dialogs.product_info_dialog import ProductInfoDialog
         
+        # Фильтруем штрихкоды, исключая основной артикул для article2
+        other_barcodes = [b for b in self._current_product.barcodes if b != self._current_product.article]
+        article2 = other_barcodes[0] if other_barcodes else ''
+        
         # Формируем словарь данных для диалога
         product_data = {
             'article': self._current_product.article,
-            'article2': self._current_product.barcodes[1] if len(self._current_product.barcodes) > 1 else '',
+            'article2': article2,
             'name': self._current_product.name,
             'barcodes': ', '.join(self._current_product.barcodes),
             'description': getattr(self._current_product, 'description', 'Нет описания'),
@@ -217,16 +221,18 @@ class ProductDetails(ctk.CTkFrame):
             case "article":
                 return self._current_product.article
             case "article2":
-                # Возвращаем второй штрих-код если есть
-                if len(self._current_product.barcodes) > 1:
-                    return self._current_product.barcodes[1]
+                # Возвращаем второй штрих-код, если он отличается от основного
+                # Фильтруем баркоды, исключая основной артикул
+                other_barcodes = [b for b in self._current_product.barcodes if b != self._current_product.article]
+                if other_barcodes:
+                    return other_barcodes[0]
                 return ""
             case "name":
                 return self._current_product.name
             case "address":
                 if self._current_product.address:
                     return self._current_product.address
-                return "Не указан"
+                return ""
             case _:
                 return ""
     
