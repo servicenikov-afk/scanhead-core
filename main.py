@@ -9,11 +9,6 @@ import logging
 import json
 from pathlib import Path
 
-# Добавляем workspace в path
-sys.path.insert(0, '/workspace')
-
-# Импорт конфигурации
-# Используем относительный путь от текущего файла для кроссплатформенности
 CONFIG_PATH = Path(__file__).parent / "config" / "app_config.json"
 
 
@@ -30,10 +25,8 @@ def load_config() -> dict:
     }
 
 
-# Загрузка конфигурации
 config = load_config()
 
-# Инициализация логгирования через Bootstrap
 from libs.core import quick_bootstrap
 
 quick_bootstrap(
@@ -50,7 +43,6 @@ def main() -> None:
     logger.info("ScanHead Combine - Запуск приложения")
     logger.info("=" * 60)
 
-    # Импорт зависимостей GUI
     try:
         import customtkinter as ctk
     except ImportError:
@@ -64,37 +56,34 @@ def main() -> None:
         PIL_AVAILABLE = False
         logger.warning("PIL/Pillow не установлен. Изображения будут недоступны.")
 
-    # Настройка CTk
     ctk.set_appearance_mode("System")
     ctk.set_default_color_theme("blue")
 
-    # Импорт сервисов
     from gui.main_window import MainWindow
     from services.di_container import DIContainer
-    from services.interfaces import ISearchService, IProductRepository
+    from services.interfaces import (
+        ISearchService, IProductRepository, IImageService,
+        ISettingsService, IPrinterService, IInventoryService
+    )
+    from services.stubs import (
+        StubSearchService, StubProductRepository, StubImageService,
+        StubSettingsService, StubPrinterService, StubInventoryService
+    )
 
-    # Инициализация сервисов в зависимости от конфига
     use_mocks = config.get("use_mock_data", False)
     
-    # Отладка: выводим путь и значение
     logger.info(f"[DEBUG] CONFIG_PATH: {CONFIG_PATH}")
-    logger.info(f"[DEBUG] CONFIG_PATH exists: {CONFIG_PATH.exists()}")
-    logger.info(f"[DEBUG] Full config content: {config}")
-    logger.info(f"[DEBUG] use_mock_data value: {use_mocks} (type: {type(use_mocks)})")
+    logger.info(f"[DEBUG] use_mock_data: {use_mocks}")
 
-    # Создаём DI-контейнер
     container = DIContainer()
 
     if use_mocks:
         logger.info("[Main] Использование моков для тестовых данных")
         from gui.services.adapters.json_mock_loader import JsonMockLoader
-        from services.stubs import StubSearchService, StubProductRepository
         
-        # Создаём SearchServiceWithMocks как адаптер над StubSearchService + JsonMockLoader
         mock_path = config.get("mock_data_path", "data/mocks")
         mock_loader = JsonMockLoader(mock_path)
         
-        # Регистрируем сервисы с моками
         search_service = SearchServiceWithMocks(mock_loader)
         container.register(ISearchService, search_service)
         container.register(IProductRepository, StubProductRepository())
@@ -103,66 +92,52 @@ def main() -> None:
         from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
         from gui.services.adapters.store_adapter import StoreAdapter
         
-        # Инициализация адаптера номенклатуры с правильным путём
         db_path = config.get("db_paths", {}).get("nomenclature", "nomenclature.db")
         search_service = NomenclatureAdapter(db_path)
         
-        # Инициализация адаптера хранилища
         store_db_path = config.get("db_paths", {}).get("store", "store.db")
         store_adapter = StoreAdapter(store_db_path)
         
-        # Регистрируем реальные сервисы
         container.register(ISearchService, search_service)
         container.register(IProductRepository, store_adapter)
 
-    # Регистрируем остальные сервисы (заглушки по умолчанию)
-    from services.stubs import StubImageService, StubSettingsService, StubPrinterService, StubInventoryService
-    from services.interfaces import IImageService, ISettingsService, IPrinterService, IInventoryService
-    
     container.register(IImageService, StubImageService())
     container.register(ISettingsService, StubSettingsService())
     container.register(IPrinterService, StubPrinterService())
     container.register(IInventoryService, StubInventoryService())
 
-    logger.info("Сервисы инициализированы и зарегистрированы в DI-контейнере")
+    logger.info("Сервисы зарегистрированы в DI-контейнере")
 
-    # Создание главного окна
     root = ctk.CTk()
     root.title("ScanHead Combine")
     
-    # Применение размеров из настроек
     settings = container.get(ISettingsService)
     width = settings.get_setting("window_width", 1200)
     height = settings.get_setting("window_height", 800)
     root.geometry(f"{width}x{height}")
 
-    # Передаём DI-контейнер в MainWindow
     app = MainWindow(root, di_container=container)
     app.pack(fill="both", expand=True)
     
     logger.info("Главное окно создано")
     logger.info("Запуск главного цикла...")
 
-    # Запуск цикла
     try:
         root.mainloop()
     except KeyboardInterrupt:
         logger.info("Приложение завершено пользователем")
     finally:
-        # Сохранение настроек
         settings_service = container.get(ISettingsService)
-        settings_service.save()
+        if hasattr(settings_service, 'save'):
+            settings_service.save()
         logger.info("Настройки сохранены")
         logger.info("=" * 60)
 
 
 class SearchServiceWithMocks:
-    """
-    Адаптер поиска, использующий JsonMockLoader для тестовых данных.
-    Реализует интерфейс ISearchService.
-    """
+    """Адаптер поиска с использованием JsonMockLoader."""
     
-    def __init__(self, mock_loader: JsonMockLoader):
+    def __init__(self, mock_loader):
         self._mock_loader = mock_loader
         self._logger = logging.getLogger(__name__)
     
@@ -172,7 +147,7 @@ class SearchServiceWithMocks:
         import time
         
         def worker():
-            time.sleep(0.1)  # Имитация задержки
+            time.sleep(0.1)
             results = []
             if query:
                 for product in self._mock_loader.load_products():

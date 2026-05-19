@@ -1,14 +1,15 @@
 """
 Вкладка "Поиск | Адрес".
-Содержит: детали товара, очередь печати, превью стикера.
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any, List
 
 import customtkinter as ctk
 
 from libs.domain_models import Product
+from services.di_container import DIContainer
+from services.interfaces import ISearchService, IProductRepository, IPrinterService, ISettingsService
 
 from gui.search_bar import SearchBar
 from gui.product_details import ProductDetails
@@ -19,68 +20,43 @@ logger = logging.getLogger(__name__)
 
 
 class SearchAddressTab(ctk.CTkFrame):
-    """
-    Вкладка "Поиск | Адрес".
+    """Вкладка "Поиск | Адрес"."""
     
-    Структура:
-    ┌───────────────────────────────────────────────┐
-    │  [Поиск: введите артикул или название...]     │  <- Поисковая строка
-    ├──────────────────┬────────────────────────────┤
-    │                  │                            │
-    │  Детали товара   │     Превью стикера         │
-    │  (артикул,       │     (макет + кнопка        │
-    │   название,      │      редактора)            │
-    │   адрес)         │                            │
-    │  [➕ В очередь]  ├────────────────────────────┤
-    │                  │                            │
-    │                  │    Очередь печати          │
-    │                  │    (Treeview + кнопки)     │
-    │                  │                            │
-    └──────────────────┴────────────────────────────┘
-    """
-    
-    def __init__(self, master: Any, services: Dict[str, Any]):
+    def __init__(self, master: Any, di_container: DIContainer):
         super().__init__(master)
-        self._services = services
+        self._container = di_container
         self._current_products: List[Product] = []
         
         logger.info("[SearchAddressTab] Инициализация вкладки")
         
-        # Настраиваем сетку для новой компоновки
-        self.grid_rowconfigure(0, weight=0)  # Поиск - фиксированная высота
-        self.grid_rowconfigure(1, weight=3)  # Детали товара: 75% высоты
-        self.grid_rowconfigure(2, weight=1)  # Очередь+Превью: 25% высоты
-        self.grid_columnconfigure(0, weight=3)  # Очередь: 75% ширины
-        self.grid_columnconfigure(1, weight=1)  # Превью: 25% ширины
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=3)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_columnconfigure(0, weight=3)
+        self.grid_columnconfigure(1, weight=1)
         
-        # Поисковая строка (Row 0)
         self._create_search_bar()
-        
-        # Детали товара (Row 1, на всю ширину)
         self._create_details_panel()
-        
-        # Нижняя панель: очередь + превью (Row 2)
         self._create_bottom_panel()
         
         logger.info("[SearchAddressTab] Вкладка инициализирована")
     
     def _create_search_bar(self) -> None:
-        """Создание поисковой строки на вкладке."""
+        """Создание поисковой строки."""
         search_frame = ctk.CTkFrame(self, fg_color="transparent")
         search_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=2, pady=(2, 5))
         search_frame.grid_columnconfigure(0, weight=1)
         
-        # Получаем настройки из сервиса настроек
-        settings_service = self._services.get("settings_service")
+        settings_service = self._container.get(ISettingsService)
         config = {
-            "search_font_size": settings_service.get_setting("search_font_size", 18) if settings_service else 18,
-            "search_autofocus": settings_service.get_setting("search_autofocus", True) if settings_service else True,
-            "search_autofocus_delay": settings_service.get_setting("search_autofocus_delay", 1.0) if settings_service else 1.0,
+            "search_font_size": settings_service.get_setting("search_font_size", 18),
+            "search_autofocus": settings_service.get_setting("search_autofocus", True),
+            "search_autofocus_delay": settings_service.get_setting("search_autofocus_delay", 1.0),
         }
         
         self._search_bar = SearchBar(
             search_frame,
-            search_service=self._services.get("search_service"),
+            search_service=self._container.get(ISearchService),
             on_search_result=self._on_search_result,
             config=config
         )
@@ -89,47 +65,39 @@ class SearchAddressTab(ctk.CTkFrame):
         logger.debug(f"[SearchAddressTab] Поисковая строка создана с конфигом: {config}")
     
     def _create_details_panel(self) -> None:
-        """Создание панели с деталями товара (на всю ширину)."""
+        """Создание панели с деталями товара."""
         details_frame = ctk.CTkFrame(self)
         details_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=3, pady=3)
         details_frame.grid_rowconfigure(0, weight=1)
         details_frame.grid_columnconfigure(0, weight=1)
         
-        # Получаем размер шрифта из настроек
-        settings_service = self._services.get("settings_service")
-        font_size = settings_service.get_setting("search_font_size", 18) if settings_service else 18
+        settings_service = self._container.get(ISettingsService)
+        font_size = settings_service.get_setting("search_font_size", 18)
         
-        # Детали товара
         self._product_details = ProductDetails(
             details_frame,
-            product_repo=self._services.get("product_repo"),
+            product_repo=self._container.get(IProductRepository),
             on_add_to_queue=self._add_product_to_queue,
             font_size=font_size
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
-        
-        logger.debug(f"[SearchAddressTab] Панель деталей создана (font_size={font_size})")
     
     def _create_bottom_panel(self) -> None:
-        """Создание нижней панели: очередь (слева) + превью (справа)."""
-        # Очередь печати (Row 2, Col 0 - 75% ширины)
+        """Создание нижней панели: очередь + превью."""
         self._print_queue = PrintQueue(
             self,
-            product_repo=self._services.get("product_repo"),
-            printer_service=self._services.get("printer_service"),
-            settings_service=self._services.get("settings_service")
+            product_repo=self._container.get(IProductRepository),
+            printer_service=self._container.get(IPrinterService),
+            settings_service=self._container.get(ISettingsService)
         )
         self._print_queue.grid(row=2, column=0, sticky="nsew", padx=3, pady=3)
         
-        # Превью стикера (Row 2, Col 1 - 25% ширины)
         self._sticker_preview = StickerPreview(
             self,
-            printer_service=self._services.get("printer_service"),
-            settings_service=self._services.get("settings_service")
+            printer_service=self._container.get(IPrinterService),
+            settings_service=self._container.get(ISettingsService)
         )
         self._sticker_preview.grid(row=2, column=1, sticky="nsew", padx=3, pady=3)
-        
-        logger.debug("[SearchAddressTab] Нижняя панель создана")
     
     def _on_search_result(self, products: List[Product]) -> None:
         """Обработчик результатов поиска от SearchBar."""

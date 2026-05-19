@@ -1,33 +1,29 @@
 """
 Вкладка "Инвентаризация" (заглушка).
-Показывает сообщение о разработке и кнопки-заглушки.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 import customtkinter as ctk
+
+from services.di_container import DIContainer
 
 logger = logging.getLogger(__name__)
 
 
 class InventoryTab(ctk.CTkFrame):
-    """
-    Вкладка "Инвентаризация" (заглушка).
-    Показывает сообщение о разработке и кнопки-заглушки.
-    """
+    """Вкладка "Инвентаризация" (заглушка)."""
     
-    def __init__(self, master: Any, services: Dict[str, Any]):
+    def __init__(self, master: Any, di_container: DIContainer):
         super().__init__(master)
-        self._services = services
+        self._container = di_container
         
         logger.info("[InventoryTab] Инициализация вкладки-заглушки")
         
-        # Центрируем контент
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         
-        # Создаём контент
         self._create_content()
         
         logger.debug("[InventoryTab] Вкладка создана")
