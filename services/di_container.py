@@ -46,22 +46,23 @@ class DIContainer:
         """
         Регистрация сервиса.
         
-        :param interface: Интерфейс (абстрактный класс)
+        :param interface: Интерфейс (абстрактный класс) или строка-ключ
         :param implementation: Реализация сервиса
         """
         self._services[interface] = implementation
-        logger.debug(f"[DIContainer] Зарегистрирован сервис: {interface.__name__}")
+        service_name = interface.__name__ if hasattr(interface, '__name__') else str(interface)
+        logger.debug(f"[DIContainer] Зарегистрирован сервис: {service_name}")
     
     def get(self, interface: Type) -> Any:
         """
-        Получение сервиса по интерфейсу.
+        Получение сервиса по интерфейсу или строке-ключу.
         
-        :param interface: Интерфейс для поиска
+        :param interface: Интерфейс для поиска или строка-ключ
         :return: Реализация сервиса
         :raises KeyError: Если сервис не зарегистрирован
         """
         if interface not in self._services:
-            raise KeyError(f"Сервис {interface.__name__} не зарегистрирован")
+            raise KeyError(f"Сервис {interface} не зарегистрирован")
         return self._services[interface]
     
     def has(self, interface: Type) -> bool:

@@ -91,15 +91,28 @@ def main() -> None:
         logger.info("[Main] Использование реальных баз данных")
         from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
         from gui.services.adapters.store_adapter import StoreAdapter
+        from gui.services.adapters.css_export_adapter import CssExportAdapter
+        from gui.services.product_details_service import ProductDetailsService
         
         db_path = config.get("db_paths", {}).get("nomenclature", "nomenclature.db")
-        search_service = NomenclatureAdapter(db_path)
+        nomenclature_adapter = NomenclatureAdapter(db_path)
         
         store_db_path = config.get("db_paths", {}).get("store", "store.db")
         store_adapter = StoreAdapter(store_db_path)
         
-        container.register(ISearchService, search_service)
+        css_db_path = config.get("db_paths", {}).get("css_export", "css_export.db")
+        css_adapter = CssExportAdapter(css_db_path)
+        
+        # Создаём сервис детальной информации
+        details_service = ProductDetailsService(
+            nomenclature_adapter=nomenclature_adapter,
+            store_adapter=store_adapter,
+            css_adapter=css_adapter
+        )
+        
+        container.register(ISearchService, nomenclature_adapter)
         container.register(IProductRepository, store_adapter)
+        container.register("product_details_service", details_service)
 
     container.register(IImageService, StubImageService())
     container.register(ISettingsService, StubSettingsService())

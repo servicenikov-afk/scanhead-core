@@ -78,7 +78,8 @@ class SearchAddressTab(ctk.CTkFrame):
             details_frame,
             product_repo=self._container.get(IProductRepository),
             on_add_to_queue=self._add_product_to_queue,
-            font_size=font_size
+            font_size=font_size,
+            details_service=self._container.get("product_details_service") if self._container.has("product_details_service") else None
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
     

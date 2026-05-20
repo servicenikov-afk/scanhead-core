@@ -28,13 +28,15 @@ class ProductDetails(ctk.CTkFrame):
         master: Any, 
         product_repo: IProductRepository,
         on_add_to_queue: callable = None,
-        font_size: int = 14
+        font_size: int = 14,
+        details_service: Optional[Any] = None
     ):
         super().__init__(master)
         self._product_repo = product_repo
         self._on_add_to_queue = on_add_to_queue
         self._current_product: Optional[Product] = None
         self._font_size = font_size
+        self._details_service = details_service
         
         logger.debug(f"[ProductDetails] Инициализация (font_size={self._font_size})")
         
@@ -174,7 +176,8 @@ class ProductDetails(ctk.CTkFrame):
             nomenclature_adapter=self._product_repo,
             store_adapter=self._product_repo,
             css_adapter=None,
-            font_size=self._font_size
+            font_size=self._font_size,
+            details_service=self._details_service
         )
     
     def _on_add_to_queue_click(self) -> None:
