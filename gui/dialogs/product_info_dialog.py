@@ -33,6 +33,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._details_service = details_service
         self._models_label = None
         self._detail_labels = []
+        self._last_width = 800  # Для отслеживания изменений размера
+        self._resize_lock = False  # Блокировка рекурсивных вызовов
         
         self.title(f"📦 {product.get('article', 'Товар')}")
         self.geometry("800x600")
@@ -382,17 +384,33 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _on_window_resize(self, event):
         """Обработка изменения размера окна для динамического переноса текста."""
-        # Обновляем wraplength для всех лейблов с деталями
-        if hasattr(self, '_detail_labels') and self._detail_labels:
-            # Вычисляем доступную ширину: ширина окна минус отступы (примерно 150px)
-            new_wraplength = max(200, event.width - 150)
-            for label, frame in self._detail_labels:
-                label.configure(wraplength=new_wraplength)
+        # Защита от рекурсивных вызовов и бесконечного цикла
+        if self._resize_lock:
+            return
         
-        # Обновляем wraplength для лейбла с моделями
-        if hasattr(self, '_models_label') and self._models_label:
-            new_wraplength = max(200, event.width - 100)
-            self._models_label.configure(wraplength=new_wraplength)
+        # Проверяем минимальное изменение ширины (10px) чтобы избежать частых обновлений
+        width_change = abs(event.width - self._last_width)
+        if width_change < 10:
+            return
+        
+        self._resize_lock = True
+        try:
+            self._last_width = event.width
+            
+            # Обновляем wraplength для всех лейблов с деталями
+            if hasattr(self, '_detail_labels') and self._detail_labels:
+                # Вычисляем доступную ширину: ширина окна минус отступы (примерно 150px)
+                new_wraplength = max(200, event.width - 150)
+                for label, frame in self._detail_labels:
+                    label.configure(wraplength=new_wraplength)
+            
+            # Обновляем wraplength для лейбла с моделями
+            if hasattr(self, '_models_label') and self._models_label:
+                new_wraplength = max(200, event.width - 100)
+                self._models_label.configure(wraplength=new_wraplength)
+        finally:
+            # Снимаем блокировку через короткую задержку
+            self.after(50, lambda: setattr(self, '_resize_lock', False))
     
     def _on_models_frame_resize(self, event):
         """Обработка изменения размера фрейма моделей."""
