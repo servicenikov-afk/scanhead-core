@@ -126,7 +126,11 @@ class ProductDetails(ctk.CTkFrame):
             parent,
             state="disabled",  # readonly эквивалент в CTk
             height=self._font_size + 16,  # Высота = шрифт + отступы
-            font=ctk.CTkFont(size=self._font_size, family="Arial")
+            font=ctk.CTkFont(size=self._font_size, family="Arial"),
+            fg_color="#FFFFFF",      # Белый фон
+            text_color="#000000",    # Черный текст
+            border_color="#AAAAAA",
+            corner_radius=6
         )
         entry.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
         

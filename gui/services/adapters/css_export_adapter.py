@@ -1,5 +1,6 @@
 """Адаптер для работы с базой CSS Export (css_export.db)."""
 import sqlite3
+import threading
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 import logging
@@ -28,20 +29,18 @@ class CssExportAdapter:
             else:
                 logger.error(f"[CssExportAdapter] Альтернативный путь тоже не найден: {alt_path}")
         
-        self._connection: Optional[sqlite3.Connection] = None
+        logger.info(f"[CssExportAdapter] Инициализация, путь к БД: {self.db_path}")
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Получить соединение с БД."""
-        if self._connection is None:
-            if not self.db_path.exists():
-                logger.warning(f"[CssExportAdapter] БД не найдена: {self.db_path}")
-                raise FileNotFoundError(f"Database not found: {self.db_path}")
+        """Получить соединение с БД (создаёт новое для каждого потока)."""
+        if not self.db_path.exists():
+            logger.warning(f"[CssExportAdapter] БД не найдена: {self.db_path}")
+            raise FileNotFoundError(f"Database not found: {self.db_path}")
 
-            self._connection = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
-            self._connection.row_factory = sqlite3.Row
-            logger.info(f"[CssExportAdapter] Подключено к {self.db_path} (read-only)")
-
-        return self._connection
+        conn = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        logger.debug(f"[CssExportAdapter] Создано новое соединение в потоке {threading.current_thread().ident}")
+        return conn
 
     def get_by_article(self, article: str) -> List[Dict[str, Any]]:
         """Получить информацию о детали по артикулу (может быть несколько записей для разных моделей)."""
@@ -114,8 +113,5 @@ class CssExportAdapter:
             return []
 
     def close(self):
-        """Закрыть соединение с БД."""
-        if self._connection:
-            self._connection.close()
-            self._connection = None
-            logger.info("[CssExportAdapter] Соединение закрыто")
+        """Закрыть соединение с БД (теперь соединения создаются на лету и закрываются автоматически)."""
+        logger.debug("[CssExportAdapter] Метод close() вызван, но соединения теперь управляются автоматически")

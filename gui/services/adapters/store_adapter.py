@@ -1,5 +1,6 @@
 """Адаптер для работы с базой адресов хранения (store.db)."""
 import sqlite3
+import threading
 from pathlib import Path
 from typing import Optional, List
 import logging
@@ -29,22 +30,20 @@ class StoreAdapter:
             else:
                 logger.error(f"[StoreAdapter] Альтернативный путь тоже не найден: {alt_path}")
         
-        self._connection: Optional[sqlite3.Connection] = None
         logger.info(f"[StoreAdapter] Инициализация, путь к БД: {self.db_path}")
         # Не создаём схему автоматически - БД должна существовать
         # self._ensure_schema()
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Получить соединение с БД."""
-        if self._connection is None:
-            if not self.db_path.exists():
-                logger.warning(f"[StoreAdapter] БД не найдена: {self.db_path}")
-                raise FileNotFoundError(f"Database not found: {self.db_path}")
+        """Получить соединение с БД (создаёт новое для каждого потока)."""
+        if not self.db_path.exists():
+            logger.warning(f"[StoreAdapter] БД не найдена: {self.db_path}")
+            raise FileNotFoundError(f"Database not found: {self.db_path}")
 
-            self._connection = sqlite3.connect(str(self.db_path))
-            self._connection.row_factory = sqlite3.Row
-            logger.info(f"[StoreAdapter] Подключено к {self.db_path}")
-        return self._connection
+        conn = sqlite3.connect(str(self.db_path))
+        conn.row_factory = sqlite3.Row
+        logger.debug(f"[StoreAdapter] Создано новое соединение в потоке {threading.current_thread().ident}")
+        return conn
 
     def _ensure_schema(self):
         """Создать таблицу если не существует."""
@@ -153,8 +152,5 @@ class StoreAdapter:
             return False
 
     def close(self):
-        """Закрыть соединение с БД."""
-        if self._connection:
-            self._connection.close()
-            self._connection = None
-            logger.info("[StoreAdapter] Соединение закрыто")
+        """Закрыть соединение с БД (теперь соединения создаются на лету и закрываются автоматически)."""
+        logger.debug("[StoreAdapter] Метод close() вызван, но соединения теперь управляются автоматически")
