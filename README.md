@@ -89,3 +89,56 @@
 2. Парсеры накладных
 3. Поддержка камеры
 4. Вкладка "Инвентаризация"
+
+---
+
+## 🗄️ Базы данных
+
+Проект использует три базы данных SQLite для агрегации полной информации о товарах.
+
+**Важно:** Физические файлы баз данных находятся **только на тестовой машине** в директории `\data\databases\`. В репозитории присутствуют только README-файлы с описанием структуры.
+
+### 1. Nomenclature Database (`nomenclature.db`)
+
+| Параметр | Значение |
+|----------|----------|
+| Расположение | `/data/databases/nomenclature/nomenclature.db` |
+| Таблица | `nomenclature` |
+| Записей | 1 693 |
+| Ключевые поля | `canonical_article`, `name_ru`, `alternative_articles` (JSON), `unit` |
+
+**Роль:** Основной справочник внутренней номенклатуры с русскими наименованиями.
+
+### 2. Store Database (`store.db`)
+
+| Параметр | Значение |
+|----------|----------|
+| Расположение | `/data/databases/store/store.db` |
+| Таблица | `storage_locations` |
+| Ключевые поля | `article`, `locations` (JSON), `alternative_names` (JSON) |
+
+**Роль:** Складской учёт местоположения запасных частей. Один артикул может иметь несколько адресов.
+
+### 3. CSS Export Database (`css_export.db`)
+
+| Параметр | Значение |
+|----------|----------|
+| Расположение | `/data/databases/css_export/css_export.db` |
+| Таблица | `spare_parts` |
+| Записей | 24 678 |
+| Моделей | 20 |
+| Ключевые поля | `art_no`, `product_model`, `name`, `usage_path`, `category1-3` |
+
+**Роль:** База запчастей Franke из 19 файлов CSS Export с информацией о совместимости с моделями оборудования.
+
+### Схема связей
+
+```
+nomenclature.canonical_article ←→ store.article
+       ↓
+nomenclature.alternative_articles (JSON) ←→ css_export.art_no
+```
+
+Для получения полной информации о товаре данные агрегируются из всех трёх источников через сервис `ProductDetailsService`.
+
+📚 **Подробная документация:** см. [`docs/database_schema.md`](docs/database_schema.md)
