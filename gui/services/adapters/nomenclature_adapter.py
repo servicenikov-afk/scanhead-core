@@ -83,7 +83,7 @@ class NomenclatureAdapter:
             # Регистронезависимый поиск через загрузку данных и фильтрацию в Python
             # Это гарантирует корректную работу с кириллицей и спецсимволами (дефис, %)
             sql = f"""
-                SELECT DISTINCT article, name, barcodes
+                SELECT DISTINCT canonical_article, name_ru, alternative_articles, unit
                 FROM {table_name}
                 LIMIT 1000
             """
@@ -94,27 +94,29 @@ class NomenclatureAdapter:
             query_lower = query.lower()
             products = []
             for row in rows:
-                article = row['article'] or ''
-                name = row['name'] or ''
-                barcodes_raw = row['barcodes'] or ''
+                article = row['canonical_article'] or ''
+                name = row['name_ru'] or ''
+                alternative_articles_raw = row['alternative_articles'] or ''
+                unit = row['unit'] or ''
                 
-                # Проверяем совпадение по article, name или barcodes (регистронезависимо)
+                # Проверяем совпадение по canonical_article, name_ru или alternative_articles (регистронезависимо)
                 if (query_lower in article.lower() or 
                     query_lower in name.lower() or 
-                    query_lower in barcodes_raw.lower()):
-                    # barcodes хранится как JSON-строка в БД, нужно распарсить
-                    if barcodes_raw:
+                    query_lower in alternative_articles_raw.lower()):
+                    # alternative_articles хранится как JSON-строка в БД, нужно распарсить
+                    if alternative_articles_raw:
                         try:
-                            barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
+                            barcodes = json.loads(alternative_articles_raw) if isinstance(alternative_articles_raw, str) else alternative_articles_raw
                         except (json.JSONDecodeError, TypeError):
-                            barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
+                            barcodes = alternative_articles_raw if isinstance(alternative_articles_raw, list) else []
                     else:
                         barcodes = []
                     
                     products.append(Product(
                         article=article,
                         name=name,
-                        barcodes=barcodes
+                        barcodes=barcodes,
+                        unit=unit
                     ))
                     
                     if len(products) >= 50:
@@ -130,38 +132,56 @@ class NomenclatureAdapter:
 
     def get_by_article(self, article: str) -> Optional[Product]:
         """Получить товар по точному артикулу."""
-        conn = self._get_connection()
+        # Создаём новое соединение в текущем потоке (потокобезопасность)
+        if not self.db_path.exists():
+            logger.warning(f"[NomenclatureAdapter] БД не найдена: {self.db_path}")
+            return None
+        
+        conn = sqlite3.connect(f"file:{self.db_path}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
 
-        sql = """
-            SELECT article, name, barcodes
-            FROM nomenclature
-            WHERE article = ?
+        # Определяем имя таблицы динамически
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1")
+        table_row = cursor.fetchone()
+        if not table_row:
+            logger.error("[NomenclatureAdapter] Таблицы в БД не найдены")
+            conn.close()
+            return None
+        table_name = table_row['name']
+        
+        sql = f"""
+            SELECT canonical_article, name_ru, alternative_articles, unit
+            FROM {table_name}
+            WHERE canonical_article = ?
         """
 
         try:
             cursor.execute(sql, (article,))
             row = cursor.fetchone()
             if row:
-                # barcodes хранится как JSON-строка в БД, нужно распарсить
-                barcodes_raw = row['barcodes']
-                if barcodes_raw:
+                # alternative_articles хранится как JSON-строка в БД, нужно распарсить
+                alternative_articles_raw = row['alternative_articles']
+                if alternative_articles_raw:
                     try:
-                        barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
+                        barcodes = json.loads(alternative_articles_raw) if isinstance(alternative_articles_raw, str) else alternative_articles_raw
                     except (json.JSONDecodeError, TypeError):
-                        barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
+                        barcodes = alternative_articles_raw if isinstance(alternative_articles_raw, list) else []
                 else:
                     barcodes = []
                 
                 return Product(
-                    article=row['article'],
-                    name=row['name'],
-                    barcodes=barcodes
+                    article=row['canonical_article'],
+                    name=row['name_ru'],
+                    barcodes=barcodes,
+                    unit=row['unit']
                 )
             return None
         except Exception as e:
             logger.error(f"[NomenclatureAdapter] Ошибка получения товара: {e}")
             return None
+        finally:
+            conn.close()
 
     def close(self):
         """Закрыть соединение с БД."""
