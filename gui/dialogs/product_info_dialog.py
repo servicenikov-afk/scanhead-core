@@ -319,12 +319,15 @@ class ProductInfoDialog(ctk.CTkToplevel):
             models_text = "\n".join(f"• {m}" for m in models)
             
             # Динамический wraplength: ширина фрейма минус отступы
+            # Начальное значение wraplength
+            initial_wraplength = max(200, models_frame.winfo_width() - 40) if models_frame.winfo_width() > 0 else 500
+            
             self._models_label = ctk.CTkLabel(
                 models_frame,
                 text=models_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=0,  # Будет обновлено при событии <Configure>
+                wraplength=initial_wraplength,
                 text_color="#000000"
             )
             self._models_label.pack(anchor="w", padx=10, pady=5)
@@ -369,12 +372,16 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 details.append(f"Серийные номера: {item['serial_from']} - {item['serial_to']}")
             
             details_text = "\n".join(details)
+            
+            # Начальное значение wraplength для деталей
+            initial_detail_wraplength = max(200, record_frame.winfo_width() - 40) if record_frame.winfo_width() > 0 else 500
+            
             label = ctk.CTkLabel(
                 record_frame,
                 text=details_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=0,  # Будет обновлено при событии <Configure>
+                wraplength=initial_detail_wraplength,
                 text_color="#000000"
             )
             label.pack(anchor="w", padx=10, pady=(0, 5))
@@ -388,26 +395,26 @@ class ProductInfoDialog(ctk.CTkToplevel):
         if self._resize_lock:
             return
         
-        # Проверяем минимальное изменение ширины (10px) чтобы избежать частых обновлений
+        # Проверяем минимальное изменение ширины (15px) чтобы избежать частых обновлений
         width_change = abs(event.width - self._last_width)
-        if width_change < 10:
+        if width_change < 15:
             return
         
         self._resize_lock = True
         try:
             self._last_width = event.width
             
-            # Обновляем wraplength для всех лейблов с деталями
-            if hasattr(self, '_detail_labels') and self._detail_labels:
-                # Вычисляем доступную ширину: ширина окна минус отступы (примерно 150px)
-                new_wraplength = max(200, event.width - 150)
-                for label, frame in self._detail_labels:
-                    label.configure(wraplength=new_wraplength)
+            # Вычисляем доступную ширину: ширина окна минус отступы (примерно 120px)
+            new_wraplength = max(200, event.width - 120)
             
             # Обновляем wraplength для лейбла с моделями
             if hasattr(self, '_models_label') and self._models_label:
-                new_wraplength = max(200, event.width - 100)
                 self._models_label.configure(wraplength=new_wraplength)
+            
+            # Обновляем wraplength для всех лейблов с деталями
+            if hasattr(self, '_detail_labels') and self._detail_labels:
+                for label, frame in self._detail_labels:
+                    label.configure(wraplength=new_wraplength)
         finally:
             # Снимаем блокировку через короткую задержку
             self.after(50, lambda: setattr(self, '_resize_lock', False))
