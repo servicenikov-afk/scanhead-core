@@ -31,10 +31,15 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._css_adapter = css_adapter
         self._font_size = font_size
         self._details_service = details_service
+        self._models_label = None
+        self._detail_labels = []
         
         self.title(f"📦 {product.get('article', 'Товар')}")
         self.geometry("800x600")
         self.resizable(True, True)
+        
+        # Привязка к изменению размера окна для динамического переноса текста
+        self.bind("<Configure>", self._on_window_resize)
         
         # Модальность
         self.transient(master)
@@ -311,16 +316,22 @@ class ProductInfoDialog(ctk.CTkToplevel):
             # Показываем ВСЕ модели без ограничений
             models_text = "\n".join(f"• {m}" for m in models)
             
-            ctk.CTkLabel(
+            # Динамический wraplength: ширина фрейма минус отступы
+            self._models_label = ctk.CTkLabel(
                 models_frame,
                 text=models_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=650,
+                wraplength=0,  # Будет обновлено при событии <Configure>
                 text_color="#000000"
-            ).pack(anchor="w", padx=10, pady=5)
+            )
+            self._models_label.pack(anchor="w", padx=10, pady=5)
+            
+            # Привязка к изменению размера для динамического переноса
+            models_frame.bind("<Configure>", self._on_models_frame_resize)
         
         # Записи о деталях с форматированием "Модель > Путь" - показываем ВСЕ записи
+        self._detail_labels = []  # Сохраняем ссылки для обновления wraplength
         for i, item in enumerate(manufacturer_info):
             record_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#ffffff", border_width=1, border_color="#dddddd")
             record_frame.pack(fill="x", pady=3, padx=5)
@@ -356,16 +367,40 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 details.append(f"Серийные номера: {item['serial_from']} - {item['serial_to']}")
             
             details_text = "\n".join(details)
-            ctk.CTkLabel(
+            label = ctk.CTkLabel(
                 record_frame,
                 text=details_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=600,
+                wraplength=0,  # Будет обновлено при событии <Configure>
                 text_color="#000000"
-            ).pack(anchor="w", padx=10, pady=(0, 5))
+            )
+            label.pack(anchor="w", padx=10, pady=(0, 5))
+            self._detail_labels.append((label, record_frame))
         
         # Убрано ограничение на отображение записей - теперь показываются все
+    
+    def _on_window_resize(self, event):
+        """Обработка изменения размера окна для динамического переноса текста."""
+        # Обновляем wraplength для всех лейблов с деталями
+        if hasattr(self, '_detail_labels') and self._detail_labels:
+            # Вычисляем доступную ширину: ширина окна минус отступы (примерно 150px)
+            new_wraplength = max(200, event.width - 150)
+            for label, frame in self._detail_labels:
+                label.configure(wraplength=new_wraplength)
+        
+        # Обновляем wraplength для лейбла с моделями
+        if hasattr(self, '_models_label') and self._models_label:
+            new_wraplength = max(200, event.width - 100)
+            self._models_label.configure(wraplength=new_wraplength)
+    
+    def _on_models_frame_resize(self, event):
+        """Обработка изменения размера фрейма моделей."""
+        if hasattr(self, '_models_label') and self._models_label:
+            # Вычисляем wraplength на основе ширины фрейма минус отступы
+            new_wraplength = max(150, event.width - 40)
+            self._models_label.configure(wraplength=new_wraplength)
+    
     def _load_details_legacy(self) -> None:
         """Загрузить данные через старые адаптеры (обратная совместимость)."""
         # Загрузить адрес из БД
