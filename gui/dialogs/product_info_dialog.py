@@ -37,7 +37,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._resize_lock = False  # Блокировка рекурсивных вызовов
         
         self.title(f"📦 {product.get('article', 'Товар')}")
-        self.geometry("800x600")
+        self.geometry("1200x800+50+50")
         self.resizable(True, True)
         
         # Привязка к изменению размера окна для динамического переноса текста
@@ -120,7 +120,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=2, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_name.grid(row=2, column=1, sticky="ew", pady=5, padx=5)
         
         # Штрихкоды
@@ -141,7 +141,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(parent, text="Модель:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=5, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_model.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
