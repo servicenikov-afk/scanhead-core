@@ -16,33 +16,34 @@
 
 **Количество записей:** 1693
 
-### Структура таблицы `nomenclature`
+### Структура таблицы `spare_parts`
 
 | Колонка | Тип | Описание | Пример |
 |---------|-----|----------|--------|
 | `id` | INTEGER | Порядковый номер записи | `1` |
-| `canonical_article` | TEXT | **Канонический артикул** (внутренний) | `566.0000.004` |
-| `name_ru` | TEXT | Наименование на русском языке | `Головная часть 0-70% со слайдером` |
-| `alternative_articles` | TEXT | JSON-массив альтернативных артикулов | `["1013637","566.0000.004"]` |
+| `article` | TEXT | **Артикул** (внутренний, уникальный) | `566.0000.004` |
+| `name` | TEXT | Наименование на русском языке | `Головная часть 0-70% со слайдером` |
+| `barcodes` | TEXT | JSON-массив альтернативных артикулов | `["1013637","566.0000.004"]` |
 | `unit` | TEXT | Единица измерения | `шт` |
+| `last_updated` | DATETIME | Дата последнего обновления | `2026-05-17 18:30:00` |
 
 ### Пример записи
 
 ```json
 {
   "id": 2,
-  "canonical_article": "566.0000.004",
-  "name_ru": "Головная часть 0-70% со слайдером, соединения G3/8",
-  "alternative_articles": "[\"1013637\",\"566.0000.004\"]",
+  "article": "566.0000.004",
+  "name": "Головная часть 0-70% со слайдером, соединения G3/8",
+  "barcodes": "[\"1013637\",\"566.0000.004\"]",
   "unit": "шт"
 }
 ```
 
 ### Ключевые особенности
 
-- Поле `alternative_articles` хранится как JSON-строка
-- Канонический артикул не всегда входит в массив альтернативных
-- Поиск возможен как по `canonical_article`, так и по значениям внутри `alternative_articles`
+- Поле `barcodes` хранится как JSON-строка
+- Артикул не всегда входит в массив альтернативных
+- Поиск возможен как по `article`, так и по значениям внутри `barcodes`
 
 ---
 
@@ -146,23 +147,23 @@
 
 | База | Ключевое поле | Тип связи |
 |------|---------------|-----------|
-| `nomenclature.db` | `canonical_article` или `alternative_articles` | Основная номенклатура |
+| `nomenclature.db` | `article` или `barcodes` | Основная номенклатура |
 | `css_export.db` | `art_no` | Запчасти производителя |
 | `store.db` | `article` | Складские адреса |
 
 ### Схема соединения
 
 ```
-nomenclature.canonical_article ←→ store.article
+spare_parts.article ←→ storage_locations.article
        ↓
-nomenclature.alternative_articles (JSON) ←→ css_export.art_no
+spare_parts.barcodes (JSON) ←→ css_export.art_no
 ```
 
 ### Пример объединённого запроса
 
 Для получения полной информации о товаре необходимо:
 
-1. Найти товар в `nomenclature.db` по `canonical_article` или внутри `alternative_articles`
+1. Найти товар в `nomenclature.db` по `article` или внутри `barcodes`
 2. Получить все адреса хранения из `store.db` по `article`
 3. Получить информацию о совместимости из `css_export.db` по `art_no`
 
@@ -172,7 +173,7 @@ nomenclature.alternative_articles (JSON) ←→ css_export.art_no
 
 | База | Таблица | Записей | Полей |
 |------|---------|---------|-------|
-| nomenclature.db | nomenclature | 1 693 | 5 |
+| nomenclature.db | spare_parts | 1 693 | 6 |
 | store.db | storage_locations | ~1 693* | 6 |
 | css_export.db | spare_parts | 24 678 | 12 |
 

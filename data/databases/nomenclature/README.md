@@ -2,78 +2,79 @@
 
 ## 📦 Описание
 
-База данных внутренней номенклатуры организации, содержащая соответствие между каноническими артикулами, русскими наименованиями и альтернативными артикулами (включая штрих-коды и артикулы производителей).
+База данных внутренней номенклатуры организации, содержащая соответствие между артикулами, наименованиями и альтернативными артикулами (включая штрих-коды и артикулы производителей).
 
 **Расположение БД:** `/data/databases/nomenclature/nomenclature.db`
 
 **Роль:** Основной справочник при поиске деталей
 
-## 🗂️ Структура таблицы `nomenclature`
+## 🗂️ Структура таблицы `spare_parts`
 
 | Колонка | Тип | Описание | Пример |
 |---------|-----|----------|--------|
 | `id` | INTEGER | Порядковый номер записи | `1` |
-| `canonical_article` | TEXT | **Канонический артикул** (внутренний) | `566.0000.004` |
-| `name_ru` | TEXT | Наименование на русском языке | `Головная часть 0-70% со слайдером` |
-| `alternative_articles` | TEXT | JSON-массив альтернативных артикулов | `["1013637","566.0000.004"]` |
+| `article` | TEXT | **Артикул** (внутренний, уникальный) | `566.0000.004` |
+| `name` | TEXT | Наименование на русском языке | `Головная часть 0-70% со слайдером` |
+| `barcodes` | TEXT | JSON-массив альтернативных артикулов/штрихкодов | `["1013637","566.0000.004"]` |
 | `unit` | TEXT | Единица измерения | `шт` |
+| `last_updated` | DATETIME | Дата последнего обновления | `2026-05-17 18:30:00` |
 
 ### Пример записи
 
 ```json
 {
   "id": 2,
-  "canonical_article": "566.0000.004",
-  "name_ru": "Головная часть 0-70% со слайдером, соединения G3/8",
-  "alternative_articles": "[\"1013637\",\"566.0000.004\"]",
+  "article": "566.0000.004",
+  "name": "Головная часть 0-70% со слайдером, соединения G3/8",
+  "barcodes": "[\"1013637\",\"566.0000.004\"]",
   "unit": "шт"
 }
 ```
 
 ## 🔍 Примеры SQL-запросов
 
-### 1. Поиск по каноническому артикулу
+### 1. Поиск по артикулу
 
 ```sql
-SELECT * FROM nomenclature 
-WHERE canonical_article = '566.0000.004';
+SELECT * FROM spare_parts 
+WHERE article = '566.0000.004';
 ```
 
 ### 2. Поиск по любому альтернативному артикулу
 
 ```sql
 -- Найти запись, где в JSON-массиве есть нужный артикул
-SELECT * FROM nomenclature 
-WHERE JSON_EXTRACT(alternative_articles, '$') LIKE '%566.0000.004%';
+SELECT * FROM spare_parts 
+WHERE barcodes LIKE '%566.0000.004%';
 ```
 
 ### 3. Поиск по наименованию (частичное совпадение)
 
 ```sql
-SELECT * FROM nomenclature 
-WHERE name_ru LIKE '%головная часть%';
+SELECT * FROM spare_parts 
+WHERE name LIKE '%головная часть%';
 ```
 
 ### 4. Получить все альтернативные артикулы для позиции
 
 ```sql
 SELECT 
-    canonical_article,
-    name_ru,
+    article,
+    name,
     json_each.value as alias_article
-FROM nomenclature, json_each(nomenclature.alternative_articles)
-WHERE canonical_article = '566.0000.004';
+FROM spare_parts, json_each(spare_parts.barcodes)
+WHERE article = '566.0000.004';
 ```
 
 ### 5. Поиск с нормализацией (один запрос по любому артикулу)
 
 ```sql
--- Ищет и в каноническом, и в альтернативных
+-- Ищет и в article, и в barcodes
 SELECT DISTINCT n.* 
-FROM nomenclature n
-LEFT JOIN json_each(n.alternative_articles) as aliases
+FROM spare_parts n
+LEFT JOIN json_each(n.barcodes) as aliases
 WHERE 
-    n.canonical_article = '566.0000.004'
+    n.article = '566.0000.004'
     OR aliases.value = '566.0000.004';
 ```
 
@@ -100,9 +101,9 @@ def search_article(article):
     cur = conn.cursor()
     cur.execute("""
         SELECT DISTINCT n.* 
-        FROM nomenclature n
-        LEFT JOIN json_each(n.alternative_articles) as aliases
-        WHERE n.canonical_article = ? OR aliases.value = ?
+        FROM spare_parts n
+        LEFT JOIN json_each(n.barcodes) as aliases
+        WHERE n.article = ? OR aliases.value = ?
     """, (article, article))
     results['internal'] = cur.fetchone()
     conn.close()
@@ -129,7 +130,7 @@ def search_article(article):
 # Командная строка
 sqlite3 data/databases/nomenclature/nomenclature.db
 .tables
-SELECT * FROM nomenclature LIMIT 10;
+SELECT * FROM spare_parts LIMIT 10;
 .quit
 ```
 
@@ -143,10 +144,10 @@ import json
 conn = sqlite3.connect('data/databases/nomenclature/nomenclature.db')
 
 # Читаем все данные
-df = pd.read_sql_query("SELECT * FROM nomenclature", conn)
+df = pd.read_sql_query("SELECT * FROM spare_parts", conn)
 
 # Раскрываем JSON с альтернативными артикулами
-df['alternative_articles'] = df['alternative_articles'].apply(
+df['barcodes'] = df['barcodes'].apply(
     lambda x: ', '.join(json.loads(x)) if x else ''
 )
 
@@ -158,28 +159,28 @@ conn.close()
 
 ```sql
 -- Общее количество позиций
-SELECT COUNT(*) as total FROM nomenclature;
+SELECT COUNT(*) as total FROM spare_parts;
 
 -- Уникальные единицы измерения
-SELECT unit, COUNT(*) as count FROM nomenclature GROUP BY unit;
+SELECT unit, COUNT(*) as count FROM spare_parts GROUP BY unit;
 
 -- Среднее количество альтернативных артикулов на позицию
-SELECT AVG(json_array_length(alternative_articles)) as avg_aliases 
-FROM nomenclature;
+SELECT AVG(json_array_length(barcodes)) as avg_aliases 
+FROM spare_parts;
 ```
 
 ### Обновление альтернативных артикулов
 
 ```sql
-UPDATE nomenclature 
-SET alternative_articles = '["1013637","566.0000.004","НОВЫЙ_АРТ"]'
-WHERE canonical_article = '566.0000.004';
+UPDATE spare_parts 
+SET barcodes = '["1013637","566.0000.004","НОВЫЙ_АРТ"]'
+WHERE article = '566.0000.004';
 ```
 
 ## 📝 Примечания
 
-1. **Поле `alternative_articles`** хранится как JSON-массив для гибкости
-2. **Канонический артикул** не всегда входит в массив альтернативных
+1. **Поле `barcodes`** хранится как JSON-массив для гибкости
+2. **Артикул** не всегда входит в массив альтернативных
 3. **Единица измерения** — преимущественно `шт`, но могут быть и другие
 
 ---

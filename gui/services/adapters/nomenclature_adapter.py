@@ -83,7 +83,7 @@ class NomenclatureAdapter:
             # Регистронезависимый поиск через загрузку данных и фильтрацию в Python
             # Это гарантирует корректную работу с кириллицей и спецсимволами (дефис, %)
             sql = f"""
-                SELECT DISTINCT canonical_article, name_ru, alternative_articles, unit
+                SELECT DISTINCT article, name, barcodes, unit
                 FROM {table_name}
                 LIMIT 1000
             """
@@ -94,21 +94,21 @@ class NomenclatureAdapter:
             query_lower = query.lower()
             products = []
             for row in rows:
-                article = row['canonical_article'] or ''
-                name = row['name_ru'] or ''
-                alternative_articles_raw = row['alternative_articles'] or ''
+                article = row['article'] or ''
+                name = row['name'] or ''
+                barcodes_raw = row['barcodes'] or ''
                 unit = row['unit'] or ''
                 
-                # Проверяем совпадение по canonical_article, name_ru или alternative_articles (регистронезависимо)
+                # Проверяем совпадение по article, name или barcodes (регистронезависимо)
                 if (query_lower in article.lower() or 
                     query_lower in name.lower() or 
-                    query_lower in alternative_articles_raw.lower()):
-                    # alternative_articles хранится как JSON-строка в БД, нужно распарсить
-                    if alternative_articles_raw:
+                    query_lower in barcodes_raw.lower()):
+                    # barcodes хранится как JSON-строка в БД, нужно распарсить
+                    if barcodes_raw:
                         try:
-                            barcodes = json.loads(alternative_articles_raw) if isinstance(alternative_articles_raw, str) else alternative_articles_raw
+                            barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
                         except (json.JSONDecodeError, TypeError):
-                            barcodes = alternative_articles_raw if isinstance(alternative_articles_raw, list) else []
+                            barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
                     else:
                         barcodes = []
                     
@@ -151,28 +151,28 @@ class NomenclatureAdapter:
         table_name = table_row['name']
         
         sql = f"""
-            SELECT canonical_article, name_ru, alternative_articles, unit
+            SELECT article, name, barcodes, unit
             FROM {table_name}
-            WHERE canonical_article = ?
+            WHERE article = ?
         """
 
         try:
             cursor.execute(sql, (article,))
             row = cursor.fetchone()
             if row:
-                # alternative_articles хранится как JSON-строка в БД, нужно распарсить
-                alternative_articles_raw = row['alternative_articles']
-                if alternative_articles_raw:
+                # barcodes хранится как JSON-строка в БД, нужно распарсить
+                barcodes_raw = row['barcodes']
+                if barcodes_raw:
                     try:
-                        barcodes = json.loads(alternative_articles_raw) if isinstance(alternative_articles_raw, str) else alternative_articles_raw
+                        barcodes = json.loads(barcodes_raw) if isinstance(barcodes_raw, str) else barcodes_raw
                     except (json.JSONDecodeError, TypeError):
-                        barcodes = alternative_articles_raw if isinstance(alternative_articles_raw, list) else []
+                        barcodes = barcodes_raw if isinstance(barcodes_raw, list) else []
                 else:
                     barcodes = []
                 
                 return Product(
-                    article=row['canonical_article'],
-                    name=row['name_ru'],
+                    article=row['article'],
+                    name=row['name'],
                     barcodes=barcodes,
                     unit=row['unit']
                 )
