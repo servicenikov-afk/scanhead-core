@@ -32,9 +32,9 @@ class SettingsDialog(ctk.CTkToplevel):
         
         logger.debug("[SettingsDialog] Открытие диалога настроек")
         
-        # Настройки окна (увеличенный размер 800x600)
+        # Настройки окна (размер 800x500 - на 100px меньше по высоте)
         self.title("⚙ Настройки приложения")
-        self.geometry("800x600")
+        self.geometry("800x500+50+50")
         self.minsize(600, 450)
         
         self.transient(master)

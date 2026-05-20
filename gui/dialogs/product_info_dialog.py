@@ -37,7 +37,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._resize_lock = False  # Блокировка рекурсивных вызовов
         
         self.title(f"📦 {product.get('article', 'Товар')}")
-        self.geometry("1200x800+50+50")
+        self.geometry("1200x680+50+50")
         self.resizable(True, True)
         
         # Привязка к изменению размера окна для динамического переноса текста

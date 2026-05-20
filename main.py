@@ -124,10 +124,12 @@ def main() -> None:
     root = ctk.CTk()
     root.title("ScanHead Combine")
     
-    settings = container.get(ISettingsService)
-    width = settings.get_setting("window_width", 1200)
-    height = settings.get_setting("window_height", 800)
-    root.geometry(f"{width}x{height}")
+    # Главное окно на весь экран
+    root.attributes('-fullscreen', True)
+    
+    # Или альтернативно: максимальный размер с небольшими отступами
+    # root.geometry("+0+0")
+    # root.state('zoomed')  # Для Windows
 
     app = MainWindow(root, di_container=container)
     app.pack(fill="both", expand=True)
