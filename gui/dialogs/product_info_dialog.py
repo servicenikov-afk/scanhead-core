@@ -298,13 +298,14 @@ class ProductInfoDialog(ctk.CTkToplevel):
         
         # Список моделей (уже очищенных в _update_ui_with_full_data)
         if models:
-            models_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#2a2a2a")
+            models_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#f0f0f0", border_width=1, border_color="#cccccc")
             models_frame.pack(fill="x", pady=5, padx=5)
             
             ctk.CTkLabel(
                 models_frame,
                 text=f"🔧 Модели оборудования ({len(models)}):",
-                font=ctk.CTkFont(size=self._font_size, weight="bold")
+                font=ctk.CTkFont(size=self._font_size, weight="bold"),
+                text_color="#000000"
             ).pack(anchor="w", padx=5, pady=5)
             
             models_text = "\n".join(f"• {m}" for m in models[:10])
@@ -316,12 +317,13 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 text=models_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=600
+                wraplength=600,
+                text_color="#000000"
             ).pack(anchor="w", padx=10, pady=5)
         
         # Записи о деталях с форматированием "Модель > Путь"
         for i, item in enumerate(manufacturer_info[:20]):  # Ограничим 20 записями
-            record_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#2a2a2a")
+            record_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#ffffff", border_width=1, border_color="#dddddd")
             record_frame.pack(fill="x", pady=3, padx=5)
             
             # Форматируем "Оригинальное название" и "Расположение"
@@ -360,7 +362,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 text=details_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=600
+                wraplength=600,
+                text_color="#000000"
             ).pack(anchor="w", padx=10, pady=(0, 5))
         
         if len(manufacturer_info) > 20:
