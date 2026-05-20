@@ -113,7 +113,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=2, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_name.grid(row=2, column=1, sticky="ew", pady=5, padx=5)
         
         # Штрихкоды
@@ -308,21 +308,20 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 text_color="#000000"
             ).pack(anchor="w", padx=5, pady=5)
             
-            models_text = "\n".join(f"• {m}" for m in models[:10])
-            if len(models) > 10:
-                models_text += f"\n... и ещё {len(models) - 10}"
+            # Показываем ВСЕ модели без ограничений
+            models_text = "\n".join(f"• {m}" for m in models)
             
             ctk.CTkLabel(
                 models_frame,
                 text=models_text,
                 font=ctk.CTkFont(size=self._font_size - 1),
                 justify="left",
-                wraplength=600,
+                wraplength=650,
                 text_color="#000000"
             ).pack(anchor="w", padx=10, pady=5)
         
-        # Записи о деталях с форматированием "Модель > Путь"
-        for i, item in enumerate(manufacturer_info[:20]):  # Ограничим 20 записями
+        # Записи о деталях с форматированием "Модель > Путь" - показываем ВСЕ записи
+        for i, item in enumerate(manufacturer_info):
             record_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#ffffff", border_width=1, border_color="#dddddd")
             record_frame.pack(fill="x", pady=3, padx=5)
             
@@ -366,14 +365,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 text_color="#000000"
             ).pack(anchor="w", padx=10, pady=(0, 5))
         
-        if len(manufacturer_info) > 20:
-            ctk.CTkLabel(
-                self._css_records_frame,
-                text=f"... и ещё {len(manufacturer_info) - 20} записей",
-                font=ctk.CTkFont(size=self._font_size - 1),
-                text_color="gray"
-            ).pack(pady=5)
-    
+        # Убрано ограничение на отображение записей - теперь показываются все
     def _load_details_legacy(self) -> None:
         """Загрузить данные через старые адаптеры (обратная совместимость)."""
         # Загрузить адрес из БД
