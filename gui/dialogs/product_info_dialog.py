@@ -87,8 +87,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _create_nomenclature_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку номенклатуры."""
-        # Сетка для полей
-        for i in range(7):
+        # Сетка для полей (6 строк вместо 7 - убрано Описание)
+        for i in range(6):
             parent.grid_rowconfigure(i, weight=0)
         parent.grid_columnconfigure(0, weight=0)
         parent.grid_columnconfigure(1, weight=1)
@@ -130,19 +130,12 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._lbl_unit = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_unit.grid(row=4, column=1, sticky="ew", pady=5, padx=5)
         
-        # Описание (если есть)
-        ctk.CTkLabel(parent, text="Описание:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
-            row=5, column=0, sticky="nw", pady=5, padx=5
+        # Модель (бывшая Категория) - теперь отображает product_model из css_export
+        ctk.CTkLabel(parent, text="Модель:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
+            row=5, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_description = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
-        self._lbl_description.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
-        
-        # Категория
-        ctk.CTkLabel(parent, text="Категория:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
-            row=6, column=0, sticky="w", pady=5, padx=5
-        )
-        self._lbl_category = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
-        self._lbl_category.grid(row=6, column=1, sticky="ew", pady=5, padx=5)
+        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_model.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку адреса хранения."""
@@ -230,8 +223,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._lbl_article2.configure(text=self._product.get('article2', ''))
         self._lbl_name.configure(text=self._product.get('name', ''))
         self._lbl_barcodes.configure(text=self._product.get('barcodes', ''))
-        self._lbl_description.configure(text=self._product.get('description', 'Нет описания'))
-        self._lbl_category.configure(text=self._product.get('category', 'Нет категории'))
+        # Поле description удалено, category переименовано в model
         
         # Если есть details_service, загружаем полные данные из всех БД
         if self._details_service:
@@ -265,9 +257,24 @@ class ProductInfoDialog(ctk.CTkToplevel):
         else:
             self._lbl_location.configure(text="Не указан", text_color="gray")
         
-        # Обновляем категорию
-        if product.category:
-            self._lbl_category.configure(text=product.category)
+        # Обновляем поле "Модель" - обрезаем текст в скобках и объединяем через запятую
+        if product.models:
+            # Обрезаем значения в скобках: "FM series (FCS4026)" -> "FM series"
+            cleaned_models = []
+            for model in product.models:
+                # Находим первую скобку и обрезаем до неё
+                if '(' in model:
+                    cleaned = model.split('(')[0].strip()
+                else:
+                    cleaned = model.strip()
+                if cleaned:
+                    cleaned_models.append(cleaned)
+            
+            # Убираем дубликаты и объединяем через запятую
+            unique_models = list(dict.fromkeys(cleaned_models))
+            self._lbl_model.configure(text=", ".join(unique_models))
+        else:
+            self._lbl_model.configure(text="Нет модели")
         
         # Заполняем вкладку CSS данными от производителя
         self._populate_css_tab(product.manufacturer_info, product.models)
@@ -289,7 +296,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
             ).pack(pady=20)
             return
         
-        # Список моделей
+        # Список моделей (уже очищенных в _update_ui_with_full_data)
         if models:
             models_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#2a2a2a")
             models_frame.pack(fill="x", pady=5, padx=5)
@@ -312,28 +319,32 @@ class ProductInfoDialog(ctk.CTkToplevel):
                 wraplength=600
             ).pack(anchor="w", padx=10, pady=5)
         
-        # Записи о деталях
+        # Записи о деталях с форматированием "Модель > Путь"
         for i, item in enumerate(manufacturer_info[:20]):  # Ограничим 20 записями
             record_frame = ctk.CTkFrame(self._css_records_frame, fg_color="#2a2a2a")
             record_frame.pack(fill="x", pady=3, padx=5)
             
-            # Заголовок записи
-            header = f"#{i+1} {item.get('product_model', 'N/A')}"
-            ctk.CTkLabel(
-                record_frame,
-                text=header,
-                font=ctk.CTkFont(size=self._font_size, weight="bold"),
-                text_color="#4CAF50"
-            ).pack(anchor="w", padx=5, pady=(5, 0))
+            # Форматируем "Оригинальное название" и "Расположение"
+            original_name = item.get('name', 'N/A')
+            
+            # Формат: [%Модель] > [%Путь]
+            product_model = item.get('product_model', '')
+            usage_path = item.get('usage_path', '')
+            
+            # Обрезаем скобки в модели для отображения
+            if '(' in product_model:
+                display_model = product_model.split('(')[0].strip()
+            else:
+                display_model = product_model.strip()
+            
+            location_display = f"{display_model} > {usage_path}" if display_model and usage_path else (display_model or usage_path or 'N/A')
             
             # Детали
             details = []
-            if item.get('name'):
-                details.append(f"Название: {item['name']}")
+            details.append(f"Оригинальное название: {original_name}")
+            details.append(f"Расположение: {location_display}")
             if item.get('position'):
                 details.append(f"Позиция: {item['position']}")
-            if item.get('usage_path'):
-                details.append(f"Расположение: {item['usage_path']}")
             if item.get('category1'):
                 details.append(f"Категория: {item['category1']}")
             if item.get('category2'):

@@ -124,24 +124,24 @@ class ProductDetailsService:
                 return None
             table_name = table_row['name']
             
-            # Ищем по canonical_article или в alternative_articles
+            # Ищем по article или в barcodes (JSON-массив альтернативных артикулов)
             cursor.execute(f"""
-                SELECT canonical_article, name_ru, alternative_articles, unit
+                SELECT article, name, barcodes, unit
                 FROM {table_name}
-                WHERE canonical_article = ?
-                OR JSON_EXTRACT(alternative_articles, '$') LIKE ?
+                WHERE article = ?
+                OR JSON_EXTRACT(barcodes, '$') LIKE ?
             """, (article, f'%{article}%'))
             
             row = cursor.fetchone()
             if row:
                 import json
-                alt_articles_raw = row['alternative_articles']
-                alt_articles = json.loads(alt_articles_raw) if alt_articles_raw else []
+                barcodes_raw = row['barcodes']
+                barcodes = json.loads(barcodes_raw) if barcodes_raw else []
                 
                 return {
-                    'article': row['canonical_article'],
-                    'name': row['name_ru'],
-                    'barcodes': alt_articles,
+                    'article': row['article'],
+                    'name': row['name'],
+                    'barcodes': barcodes,
                     'unit': row['unit'],
                     'description': None  # В nomenclature.db нет поля description
                 }
