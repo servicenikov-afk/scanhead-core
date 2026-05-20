@@ -116,12 +116,15 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._lbl_article2 = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_article2.grid(row=1, column=1, sticky="ew", pady=5, padx=5)
         
-        # Наименование
+        # Наименование - с динамическим wraplength
         ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=2, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_name.grid(row=2, column=1, sticky="ew", pady=5, padx=5)
+        
+        # Привязка для динамического изменения wraplength при изменении размера окна
+        parent.bind("<Configure>", lambda e: self._update_nomenclature_wraplength(e.width))
         
         # Штрихкоды
         ctk.CTkLabel(parent, text="Штрихкоды:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
@@ -141,8 +144,19 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(parent, text="Модель:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=5, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=400, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_model.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
+    
+    def _update_nomenclature_wraplength(self, window_width: int) -> None:
+        """Обновить wraplength для полей Наименование и Модель при изменении размера окна."""
+        # Вычисляем доступную ширину: ширина окна минус отступы (~150px)
+        new_wraplength = max(200, window_width - 150)
+        
+        if hasattr(self, '_lbl_name'):
+            self._lbl_name.configure(wraplength=new_wraplength)
+        
+        if hasattr(self, '_lbl_model'):
+            self._lbl_model.configure(wraplength=new_wraplength)
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку адреса хранения."""
