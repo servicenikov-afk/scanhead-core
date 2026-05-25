@@ -44,6 +44,9 @@ class ProductInfoDialog(ctk.CTkToplevel):
         # (используется только для таба "Дополнительно")
         self.bind("<Configure>", self._on_window_resize)
         
+        # Флаг, указывающий, что окно закрывается
+        self._is_destroying = False
+        
         # Отслеживание несохранённых изменений адресов
         self._unsaved_changes = {}  # {index: original_value}
         self._location_entries = []  # Список entry виджетов для адресов
@@ -57,6 +60,20 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self.grab_set()
         
         logger.info(f"[ProductInfoDialog] Открыто окно для {product.get('article')}")
+    
+    def destroy(self):
+        """Переопределение метода destroy для предотвращения ошибок при закрытии."""
+        self._is_destroying = True
+        try:
+            # Отвязываем обработчик изменения размера, чтобы избежать вызова после уничтожения
+            try:
+                self.unbind("<Configure>")
+            except Exception:
+                pass
+            
+            super().destroy()
+        except Exception as e:
+            logger.warning(f"[ProductInfoDialog] Ошибка при уничтожении окна: {e}")
     
     def _create_ui(self) -> None:
         """Создать интерфейс окна."""
@@ -402,12 +419,17 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _on_window_resize(self, event):
         """Обработка изменения размера окна для динамического переноса текста."""
+        # Игнорируем события во время уничтожения окна
+        if getattr(self, '_is_destroying', False):
+            return
+        
         # Защита от рекурсивных вызовов и бесконечного цикла
-        if self._resize_lock:
+        if getattr(self, '_resize_lock', False):
             return
         
         # Проверяем минимальное изменение ширины (15px) чтобы избежать частых обновлений
-        width_change = abs(event.width - self._last_width)
+        last_width = getattr(self, '_last_width', 0)
+        width_change = abs(event.width - last_width)
         if width_change < 15:
             return
         
