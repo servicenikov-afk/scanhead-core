@@ -107,7 +107,7 @@ class SearchAddressTab(ctk.CTkFrame):
             details_service = self._container.get("product_details_service")
             
             # Обогащаем все товары адресами
-            enriched_products = []
+            enriched_products = products.copy()
             pending_count = len(products)
             
             def on_details_loaded(product: Optional[Product], index: int):
@@ -115,19 +115,21 @@ class SearchAddressTab(ctk.CTkFrame):
                     enriched_products[index] = product
                 else:
                     # Если не удалось обогатить, оставляем оригинал
-                    pass
+                    logger.debug(f"[SearchAddressTab] Не удалось обогатить товар на позиции {index}")
                 
                 # Проверяем, загрузились ли все товары
                 nonlocal pending_count
                 pending_count -= 1
                 if pending_count == 0:
+                    logger.info(f"[SearchAddressTab] Все товары обогащены, обновляем UI ({len(enriched_products)} шт.)")
                     self.update_products(enriched_products)
             
-            # Копируем список и запускаем загрузку для каждого товара
-            enriched_products = products.copy()
+            # Запускаем загрузку для каждого товара с замыканием через default-аргумент
             for i, product in enumerate(products):
-                details_service.get_product_details(product.article, 
-                                                   callback=lambda p, idx=i: on_details_loaded(p, idx))
+                details_service.get_product_details(
+                    product.article, 
+                    callback=lambda p, idx=i: on_details_loaded(p, idx)
+                )
         else:
             self.update_products(products)
 
