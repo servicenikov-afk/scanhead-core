@@ -308,8 +308,21 @@ class ProductDetails(ctk.CTkFrame):
         # Диагностика видимости
         logger.debug(f"[DEBUG_TEMP] Контейнер адресов: width={self._address_container.winfo_width()}, height={self._address_container.winfo_height()}")
         logger.debug(f"[DEBUG_TEMP] Контейнер адресов видим: {self._address_container.winfo_ismapped()}")
+        
+        # Проверка родителя (fields_frame)
+        fields_frame = self._address_container.master
+        logger.debug(f"[DEBUG_TEMP] Родитель (fields_frame): width={fields_frame.winfo_width()}, height={fields_frame.winfo_height()}")
+        logger.debug(f"[DEBUG_TEMP] Родитель видим: {fields_frame.winfo_ismapped()}")
+        
+        # Проверка самого ProductDetails
+        logger.debug(f"[DEBUG_TEMP] ProductDetails: width={self.winfo_width()}, height={self.winfo_height()}")
+        logger.debug(f"[DEBUG_TEMP] ProductDetails видим: {self.winfo_ismapped()}")
+        
         for i, entry in enumerate(self._address_entries):
-            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] виджет: width={entry.winfo_width()}, visible={entry.winfo_ismapped()}")
+            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] виджет: width={entry.winfo_width()}, height={entry.winfo_height()}, visible={entry.winfo_ismapped()}")
+            # Проверка конфигурации grid
+            grid_info = entry.grid_info()
+            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] grid: row={grid_info.get('row')}, col={grid_info.get('column')}, sticky={grid_info.get('sticky')}")
         
         logger.debug(f"[DEBUG_TEMP] Отрисовано {len(self._address_entries)} адресов")
     
