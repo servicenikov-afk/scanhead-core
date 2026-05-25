@@ -420,12 +420,20 @@ class ProductInfoDialog(ctk.CTkToplevel):
             
             # Обновляем wraplength для лейбла с моделями
             if hasattr(self, '_models_label') and self._models_label:
-                self._models_label.configure(wraplength=new_wraplength)
+                try:
+                    self._models_label.configure(wraplength=new_wraplength)
+                except Exception:
+                    # Виджет может быть уничтожен во время изменения размера
+                    pass
             
             # Обновляем wraplength для всех лейблов с деталями
             if hasattr(self, '_detail_labels') and self._detail_labels:
                 for label, frame in self._detail_labels:
-                    label.configure(wraplength=new_wraplength)
+                    try:
+                        label.configure(wraplength=new_wraplength)
+                    except Exception:
+                        # Виджет может быть уничтожен во время изменения размера
+                        pass
         finally:
             # Снимаем блокировку через короткую задержку
             self.after(50, lambda: setattr(self, '_resize_lock', False))
