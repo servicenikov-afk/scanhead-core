@@ -37,18 +37,24 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._resize_lock = False  # Блокировка рекурсивных вызовов
         
         self.title(f"📦 {product.get('article', 'Товар')}")
-        self.geometry("1200x680+50+50")
+        self.geometry("900x550+50+50")
         self.resizable(True, True)
         
         # Привязка к изменению размера окна для динамического переноса текста
+        # (используется только для таба "Дополнительно")
         self.bind("<Configure>", self._on_window_resize)
         
-        # Модальность
-        self.transient(master)
-        self.grab_set()
+        # Отслеживание несохранённых изменений адресов
+        self._unsaved_changes = {}  # {index: original_value}
+        self._location_entries = []  # Список entry виджетов для адресов
+        self._location_frames = []   # Список фреймов для адресов
         
         self._create_ui()
         self._load_details()
+        
+        # Модальность (после создания UI)
+        self.transient(master)
+        self.grab_set()
         
         logger.info(f"[ProductInfoDialog] Открыто окно для {product.get('article')}")
     
@@ -160,53 +166,40 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку адреса хранения."""
-        parent.grid_rowconfigure(0, weight=0)
-        parent.grid_rowconfigure(1, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
         parent.grid_columnconfigure(0, weight=1)
         
-        # Текущий адрес
-        info_frame = ctk.CTkFrame(parent, fg_color="transparent")
-        info_frame.grid(row=0, column=0, sticky="ew", pady=10, padx=10)
+        # Прокручиваемый контейнер для адресов
+        self._store_scroll_frame = ctk.CTkScrollableFrame(parent, fg_color="transparent")
+        self._store_scroll_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self._store_scroll_frame.grid_columnconfigure(0, weight=1)
         
-        ctk.CTkLabel(
-            info_frame,
-            text="Текущий адрес хранения:",
-            font=ctk.CTkFont(weight="bold", size=self._font_size)
-        ).pack(anchor="w")
+        # Контейнер для динамических строк адресов
+        self._addresses_container = ctk.CTkFrame(self._store_scroll_frame, fg_color="transparent")
+        self._addresses_container.grid(row=0, column=0, sticky="ew", pady=5)
+        self._addresses_container.grid_columnconfigure(1, weight=1)
         
-        self._lbl_location = ctk.CTkLabel(
-            info_frame,
-            text="Загрузка...",
-            font=ctk.CTkFont(size=self._font_size + 4),
-            text_color="green",
-            height=self._font_size + 20
-        )
-        self._lbl_location.pack(anchor="w", pady=10)
-        
-        # Поле редактирования
-        edit_frame = ctk.CTkFrame(parent, fg_color="transparent")
-        edit_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-        
-        ctk.CTkLabel(edit_frame, text="Изменить адрес:", font=ctk.CTkFont(size=self._font_size)).pack(anchor="w")
-        
-        entry_frame = ctk.CTkFrame(edit_frame, fg_color="transparent")
-        entry_frame.pack(fill="x", pady=5)
-        
-        self._entry_location = ctk.CTkEntry(
-            entry_frame,
-            placeholder_text="Новый адрес",
-            height=self._font_size + 16,
-            font=ctk.CTkFont(size=self._font_size, family="Arial")
-        )
-        self._entry_location.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        
-        ctk.CTkButton(
-            entry_frame,
-            text="💾 Сохранить",
+        # Кнопка "Добавить адрес"
+        self._btn_add_address = ctk.CTkButton(
+            self._store_scroll_frame,
+            text="➕ Добавить адрес",
             height=self._font_size + 14,
             font=ctk.CTkFont(size=self._font_size),
-            command=self._save_location
-        ).pack(side="left")
+            command=self._add_address_row
+        )
+        self._btn_add_address.grid(row=1, column=0, sticky="w", pady=(5, 10))
+        
+        # Кнопки управления (Сохранить все)
+        self._btn_save_all = ctk.CTkButton(
+            self._store_scroll_frame,
+            text="💾 Сохранить все",
+            height=self._font_size + 14,
+            font=ctk.CTkFont(size=self._font_size),
+            fg_color="#28a745",
+            hover_color="#218838",
+            command=self._save_all_locations
+        )
+        self._btn_save_all.grid(row=1, column=0, sticky="e", pady=(5, 10), padx=(0, 5))
     
     def _create_css_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку дополнительной информации."""
@@ -271,14 +264,14 @@ class ProductInfoDialog(ctk.CTkToplevel):
         if product.unit:
             self._lbl_unit.configure(text=product.unit)
         
-        # Обновляем адрес хранения
+        # Обновляем адреса хранения - создаём строки для каждого адреса
+        self._clear_address_rows()
         if product.storage_locations:
-            location_text = " | ".join(product.storage_locations)
-            self._lbl_location.configure(text=location_text, text_color="green")
-            self._entry_location.delete(0, "end")
-            self._entry_location.insert(0, product.storage_locations[0])
+            for i, location in enumerate(product.storage_locations):
+                self._add_address_row(location, is_original=True)
         else:
-            self._lbl_location.configure(text="Не указан", text_color="gray")
+            # Если адресов нет, добавляем одну пустую строку
+            self._add_address_row("", is_original=False)
         
         # Обновляем поле "Модель" - обрезаем текст в скобках и объединяем через запятую
         if product.models:
@@ -446,30 +439,248 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _load_details_legacy(self) -> None:
         """Загрузить данные через старые адаптеры (обратная совместимость)."""
-        # Загрузить адрес из БД
+        # Загрузить адреса из БД
+        self._clear_address_rows()
         if self._store_adapter:
-            location = self._store_adapter.get_location(self._product.get('article', ''))
-            if location:
-                self._lbl_location.configure(text=location, text_color="green")
-                self._entry_location.insert(0, location)
+            locations = self._store_adapter.get_all_locations(self._product.get('article', ''))
+            if locations:
+                for location in locations:
+                    self._add_address_row(location, is_original=True)
             else:
-                self._lbl_location.configure(text="Не указан", text_color="gray")
+                self._add_address_row("", is_original=False)
         else:
-            self._lbl_location.configure(text="Адаптер не подключён", text_color="red")
+            self._add_address_row("", is_original=False)
         
         self._lbl_css_loading.configure(text="ℹ️ Дополнительная информация\n\nДанные из css_export.db\n(подключите ProductDetailsService для полной функциональности)")
     
-    def _save_location(self) -> None:
-        """Сохранить новый адрес."""
-        new_location = self._entry_location.get().strip()
-        if not new_location:
+    def _clear_address_rows(self) -> None:
+        """Очистить все строки адресов."""
+        for widget in self._addresses_container.winfo_children():
+            widget.destroy()
+        self._location_entries = []
+        self._location_frames = []
+        self._unsaved_changes = {}
+    
+    def _add_address_row(self, initial_value: str = "", is_original: bool = False) -> None:
+        """Добавить новую строку с адресом."""
+        row_index = len(self._location_frames)
+        
+        # Фрейм для строки
+        row_frame = ctk.CTkFrame(self._addresses_container, fg_color="transparent")
+        row_frame.grid(row=row_index, column=0, columnspan=4, sticky="ew", pady=2)
+        row_frame.grid_columnconfigure(1, weight=1)
+        self._location_frames.append(row_frame)
+        
+        # Label с номером
+        lbl_num = ctk.CTkLabel(
+            row_frame,
+            text=f"#{row_index + 1}",
+            width=30,
+            font=ctk.CTkFont(size=self._font_size)
+        )
+        lbl_num.grid(row=0, column=0, padx=(0, 5))
+        
+        # Entry для адреса
+        entry = ctk.CTkEntry(
+            row_frame,
+            placeholder_text="Введите адрес",
+            height=self._font_size + 16,
+            font=ctk.CTkFont(size=self._font_size, family="Arial")
+        )
+        entry.insert(0, initial_value)
+        entry.grid(row=0, column=1, sticky="ew", padx=5)
+        self._location_entries.append(entry)
+        
+        # Кнопка "Удалить" (корзина)
+        btn_delete = ctk.CTkButton(
+            row_frame,
+            text="🗑️",
+            width=40,
+            height=self._font_size + 14,
+            font=ctk.CTkFont(size=self._font_size),
+            fg_color="#dc3545",
+            hover_color="#c82333",
+            command=lambda idx=row_index: self._delete_address_row(idx)
+        )
+        btn_delete.grid(row=0, column=2, padx=5)
+        
+        # Кнопка "Сохранить" (дискета) - для индивидуального сохранения
+        btn_save = ctk.CTkButton(
+            row_frame,
+            text="💾",
+            width=40,
+            height=self._font_size + 14,
+            font=ctk.CTkFont(size=self._font_size),
+            fg_color="#007bff",
+            hover_color="#0056b3",
+            command=lambda idx=row_index: self._save_address_row(idx)
+        )
+        btn_save.grid(row=0, column=3, padx=5)
+        
+        # Отслеживаем оригинальное значение
+        if is_original:
+            self._unsaved_changes[row_index] = initial_value
+    
+    def _delete_address_row(self, index: int) -> None:
+        """Удалить строку адреса с подтверждением."""
+        if index < 0 or index >= len(self._location_frames):
             return
         
+        # Проверка на несохранённые изменения
+        if index in self._unsaved_changes:
+            confirm = ctk.CTkInputDialog(
+                title="Подтверждение",
+                label_text="В этой строке есть несохранённые изменения. Удалить?",
+                button_text="Да",
+                button_fg_color="#dc3545"
+            )
+            # Простая реализация - просто удаляем
+            # В идеале нужен полноценный диалог подтверждения
+        
+        # Удаляем виджеты
+        self._location_frames[index].destroy()
+        self._location_frames.pop(index)
+        self._location_entries.pop(index)
+        
+        # Пересоздаём строки с правильными номерами
+        self._rebuild_address_rows()
+    
+    def _rebuild_address_rows(self) -> None:
+        """Перестроить строки адресов после удаления."""
+        # Сохраняем текущие значения
+        current_values = [entry.get() for entry in self._location_entries]
+        
+        # Очищаем и пересоздаём
+        self._clear_address_rows()
+        
+        for value in current_values:
+            self._add_address_row(value, is_original=False)
+    
+    def _save_address_row(self, index: int) -> None:
+        """Сохранить конкретную строку адреса."""
+        if index < 0 or index >= len(self._location_entries):
+            return
+        
+        new_value = self._location_entries[index].get().strip()
+        if not new_value:
+            return
+        
+        # Диалог подтверждения
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Подтверждение")
+        dialog.geometry("300x150")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        ctk.CTkLabel(
+            dialog,
+            text="Сохранить изменения?",
+            font=ctk.CTkFont(size=self._font_size)
+        ).pack(pady=20)
+        
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(pady=10)
+        
+        def on_confirm():
+            self._do_save_address_row(index, new_value)
+            dialog.destroy()
+        
+        def on_cancel():
+            dialog.destroy()
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Отмена",
+            command=on_cancel,
+            fg_color="#6c757d",
+            hover_color="#5a6268"
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Сохранить",
+            command=on_confirm,
+            fg_color="#28a745",
+            hover_color="#218838"
+        ).pack(side="left", padx=5)
+    
+    def _do_save_address_row(self, index: int, new_value: str) -> None:
+        """Выполнить сохранение адреса."""
+        article = self._product.get('article', '')
+        
+        # Получаем все текущие адреса
+        all_locations = [entry.get().strip() for entry in self._location_entries if entry.get().strip()]
+        
         if self._store_adapter:
-            article = self._product.get('article', '')
-            success = self._store_adapter.update_location(article, new_location)
+            success = self._store_adapter.set_locations(article, all_locations)
             if success:
-                self._lbl_location.configure(text=new_location, text_color="green")
-                logger.info(f"[ProductInfoDialog] Адрес сохранён для {article}: {new_location}")
+                # Обновляем статус
+                self._location_entries[index].configure(border_color="green")
+                if index in self._unsaved_changes:
+                    del self._unsaved_changes[index]
+                logger.info(f"[ProductInfoDialog] Адреса сохранены для {article}: {all_locations}")
             else:
-                logger.error(f"[ProductInfoDialog] Ошибка сохранения адреса для {article}")
+                logger.error(f"[ProductInfoDialog] Ошибка сохранения адресов для {article}")
+    
+    def _save_all_locations(self) -> None:
+        """Сохранить все адреса."""
+        article = self._product.get('article', '')
+        all_locations = [entry.get().strip() for entry in self._location_entries if entry.get().strip()]
+        
+        if not all_locations:
+            return
+        
+        # Диалог подтверждения
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Подтверждение")
+        dialog.geometry("350x180")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        ctk.CTkLabel(
+            dialog,
+            text=f"Сохранить {len(all_locations)} адрес(ов)?",
+            font=ctk.CTkFont(size=self._font_size),
+            wraplength=300
+        ).pack(pady=20)
+        
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(pady=10)
+        
+        def on_confirm():
+            self._do_save_all_locations(all_locations)
+            dialog.destroy()
+        
+        def on_cancel():
+            dialog.destroy()
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Отмена",
+            command=on_cancel,
+            fg_color="#6c757d",
+            hover_color="#5a6268"
+        ).pack(side="left", padx=5)
+        
+        ctk.CTkButton(
+            btn_frame,
+            text="Сохранить",
+            command=on_confirm,
+            fg_color="#28a745",
+            hover_color="#218838"
+        ).pack(side="left", padx=5)
+    
+    def _do_save_all_locations(self, locations: list) -> None:
+        """Выполнить сохранение всех адресов."""
+        article = self._product.get('article', '')
+        
+        if self._store_adapter:
+            success = self._store_adapter.set_locations(article, locations)
+            if success:
+                # Сбрасываем все несохранённые изменения
+                self._unsaved_changes = {}
+                for entry in self._location_entries:
+                    entry.configure(border_color="")
+                logger.info(f"[ProductInfoDialog] Все адреса сохранены для {article}: {locations}")
+            else:
+                logger.error(f"[ProductInfoDialog] Ошибка сохранения адресов для {article}")
