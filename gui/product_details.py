@@ -69,13 +69,12 @@ class ProductDetails(ctk.CTkFrame):
             field_name="name"
         )
         
-        # Поле: Адрес хранения (readonly, без кнопки редактирования)
-        self._create_field_row(
+        # Поле: Адрес хранения (readonly, без кнопки редактирования, многострочный)
+        self._create_address_field_row(
             fields_frame, 
             row=3, 
             label="Адрес:", 
-            field_name="address",
-            show_edit_btn=False  # Убираем кнопку редактирования
+            field_name="address"
         )
         
         # Кнопки под полями: [ℹ️] и [⤵️]
@@ -102,6 +101,42 @@ class ProductDetails(ctk.CTkFrame):
         
         logger.debug("[ProductDetails] Поля и кнопки созданы")
     
+    def _create_address_field_row(
+        self, 
+        parent: Any, 
+        row: int, 
+        label: str, 
+        field_name: str
+    ) -> None:
+        """Создание строки с многострочным полем адреса (без кнопки редактирования)."""
+        # Метка
+        lbl = ctk.CTkLabel(
+            parent,
+            text=label,
+            width=100,
+            anchor="e",
+            font=ctk.CTkFont(size=self._font_size)
+        )
+        lbl.grid(row=row, column=0, padx=(5, 10), pady=2, sticky="ne")
+        
+        # Многострочное поле ввода (readonly) - используем CTkTextbox
+        textbox = ctk.CTkTextbox(
+            parent,
+            height=self._font_size * 3 + 20,  # Высота для ~3 строк
+            font=ctk.CTkFont(size=self._font_size, family="Arial"),
+            fg_color="#FFFFFF",      # Белый фон
+            text_color="#000000",    # Черный текст
+            border_color="#AAAAAA",
+            corner_radius=6,
+            wrap="word",  # Перенос по словам
+            state="disabled"
+        )
+        textbox.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
+        
+        # Сохраняем ссылки на виджеты
+        setattr(self, f"_{field_name}_label", lbl)
+        setattr(self, f"_{field_name}_entry", textbox)
+
     def _create_field_row(
         self, 
         parent: Any, 
@@ -274,8 +309,8 @@ class ProductDetails(ctk.CTkFrame):
         self._current_product = product
         logger.debug(f"[ProductDetails] Установка товара: {product.article}")
         
-        # Обновляем все поля
-        for field_name in ["article", "article2", "name", "address"]:
+        # Обновляем обычные поля
+        for field_name in ["article", "article2", "name"]:
             entry = getattr(self, f"_{field_name}_entry")
             value = self._get_field_value(field_name)
             
@@ -285,17 +320,34 @@ class ProductDetails(ctk.CTkFrame):
             if value:  # Вставляем только непустые значения
                 entry.insert(0, value)
             entry.configure(state="disabled")
+        
+        # Обновляем многострочное поле адреса
+        address_entry = getattr(self, "_address_entry")
+        address_value = self._get_field_value("address")
+        
+        address_entry.configure(state="normal")
+        address_entry.delete("0.0", "end")
+        if address_value:
+            address_entry.insert("0.0", address_value)
+        address_entry.configure(state="disabled")
     
     def clear(self) -> None:
         """Очистка всех полей."""
         self._current_product = None
         logger.debug("[ProductDetails] Очистка полей")
         
-        for field_name in ["article", "article2", "name", "address"]:
+        # Очищаем обычные поля
+        for field_name in ["article", "article2", "name"]:
             entry = getattr(self, f"_{field_name}_entry")
             entry.configure(state="normal")
             entry.delete(0, "end")
             entry.configure(state="disabled")
+        
+        # Очищаем многострочное поле адреса
+        address_entry = getattr(self, "_address_entry")
+        address_entry.configure(state="normal")
+        address_entry.delete("0.0", "end")
+        address_entry.configure(state="disabled")
     
     def get_current_product(self) -> Optional[Product]:
         """Получение текущего товара."""
