@@ -102,7 +102,21 @@ class SearchAddressTab(ctk.CTkFrame):
     
     def _on_search_result(self, products: List[Product]) -> None:
         """Обработчик результатов поиска от SearchBar."""
-        self.update_products(products)
+        # Обогащаем товары адресами перед отображением
+        if self._container.has("product_details_service") and products:
+            details_service = self._container.get("product_details_service")
+            
+            # Обогащаем первый товар (остальные можно при необходимости)
+            def on_details_loaded(product: Optional[Product]):
+                if product:
+                    self.update_products([product] + products[1:])
+                else:
+                    self.update_products(products)
+            
+            # Загружаем детали для первого товара асинхронно
+            details_service.get_product_details(products[0].article, callback=on_details_loaded)
+        else:
+            self.update_products(products)
     
     def _add_product_to_queue(self, product: Product) -> None:
         """Добавить товар в очередь печати."""
