@@ -29,13 +29,15 @@ class StubSearchService(ISearchService):
                 article="ART001",
                 name="Тестовый товар 1",
                 barcodes=["4600000000001", "4600000000002"],
-                address="A01 — Стеллаж 1, Полка A"
+                address="A01 — Стеллаж 1, Полка A",
+                storage_locations=["A01 — Стеллаж 1, Полка A"]
             ),
             Product(
                 article="ART002",
                 name="Тестовый товар 2",
                 barcodes=["4600000000003"],
-                address="B02 — Стеллаж 2, Полка B"
+                address="B02 — Стеллаж 2, Полка B",
+                storage_locations=["B02 — Стеллаж 2, Полка B"]
             ),
         ]
     

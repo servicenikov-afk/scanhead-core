@@ -106,17 +106,31 @@ class SearchAddressTab(ctk.CTkFrame):
         if self._container.has("product_details_service") and products:
             details_service = self._container.get("product_details_service")
             
-            # Обогащаем первый товар (остальные можно при необходимости)
-            def on_details_loaded(product: Optional[Product]):
-                if product:
-                    self.update_products([product] + products[1:])
-                else:
-                    self.update_products(products)
+            # Обогащаем все товары адресами
+            enriched_products = []
+            pending_count = len(products)
             
-            # Загружаем детали для первого товара асинхронно
-            details_service.get_product_details(products[0].article, callback=on_details_loaded)
+            def on_details_loaded(product: Optional[Product], index: int):
+                if product:
+                    enriched_products[index] = product
+                else:
+                    # Если не удалось обогатить, оставляем оригинал
+                    pass
+                
+                # Проверяем, загрузились ли все товары
+                nonlocal pending_count
+                pending_count -= 1
+                if pending_count == 0:
+                    self.update_products(enriched_products)
+            
+            # Копируем список и запускаем загрузку для каждого товара
+            enriched_products = products.copy()
+            for i, product in enumerate(products):
+                details_service.get_product_details(product.article, 
+                                                   callback=lambda p, idx=i: on_details_loaded(p, idx))
         else:
             self.update_products(products)
+
     
     def _add_product_to_queue(self, product: Product) -> None:
         """Добавить товар в очередь печати."""
