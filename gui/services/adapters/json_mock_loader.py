@@ -1,4 +1,10 @@
-"""Загрузка тестовых данных из JSON-файлов."""
+"""Загрузка тестовых данных из JSON-файлов.
+
+ПРИМЕЧАНИЕ: Моки больше не используются!
+Этот файл сохранён только для истории. Приложение работает ТОЛЬКО с реальными базами данных,
+которые находятся на тестовой машине и соответствуют описанию в data/databases/*/README.md.
+Реальные БД не загружаются в репозиторий ввиду конфиденциальности данных.
+"""
 
 import json
 from pathlib import Path
@@ -8,7 +14,11 @@ from libs.domain_models import Product, Address
 
 
 class JsonMockLoader:
-    """Загрузка тестовых данных из JSON-файлов."""
+    """Загрузка тестовых данных из JSON-файлов.
+
+    ПРИМЕЧАНИЕ: Моки больше не используются!
+    Этот класс сохранён только для истории. Приложение работает ТОЛЬКО с реальными базами данных.
+    """
 
     def __init__(self, data_dir: Path | str = "data/mocks"):
         self.data_dir = Path(data_dir)
@@ -34,11 +44,16 @@ class JsonMockLoader:
 
         products = []
         for item in data:
+            address = item.get("address")
+            # Заполняем storage_locations из address для совместимости с UI
+            storage_locations = [address] if address else []
+            
             product = Product(
                 article=item.get("article", ""),
                 name=item.get("name", ""),
                 barcodes=item.get("barcodes", []),
-                address=item.get("address"),
+                address=address,
+                storage_locations=storage_locations
             )
             products.append(product)
 

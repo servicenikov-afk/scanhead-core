@@ -116,7 +116,8 @@ class NomenclatureAdapter:
                         article=article,
                         name=name,
                         barcodes=barcodes,
-                        unit=unit
+                        unit=unit,
+                        storage_locations=[]  # Пустой список, адреса будут загружены через ProductDetailsService
                     ))
                     
                     if len(products) >= 50:

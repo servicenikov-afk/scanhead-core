@@ -1,8 +1,6 @@
 {
   "app_name": "ScanHead Combine",
-  "version": "0.2.2",
-  "use_mock_data": false,
-  "mock_data_path": "data/mocks",
+  "version": "0.2.3",
   "log_level": "INFO",
   "log_file": "app.log",
   "db_paths": {

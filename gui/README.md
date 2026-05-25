@@ -30,7 +30,7 @@ gui/
 │   └── sticker_editor.py    # Редактор пресетов этикеток
 ├── services/             # Сервисный слой для GUI
 │   ├── interfaces/         # Интерфейсы (ISearchService, IProductRepository...)
-│   ├── adapters/           # Адаптеры (JsonMockLoader для тестовых данных)
+│   ├── adapters/           # Адаптеры к реальным БД (NomenclatureAdapter, StoreAdapter...)
 │   └── stubs/              # Заглушки сервисов для разработки
 ├── widgets/              # Кастомные виджеты (переиспользуемые компоненты)
 └── windows/              # Дочерние окна (Toplevel)
@@ -88,35 +88,48 @@ python main.py
 
 ### Тестирование поиска
 1. Введите `560` в поле поиска
-2. Через ~300мс появятся товары из основной БД или моков
+2. Через ~300мс появятся товары из реальных баз данных
 3. Лог: `[SearchBar] Поиск завершён, найдено: X товаров`
 4. **Проверка регистронезависимости:** запрос `аб-001` находит товар `АБ-001`
 
 ---
 
-## 🧪 Моки и тестовые данные
+## 🗄️ Базы данных
 
-### Включение моков
+Приложение работает ТОЛЬКО с реальными базами данных SQLite.
+
+### Расположение БД
+
+Реальные базы данных находятся **ТОЛЬКО на тестовой машине** в директории `data/databases/`.
+В репозиторий они **НЕ загружаются** ввиду конфиденциальности данных, но полностью соответствуют
+описанию в соответствующих README.md файлах:
+
+- `data/databases/nomenclature/README.md` — внутренний справочник номенклатуры (1693 записи)
+- `data/databases/store/README.md` — складской учёт местоположения
+- `data/databases/css_export/README.md` — база запчастей Franke (24678 записей)
+
+### Конфигурация
+
 Файл `config/app_config.json`:
 ```json
 {
-  "use_mock_data": true,
-  "mock_data_path": "data/mocks"
+  "db_paths": {
+    "nomenclature": "data/databases/nomenclature/nomenclature.db",
+    "store": "data/databases/store/store.db",
+    "css_export": "data/databases/css_export/css_export.db"
+  }
 }
 ```
 
-### Моки товаров
-Файл `data/mocks/products.json`:
-- 4 тестовых товара с артикулами `560xxx`
-- Поля: `article`, `name`, `address`, `quantity`
+### Адаптеры
 
-### Заглушки сервисов
 | Сервис | Класс | Описание |
 |--------|-------|----------|
-| SearchService | `StubSearchService` | Возвращает моки по артикулу |
-| SettingsService | `StubSettingsService` | Хранит настройки в памяти |
-| PrinterService | `StubPrinterService` | Логирование вместо печати |
-| ProductRepository | `JsonMockLoader` | Загрузка из JSON-файла |
+| SearchService | `NomenclatureAdapter` | Поиск по основной БД номенклатуры |
+| ProductRepository | `StoreAdapter` | Получение адресов хранения из БД склада |
+| CssExportAdapter | `CssExportAdapter` | Данные о совместимости из CSS Export |
+
+**Примечание:** Моки удалены как неактуальные. Приложение работает только с реальными БД.
 
 ---
 

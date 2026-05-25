@@ -2,6 +2,10 @@
 """
 ScanHead Combine - Главное приложение.
 Точка входа для GUI-каркаса.
+
+Примечание: Приложение работает ТОЛЬКО с реальными базами данных.
+Моки удалены как неактуальные. Реальные БД находятся на тестовой машине
+и не загружаются в репозиторий ввиду конфиденциальности данных.
 """
 
 import sys
@@ -19,8 +23,6 @@ def load_config() -> dict:
             return json.load(f)
     return {
         "app_name": "ScanHead Combine",
-        "use_mock_data": False,
-        "mock_data_path": "data/mocks",
         "log_level": "INFO",
     }
 
@@ -66,53 +68,37 @@ def main() -> None:
         ISettingsService, IPrinterService, IInventoryService
     )
     from services.stubs import (
-        StubSearchService, StubProductRepository, StubImageService,
-        StubSettingsService, StubPrinterService, StubInventoryService
+        StubImageService, StubSettingsService, StubPrinterService, StubInventoryService
     )
 
-    use_mocks = config.get("use_mock_data", False)
+    # Используем ТОЛЬКО реальные базы данных
+    # Моки удалены как неактуальные. Реальные БД находятся на тестовой машине
+    # и соответствуют описанию в data/databases/*/README.md
+    logger.info("[Main] Использование реальных баз данных")
+    from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
+    from gui.services.adapters.store_adapter import StoreAdapter
+    from gui.services.adapters.css_export_adapter import CssExportAdapter
+    from gui.services.product_details_service import ProductDetailsService
     
-    logger.info(f"[DEBUG] CONFIG_PATH: {CONFIG_PATH}")
-    logger.info(f"[DEBUG] use_mock_data: {use_mocks}")
-
-    container = DIContainer()
-
-    if use_mocks:
-        logger.info("[Main] Использование моков для тестовых данных")
-        from gui.services.adapters.json_mock_loader import JsonMockLoader
-        
-        mock_path = config.get("mock_data_path", "data/mocks")
-        mock_loader = JsonMockLoader(mock_path)
-        
-        search_service = SearchServiceWithMocks(mock_loader)
-        container.register(ISearchService, search_service)
-        container.register(IProductRepository, StubProductRepository())
-    else:
-        logger.info("[Main] Использование реальных баз данных")
-        from gui.services.adapters.nomenclature_adapter import NomenclatureAdapter
-        from gui.services.adapters.store_adapter import StoreAdapter
-        from gui.services.adapters.css_export_adapter import CssExportAdapter
-        from gui.services.product_details_service import ProductDetailsService
-        
-        db_path = config.get("db_paths", {}).get("nomenclature", "nomenclature.db")
-        nomenclature_adapter = NomenclatureAdapter(db_path)
-        
-        store_db_path = config.get("db_paths", {}).get("store", "store.db")
-        store_adapter = StoreAdapter(store_db_path)
-        
-        css_db_path = config.get("db_paths", {}).get("css_export", "css_export.db")
-        css_adapter = CssExportAdapter(css_db_path)
-        
-        # Создаём сервис детальной информации
-        details_service = ProductDetailsService(
-            nomenclature_adapter=nomenclature_adapter,
-            store_adapter=store_adapter,
-            css_adapter=css_adapter
-        )
-        
-        container.register(ISearchService, nomenclature_adapter)
-        container.register(IProductRepository, store_adapter)
-        container.register("product_details_service", details_service)
+    db_path = config.get("db_paths", {}).get("nomenclature", "data/databases/nomenclature/nomenclature.db")
+    nomenclature_adapter = NomenclatureAdapter(db_path)
+    
+    store_db_path = config.get("db_paths", {}).get("store", "data/databases/store/store.db")
+    store_adapter = StoreAdapter(store_db_path)
+    
+    css_db_path = config.get("db_paths", {}).get("css_export", "data/databases/css_export/css_export.db")
+    css_adapter = CssExportAdapter(css_db_path)
+    
+    # Создаём сервис детальной информации
+    details_service = ProductDetailsService(
+        nomenclature_adapter=nomenclature_adapter,
+        store_adapter=store_adapter,
+        css_adapter=css_adapter
+    )
+    
+    container.register(ISearchService, nomenclature_adapter)
+    container.register(IProductRepository, store_adapter)
+    container.register("product_details_service", details_service)
 
     container.register(IImageService, StubImageService())
     container.register(ISettingsService, StubSettingsService())
@@ -148,37 +134,6 @@ def main() -> None:
             settings_service.save()
         logger.info("Настройки сохранены")
         logger.info("=" * 60)
-
-
-class SearchServiceWithMocks:
-    """Адаптер поиска с использованием JsonMockLoader."""
-    
-    def __init__(self, mock_loader):
-        self._mock_loader = mock_loader
-        self._logger = logging.getLogger(__name__)
-    
-    def search_async(self, query: str, callback) -> None:
-        """Асинхронный поиск по мокам."""
-        import threading
-        import time
-        
-        def worker():
-            time.sleep(0.1)
-            results = []
-            if query:
-                query_lower = query.lower()
-                for product in self._mock_loader.load_products():
-                    if (query_lower in (product.article or "").lower() or 
-                        query_lower in (product.name or "").lower()):
-                        results.append(product)
-            callback(results)
-        
-        threading.Thread(target=worker, daemon=True).start()
-    
-    def get_product_by_id(self, product_id: int):
-        """Получение товара по ID (в моках не реализовано)."""
-        self._logger.warning("get_product_by_id не реализован для моков")
-        return None
 
 
 if __name__ == "__main__":
