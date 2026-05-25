@@ -69,13 +69,13 @@ class ProductDetails(ctk.CTkFrame):
             field_name="name"
         )
         
-        # Поле: Адрес хранения (с кнопкой редактирования)
+        # Поле: Адрес хранения (readonly, без кнопки редактирования)
         self._create_field_row(
             fields_frame, 
             row=3, 
             label="Адрес:", 
             field_name="address",
-            show_edit_btn=True
+            show_edit_btn=False  # Убираем кнопку редактирования
         )
         
         # Кнопки под полями: [ℹ️] и [⤵️]
@@ -237,6 +237,10 @@ class ProductDetails(ctk.CTkFrame):
             case "name":
                 return self._current_product.name
             case "address":
+                # Отображаем все адреса из storage_locations через запятую и перенос строки
+                if self._current_product.storage_locations:
+                    return "\n".join(self._current_product.storage_locations)
+                # Fallback на старое поле address
                 if self._current_product.address:
                     return self._current_product.address
                 return ""

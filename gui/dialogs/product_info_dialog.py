@@ -528,15 +528,52 @@ class ProductInfoDialog(ctk.CTkToplevel):
         
         # Проверка на несохранённые изменения
         if index in self._unsaved_changes:
-            confirm = ctk.CTkInputDialog(
-                title="Подтверждение",
-                label_text="В этой строке есть несохранённые изменения. Удалить?",
-                button_text="Да",
-                button_fg_color="#dc3545"
-            )
-            # Простая реализация - просто удаляем
-            # В идеале нужен полноценный диалог подтверждения
+            # Создаём кастомный диалог подтверждения
+            confirm_dialog = ctk.CTkToplevel(self)
+            confirm_dialog.title("Подтверждение")
+            confirm_dialog.geometry("300x150")
+            confirm_dialog.transient(self)
+            confirm_dialog.grab_set()
+            
+            ctk.CTkLabel(
+                confirm_dialog,
+                text="В этой строке есть несохранённые изменения. Удалить?",
+                font=ctk.CTkFont(size=self._font_size)
+            ).pack(pady=20)
+            
+            btn_frame = ctk.CTkFrame(confirm_dialog, fg_color="transparent")
+            btn_frame.pack(pady=10)
+            
+            def on_confirm():
+                self._do_delete_address_row(index)
+                confirm_dialog.destroy()
+            
+            def on_cancel():
+                confirm_dialog.destroy()
+            
+            ctk.CTkButton(
+                btn_frame,
+                text="Отмена",
+                command=on_cancel,
+                fg_color="#6c757d",
+                hover_color="#5a6268"
+            ).pack(side="left", padx=5)
+            
+            ctk.CTkButton(
+                btn_frame,
+                text="Удалить",
+                command=on_confirm,
+                fg_color="#dc3545",
+                hover_color="#c82333"
+            ).pack(side="left", padx=5)
+            
+            return
         
+        # Если нет несохранённых изменений, удаляем сразу
+        self._do_delete_address_row(index)
+    
+    def _do_delete_address_row(self, index: int) -> None:
+        """Выполнить удаление строки адреса."""
         # Удаляем виджеты
         self._location_frames[index].destroy()
         self._location_frames.pop(index)
