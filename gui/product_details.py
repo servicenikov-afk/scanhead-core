@@ -271,10 +271,24 @@ class ProductDetails(ctk.CTkFrame):
         addresses = self._current_product.storage_locations
         row, col = 0, 0
         
+        # Получаем доступную ширину контейнера для ограничения максимального размера
+        container_width = self._address_container.winfo_width()
+        if container_width <= 1:  # Если геометрия ещё не рассчитана, берём примерное значение
+            container_width = 1600
+        
         for i, addr in enumerate(addresses):
-            # Создаём поле с длиной по содержимому (минимум 15 символов)
-            width = max(len(addr) + 2, 15)
-            logger.debug(f"[DEBUG_TEMP] Отрисовка адреса[{i}]: '{addr}' (ширина={width})")
+            # Оптимизированный расчет ширины поля
+            char_width = self._font_size * 0.6  # Примерная ширина одного символа в пикселях
+            text_width = int(len(addr) * char_width) + 20  # Ширина текста + отступы
+            
+            # Минимальная и максимальная ширина
+            min_width = 60  # Минимум для коротких адресов типа '100'
+            max_width = int(container_width * 0.55)  # Максимум ~55% от ширины контейнера
+            
+            # Ограничиваем ширину
+            width = max(min_width, min(text_width, max_width))
+            
+            logger.debug(f"[DEBUG_TEMP] Отрисовка адреса[{i}]: '{addr}' (длина={len(addr)}, ширина={width})")
             
             entry = ctk.CTkEntry(
                 self._address_container,
@@ -284,7 +298,7 @@ class ProductDetails(ctk.CTkFrame):
                 text_color="#000000",
                 border_color="#AAAAAA",
                 corner_radius=6,
-                width=width * (self._font_size + 4)  # Примерная ширина в пикселях
+                width=width
             )
             # Сначала вставляем текст, потом отключаем (в CTkEntry нельзя insert() в disabled state)
             entry.insert(0, addr)
