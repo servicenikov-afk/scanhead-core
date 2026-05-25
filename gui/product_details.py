@@ -303,7 +303,7 @@ class ProductDetails(ctk.CTkFrame):
             # Сначала вставляем текст, потом отключаем (в CTkEntry нельзя insert() в disabled state)
             entry.insert(0, addr)
             entry.configure(state="disabled")
-            entry.grid(row=row, column=col, padx=2, pady=2, sticky="w")
+            entry.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
             
             self._address_entries.append(entry)
             
@@ -313,9 +313,9 @@ class ProductDetails(ctk.CTkFrame):
                 col = 0
                 row += 1
         
-        # Настройка grid контейнера
+        # Настройка grid контейнера: не растягиваем колонки равномерно, чтобы сохранить заданную ширину полей
         for c in range(3):
-            self._address_container.grid_columnconfigure(c, weight=1)
+            self._address_container.grid_columnconfigure(c, weight=0)
         
         # Принудительное обновление геометрии для немедленного отображения
         self._address_container.update_idletasks()
