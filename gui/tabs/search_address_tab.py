@@ -106,6 +106,11 @@ class SearchAddressTab(ctk.CTkFrame):
         if self._container.has("product_details_service") and products:
             details_service = self._container.get("product_details_service")
             
+            # DEBUG_TEMP: Логирование сырых данных из БД
+            logger.debug(f"[DEBUG_TEMP] Получено {len(products)} товаров из БД")
+            for i, p in enumerate(products[:3]):  # Первые 3 для краткости
+                logger.debug(f"[DEBUG_TEMP] Товар[{i}]: {p.article}, адресов в raw: {len(p.storage_locations) if hasattr(p, 'storage_locations') else 0}")
+            
             # Обогащаем все товары адресами
             enriched_products = products.copy()
             pending_count = len(products)
@@ -113,15 +118,20 @@ class SearchAddressTab(ctk.CTkFrame):
             def on_details_loaded(product: Optional[Product], index: int):
                 if product:
                     enriched_products[index] = product
+                    logger.debug(f"[DEBUG_TEMP] Обогащён товар[{index}]: {product.article}, адресов: {len(product.storage_locations) if product.storage_locations else 0}")
+                    if product.storage_locations:
+                        logger.debug(f"[DEBUG_TEMP] Адреса товара[{index}]: {product.storage_locations[:3]}")  # Первые 3 адреса
                 else:
                     # Если не удалось обогатить, оставляем оригинал
-                    logger.debug(f"[SearchAddressTab] Не удалось обогатить товар на позиции {index}")
+                    logger.debug(f"[DEBUG_TEMP] Не удалось обогатить товар на позиции {index}")
                 
                 # Проверяем, загрузились ли все товары
                 nonlocal pending_count
                 pending_count -= 1
                 if pending_count == 0:
-                    logger.info(f"[SearchAddressTab] Все товары обогащены, обновляем UI ({len(enriched_products)} шт.)")
+                    logger.info(f"[DEBUG_TEMP] Все товары обогащены, обновляем UI ({len(enriched_products)} шт.)")
+                    for i, p in enumerate(enriched_products[:3]):
+                        logger.debug(f"[DEBUG_TEMP] Итоговый товар[{i}]: {p.article}, адресов: {len(p.storage_locations) if p.storage_locations else 0}")
                     self.update_products(enriched_products)
             
             # Запускаем загрузку для каждого товара с замыканием через default-аргумент
@@ -131,6 +141,7 @@ class SearchAddressTab(ctk.CTkFrame):
                     callback=lambda p, idx=i: on_details_loaded(p, idx)
                 )
         else:
+            logger.debug(f"[DEBUG_TEMP] Сервис обогащения недоступен или товаров нет, передаём как есть")
             self.update_products(products)
 
     

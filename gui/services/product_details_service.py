@@ -66,7 +66,7 @@ class ProductDetailsService:
     
     def _fetch_all_data(self, article: str) -> Optional[Product]:
         """Собрать все данные о товаре из трёх источников."""
-        logger.debug(f"[ProductDetailsService] Запрос данных для {article}")
+        logger.debug(f"[DEBUG_TEMP] ProductDetailsService._fetch_all_data для {article}")
         
         # 1. Получаем данные из nomenclature.db (основные)
         nom_data = self._get_nomenclature_data(article)
@@ -74,11 +74,15 @@ class ProductDetailsService:
             logger.warning(f"[ProductDetailsService] Товар {article} не найден в номенклатуре")
             return None
         
+        logger.debug(f"[DEBUG_TEMP] Nomenclature data: {nom_data}")
+        
         # 2. Получаем адреса хранения из store.db
         storage_locations = self._get_storage_locations(article)
+        logger.debug(f"[DEBUG_TEMP] Storage locations для {article}: {storage_locations} (кол-во: {len(storage_locations)})")
         
         # 3. Получаем информацию от производителя из css_export.db
         manufacturer_info = self._get_manufacturer_info(article)
+        logger.debug(f"[DEBUG_TEMP] Manufacturer info для {article}: {len(manufacturer_info)} записей")
         
         # Собираем всё в единую модель
         product = Product(
@@ -94,8 +98,7 @@ class ProductDetailsService:
             models=list(set(item['product_model'] for item in manufacturer_info if item.get('product_model')))
         )
         
-        logger.info(f"[ProductDetailsService] Данные для {article} собраны: "
-                   f"{len(storage_locations)} адресов, {len(manufacturer_info)} записей производителя")
+        logger.info(f"[DEBUG_TEMP] Продукт собран: article={product.article}, storage_locations={product.storage_locations}")
         return product
     
     def _get_nomenclature_data(self, article: str) -> Optional[Dict[str, Any]]:

@@ -250,12 +250,22 @@ class ProductDetails(ctk.CTkFrame):
     
     def _render_addresses(self) -> None:
         """Отрисовка адресов в виде отдельных полей с переносом после каждого 3-го."""
+        # DEBUG_TEMP: Логирование входных данных
+        logger.debug(f"[DEBUG_TEMP] _render_addresses вызван")
+        if not self._current_product:
+            logger.debug(f"[DEBUG_TEMP] _current_product = None")
+        else:
+            logger.debug(f"[DEBUG_TEMP] _current_product.article = {self._current_product.article}")
+            logger.debug(f"[DEBUG_TEMP] storage_locations = {self._current_product.storage_locations}")
+            logger.debug(f"[DEBUG_TEMP] len(storage_locations) = {len(self._current_product.storage_locations) if self._current_product.storage_locations else 0}")
+        
         # Очищаем контейнер
         for widget in self._address_container.winfo_children():
             widget.destroy()
         self._address_entries.clear()
         
         if not self._current_product or not self._current_product.storage_locations:
+            logger.debug(f"[DEBUG_TEMP] Прерываем отрисовку: нет товара или адресов")
             return
         
         addresses = self._current_product.storage_locations
@@ -264,6 +274,7 @@ class ProductDetails(ctk.CTkFrame):
         for i, addr in enumerate(addresses):
             # Создаём поле с длиной по содержимому (минимум 15 символов)
             width = max(len(addr) + 2, 15)
+            logger.debug(f"[DEBUG_TEMP] Отрисовка адреса[{i}]: '{addr}' (ширина={width})")
             
             entry = ctk.CTkEntry(
                 self._address_container,
@@ -290,6 +301,8 @@ class ProductDetails(ctk.CTkFrame):
         # Настройка grid контейнера
         for c in range(3):
             self._address_container.grid_columnconfigure(c, weight=1)
+        
+        logger.debug(f"[DEBUG_TEMP] Отрисовано {len(self._address_entries)} адресов")
     
     def _on_field_saved(self, field_name: str, new_value: str) -> None:
         """Обработчик сохранения поля из диалога."""
