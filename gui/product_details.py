@@ -278,7 +278,6 @@ class ProductDetails(ctk.CTkFrame):
             
             entry = ctk.CTkEntry(
                 self._address_container,
-                state="disabled",
                 height=self._font_size + 16,
                 font=ctk.CTkFont(size=self._font_size, family="Arial"),
                 fg_color="#FFFFFF",
@@ -287,7 +286,9 @@ class ProductDetails(ctk.CTkFrame):
                 corner_radius=6,
                 width=width * (self._font_size + 4)  # Примерная ширина в пикселях
             )
+            # Сначала вставляем текст, потом отключаем (в CTkEntry нельзя insert() в disabled state)
             entry.insert(0, addr)
+            entry.configure(state="disabled")
             entry.grid(row=row, column=col, padx=2, pady=2, sticky="w")
             
             self._address_entries.append(entry)
