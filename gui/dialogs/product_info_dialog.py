@@ -116,15 +116,12 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._lbl_article2 = ctk.CTkLabel(parent, text="", anchor="w", height=field_height, font=ctk.CTkFont(size=self._font_size))
         self._lbl_article2.grid(row=1, column=1, sticky="ew", pady=5, padx=5)
         
-        # Наименование - с динамическим wraplength
+        # Наименование - с простым переносом на 45 символе
         ctk.CTkLabel(parent, text="Наименование:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=2, column=0, sticky="nw", pady=5, padx=5
         )
-        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_name = ctk.CTkLabel(parent, text="", anchor="nw", font=ctk.CTkFont(size=self._font_size))
         self._lbl_name.grid(row=2, column=1, sticky="ew", pady=5, padx=5)
-        
-        # Привязка для динамического изменения wraplength при изменении размера окна
-        parent.bind("<Configure>", lambda e: self._update_nomenclature_wraplength(e.width))
         
         # Штрихкоды
         ctk.CTkLabel(parent, text="Штрихкоды:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
@@ -144,19 +141,22 @@ class ProductInfoDialog(ctk.CTkToplevel):
         ctk.CTkLabel(parent, text="Модель:", font=ctk.CTkFont(weight="bold", size=self._font_size)).grid(
             row=5, column=0, sticky="w", pady=5, padx=5
         )
-        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", wraplength=550, height=field_height, font=ctk.CTkFont(size=self._font_size))
+        self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", font=ctk.CTkFont(size=self._font_size))
         self._lbl_model.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
     
-    def _update_nomenclature_wraplength(self, window_width: int) -> None:
-        """Обновить wraplength для полей Наименование и Модель при изменении размера окна."""
-        # Вычисляем доступную ширину: ширина окна минус отступы (~150px)
-        new_wraplength = max(200, window_width - 150)
+    def _wrap_text_at_word(self, text: str, max_length: int = 45) -> str:
+        """Перенести текст на границе слова после max_length символов."""
+        if not text or len(text) <= max_length:
+            return text
         
-        if hasattr(self, '_lbl_name'):
-            self._lbl_name.configure(wraplength=new_wraplength)
+        # Ищем последнюю границу слова (пробел, дефис, слэш) после max_length
+        # Начинаем поиск с max_length и идём вперёд до ближайшей границы слова
+        for i in range(max_length, len(text)):
+            if text[i] in ' \t-/\n':
+                return text[:i] + '\n' + self._wrap_text_at_word(text[i+1:].lstrip(), max_length)
         
-        if hasattr(self, '_lbl_model'):
-            self._lbl_model.configure(wraplength=new_wraplength)
+        # Если границ не найдено, просто разрываем на max_length
+        return text[:max_length] + '\n' + self._wrap_text_at_word(text[max_length:], max_length)
     
     def _create_store_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку адреса хранения."""
@@ -242,7 +242,9 @@ class ProductInfoDialog(ctk.CTkToplevel):
         # Основные данные из переданного product
         self._lbl_article.configure(text=self._product.get('article', ''))
         self._lbl_article2.configure(text=self._product.get('article2', ''))
-        self._lbl_name.configure(text=self._product.get('name', ''))
+        # Применяем перенос строк на 45 символе для наименования
+        name_text = self._product.get('name', '')
+        self._lbl_name.configure(text=self._wrap_text_at_word(name_text))
         self._lbl_barcodes.configure(text=self._product.get('barcodes', ''))
         # Поле description удалено, category переименовано в model
         
@@ -293,7 +295,9 @@ class ProductInfoDialog(ctk.CTkToplevel):
             
             # Убираем дубликаты и объединяем через запятую
             unique_models = list(dict.fromkeys(cleaned_models))
-            self._lbl_model.configure(text=", ".join(unique_models))
+            models_text = ", ".join(unique_models)
+            # Применяем перенос строк на 45 символе
+            self._lbl_model.configure(text=self._wrap_text_at_word(models_text))
         else:
             self._lbl_model.configure(text="Нет модели")
         
