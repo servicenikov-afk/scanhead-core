@@ -302,6 +302,15 @@ class ProductDetails(ctk.CTkFrame):
         for c in range(3):
             self._address_container.grid_columnconfigure(c, weight=1)
         
+        # Принудительное обновление геометрии для немедленного отображения
+        self._address_container.update_idletasks()
+        
+        # Диагностика видимости
+        logger.debug(f"[DEBUG_TEMP] Контейнер адресов: width={self._address_container.winfo_width()}, height={self._address_container.winfo_height()}")
+        logger.debug(f"[DEBUG_TEMP] Контейнер адресов видим: {self._address_container.winfo_ismapped()}")
+        for i, entry in enumerate(self._address_entries):
+            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] виджет: width={entry.winfo_width()}, visible={entry.winfo_ismapped()}")
+        
         logger.debug(f"[DEBUG_TEMP] Отрисовано {len(self._address_entries)} адресов")
     
     def _on_field_saved(self, field_name: str, new_value: str) -> None:
