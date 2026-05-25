@@ -37,6 +37,7 @@ class ProductDetails(ctk.CTkFrame):
         self._current_product: Optional[Product] = None
         self._font_size = font_size
         self._details_service = details_service
+        self._address_entries: list = []  # Список виджетов адресов
         
         logger.debug(f"[ProductDetails] Инициализация (font_size={self._font_size})")
         
@@ -69,13 +70,19 @@ class ProductDetails(ctk.CTkFrame):
             field_name="name"
         )
         
-        # Поле: Адрес хранения (readonly, без кнопки редактирования, многострочный)
-        self._create_address_field_row(
-            fields_frame, 
-            row=3, 
-            label="Адрес:", 
-            field_name="address"
+        # Метка для адреса (будет в row=3, column=0)
+        self._address_label = ctk.CTkLabel(
+            fields_frame,
+            text="Адрес:",
+            width=100,
+            anchor="e",
+            font=ctk.CTkFont(size=self._font_size)
         )
+        self._address_label.grid(row=3, column=0, padx=(5, 10), pady=2, sticky="ne")
+        
+        # Контейнер для полей адресов (grid внутри grid)
+        self._address_container = ctk.CTkFrame(fields_frame, fg_color="transparent")
+        self._address_container.grid(row=3, column=1, padx=2, pady=2, sticky="ew")
         
         # Кнопки под полями: [ℹ️] и [⤵️]
         buttons_row = ctk.CTkFrame(fields_frame, fg_color="transparent")
@@ -100,42 +107,6 @@ class ProductDetails(ctk.CTkFrame):
         btn_add.pack(side="left", padx=2)
         
         logger.debug("[ProductDetails] Поля и кнопки созданы")
-    
-    def _create_address_field_row(
-        self, 
-        parent: Any, 
-        row: int, 
-        label: str, 
-        field_name: str
-    ) -> None:
-        """Создание строки с многострочным полем адреса (без кнопки редактирования)."""
-        # Метка
-        lbl = ctk.CTkLabel(
-            parent,
-            text=label,
-            width=100,
-            anchor="e",
-            font=ctk.CTkFont(size=self._font_size)
-        )
-        lbl.grid(row=row, column=0, padx=(5, 10), pady=2, sticky="ne")
-        
-        # Многострочное поле ввода (readonly) - используем CTkTextbox
-        textbox = ctk.CTkTextbox(
-            parent,
-            height=self._font_size * 3 + 20,  # Высота для ~3 строк
-            font=ctk.CTkFont(size=self._font_size, family="Arial"),
-            fg_color="#FFFFFF",      # Белый фон
-            text_color="#000000",    # Черный текст
-            border_color="#AAAAAA",
-            corner_radius=6,
-            wrap="word",  # Перенос по словам
-            state="disabled"
-        )
-        textbox.grid(row=row, column=1, padx=2, pady=2, sticky="ew")
-        
-        # Сохраняем ссылки на виджеты
-        setattr(self, f"_{field_name}_label", lbl)
-        setattr(self, f"_{field_name}_entry", textbox)
 
     def _create_field_row(
         self, 
@@ -272,15 +243,53 @@ class ProductDetails(ctk.CTkFrame):
             case "name":
                 return self._current_product.name
             case "address":
-                # Отображаем все адреса из storage_locations через запятую и перенос строки
-                if self._current_product.storage_locations:
-                    return "\n".join(self._current_product.storage_locations)
-                # Fallback на старое поле address
-                if self._current_product.address:
-                    return self._current_product.address
+                # Больше не используется для textbox, адреса отображаются отдельно
                 return ""
             case _:
                 return ""
+    
+    def _render_addresses(self) -> None:
+        """Отрисовка адресов в виде отдельных полей с переносом после каждого 3-го."""
+        # Очищаем контейнер
+        for widget in self._address_container.winfo_children():
+            widget.destroy()
+        self._address_entries.clear()
+        
+        if not self._current_product or not self._current_product.storage_locations:
+            return
+        
+        addresses = self._current_product.storage_locations
+        row, col = 0, 0
+        
+        for i, addr in enumerate(addresses):
+            # Создаём поле с длиной по содержимому (минимум 15 символов)
+            width = max(len(addr) + 2, 15)
+            
+            entry = ctk.CTkEntry(
+                self._address_container,
+                state="disabled",
+                height=self._font_size + 16,
+                font=ctk.CTkFont(size=self._font_size, family="Arial"),
+                fg_color="#FFFFFF",
+                text_color="#000000",
+                border_color="#AAAAAA",
+                corner_radius=6,
+                width=width * (self._font_size + 4)  # Примерная ширина в пикселях
+            )
+            entry.insert(0, addr)
+            entry.grid(row=row, column=col, padx=2, pady=2, sticky="w")
+            
+            self._address_entries.append(entry)
+            
+            col += 1
+            # Перенос после каждого 3-го адреса
+            if col >= 3:
+                col = 0
+                row += 1
+        
+        # Настройка grid контейнера
+        for c in range(3):
+            self._address_container.grid_columnconfigure(c, weight=1)
     
     def _on_field_saved(self, field_name: str, new_value: str) -> None:
         """Обработчик сохранения поля из диалога."""
@@ -321,15 +330,8 @@ class ProductDetails(ctk.CTkFrame):
                 entry.insert(0, value)
             entry.configure(state="disabled")
         
-        # Обновляем многострочное поле адреса
-        address_entry = getattr(self, "_address_entry")
-        address_value = self._get_field_value("address")
-        
-        address_entry.configure(state="normal")
-        address_entry.delete("0.0", "end")
-        if address_value:
-            address_entry.insert("0.0", address_value)
-        address_entry.configure(state="disabled")
+        # Отрисовываем адреса отдельными полями
+        self._render_addresses()
     
     def clear(self) -> None:
         """Очистка всех полей."""
@@ -343,11 +345,10 @@ class ProductDetails(ctk.CTkFrame):
             entry.delete(0, "end")
             entry.configure(state="disabled")
         
-        # Очищаем многострочное поле адреса
-        address_entry = getattr(self, "_address_entry")
-        address_entry.configure(state="normal")
-        address_entry.delete("0.0", "end")
-        address_entry.configure(state="disabled")
+        # Очищаем контейнер адресов
+        for widget in self._address_container.winfo_children():
+            widget.destroy()
+        self._address_entries.clear()
     
     def get_current_product(self) -> Optional[Product]:
         """Получение текущего товара."""
