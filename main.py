@@ -96,6 +96,9 @@ def main() -> None:
         css_adapter=css_adapter
     )
     
+    # Инициализация DI-контейнера
+    container = DIContainer()
+    
     container.register(ISearchService, nomenclature_adapter)
     container.register(IProductRepository, store_adapter)
     container.register("product_details_service", details_service)
