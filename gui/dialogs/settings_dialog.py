@@ -214,13 +214,196 @@ class SettingsDialog(ctk.CTkToplevel):
         self._focus_delay_slider.configure(state=state)
     
     def _create_address_tab(self, parent: Any) -> None:
-        """Создание вкладки 'Адрес' (заглушка)."""
-        lbl = ctk.CTkLabel(
+        """Создание вкладки 'Адрес' с настройками форматирования."""
+        parent.grid_columnconfigure(1, weight=1)
+        
+        # === СЕКЦИЯ: Переключатель режима ===
+        row = 0
+        self._address_enabled_var = ctk.BooleanVar(value=False)
+        self._address_enabled_checkbox = ctk.CTkCheckBox(
             parent,
-            text="Настройки адресов хранения\n(в разработке)",
-            font=ctk.CTkFont(size=14)
+            text="Использовать форматированный адрес",
+            variable=self._address_enabled_var,
+            command=self._toggle_address_format_controls
         )
-        lbl.place(relx=0.5, rely=0.5, anchor="center")
+        self._address_enabled_checkbox.grid(row=row, column=0, columnspan=2, padx=10, pady=10, sticky="w")
+        
+        # Контейнер для настроек формата (изначально скрыт)
+        self._format_controls_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        self._format_controls_frame.grid(row=row+1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        self._format_controls_frame.grid_columnconfigure(1, weight=1)
+        
+        # === Разделитель ===
+        r = 0
+        lbl_separator = ctk.CTkLabel(
+            self._format_controls_frame,
+            text="Разделитель:",
+            width=150,
+            anchor="w"
+        )
+        lbl_separator.grid(row=r, column=0, padx=10, pady=5, sticky="w")
+        
+        self._separator_var = ctk.StringVar(value="-")
+        self._separator_combo = ctk.CTkComboBox(
+            self._format_controls_frame,
+            values=["-", "/", "_", ".", "custom"],
+            width=100,
+            variable=self._separator_var,
+            command=self._on_separator_changed
+        )
+        self._separator_combo.grid(row=r, column=1, padx=10, pady=5, sticky="w")
+        
+        # Поле для своего разделителя
+        self._custom_separator_entry = ctk.CTkEntry(
+            self._format_controls_frame,
+            width=50,
+            placeholder_text="Свой"
+        )
+        self._custom_separator_entry.grid(row=r, column=2, padx=10, pady=5, sticky="w")
+        self._custom_separator_entry.grid_remove()  # Скрыто по умолчанию
+        
+        # === Уровни ===
+        r += 1
+        lbl_levels = ctk.CTkLabel(
+            self._format_controls_frame,
+            text="Уровни адреса:",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        lbl_levels.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
+        
+        # Контейнер для списка уровней
+        self._levels_container = ctk.CTkScrollableFrame(
+            self._format_controls_frame,
+            height=150,
+            fg_color="transparent"
+        )
+        self._levels_container.grid(row=r+1, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
+        
+        # Кнопка добавления уровня
+        self._add_level_button = ctk.CTkButton(
+            self._format_controls_frame,
+            text="+ Добавить уровень",
+            width=150,
+            command=self._add_level
+        )
+        self._add_level_button.grid(row=r+2, column=0, columnspan=2, padx=10, pady=10, sticky="w")
+        
+        # Список виджетов уровней
+        self._level_widgets: list = []
+        
+        # === Режим отображения ===
+        r += 3
+        lbl_display = ctk.CTkLabel(
+            self._format_controls_frame,
+            text="Режим отображения:",
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        lbl_display.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
+        
+        self._display_mode_var = ctk.StringVar(value="compact")
+        
+        radio_compact = ctk.CTkRadioButton(
+            self._format_controls_frame,
+            text="Компактный (только значения)",
+            variable=self._display_mode_var,
+            value="compact"
+        )
+        radio_compact.grid(row=r+1, column=0, columnspan=2, padx=20, pady=5, sticky="w")
+        
+        radio_labels = ctk.CTkRadioButton(
+            self._format_controls_frame,
+            text="С подписями (Блок A, Стеллаж 01)",
+            variable=self._display_mode_var,
+            value="with_labels"
+        )
+        radio_labels.grid(row=r+2, column=0, columnspan=2, padx=20, pady=5, sticky="w")
+        
+        # Загрузка текущих настроек
+        self._load_address_settings()
+    
+    def _load_address_settings(self) -> None:
+        """Загрузка настроек адреса из сервиса настроек."""
+        config = self._settings_service.get_setting("address_format", {})
+        
+        if config:
+            self._address_enabled_var.set(config.get("enabled", False))
+            self._separator_var.set(config.get("separator", "-"))
+            self._custom_separator_entry.insert(0, config.get("custom_separator", ""))
+            self._display_mode_var.set(config.get("display_mode", "compact"))
+            
+            # Восстанавливаем уровни
+            levels = config.get("levels", ["Блок", "Стеллаж", "Секция"])
+            for level_name in levels:
+                self._add_level(level_name)
+        
+        # Обновляем состояние контролов
+        self._toggle_address_format_controls()
+        self._on_separator_changed(self._separator_var.get())
+    
+    def _toggle_address_format_controls(self) -> None:
+        """Показать/скрыть настройки формата в зависимости от чекбокса."""
+        if self._address_enabled_var.get():
+            self._format_controls_frame.grid()
+        else:
+            self._format_controls_frame.grid_remove()
+    
+    def _on_separator_changed(self, value: str) -> None:
+        """Обработчик изменения разделителя."""
+        if value == "custom":
+            self._custom_separator_entry.grid()
+        else:
+            self._custom_separator_entry.grid_remove()
+    
+    def _add_level(self, name: str = "") -> None:
+        """Добавление нового уровня в список."""
+        if len(self._level_widgets) >= 10:
+            return  # Максимум 10 уровней
+        
+        row = len(self._level_widgets)
+        frame = ctk.CTkFrame(self._levels_container, fg_color="transparent")
+        frame.pack(fill="x", pady=2)
+        
+        entry = ctk.CTkEntry(
+            frame,
+            width=200,
+            placeholder_text=f"Уровень {row + 1}"
+        )
+        entry.pack(side="left", padx=(0, 10))
+        if name:
+            entry.insert(0, name)
+        
+        btn_delete = ctk.CTkButton(
+            frame,
+            text="🗑️",
+            width=40,
+            command=lambda: self._remove_level(frame)
+        )
+        btn_delete.pack(side="left")
+        
+        self._level_widgets.append((frame, entry))
+    
+    def _remove_level(self, frame: ctk.CTkFrame) -> None:
+        """Удаление уровня из списка."""
+        for i, (f, _) in enumerate(self._level_widgets):
+            if f == frame:
+                frame.destroy()
+                self._level_widgets.pop(i)
+                break
+    
+    def _get_address_config_from_ui(self) -> dict:
+        """Получение конфигурации адреса из UI элементов."""
+        levels = [entry.get().strip() or f"Уровень {i+1}" for i, (_, entry) in enumerate(self._level_widgets)]
+        
+        separator = self._separator_var.get()
+        custom_sep = self._custom_separator_entry.get().strip()
+        
+        return {
+            "enabled": self._address_enabled_var.get(),
+            "separator": separator,
+            "custom_separator": custom_sep if separator == "custom" else "",
+            "levels": levels,
+            "display_mode": self._display_mode_var.get()
+        }
     
     def _create_data_tab(self, parent: Any) -> None:
         """Создание вкладки 'Данные' (заглушка)."""
@@ -256,12 +439,17 @@ class SettingsDialog(ctk.CTkToplevel):
         self._settings_service.set_setting("search_autofocus", autofocus)
         self._settings_service.set_setting("search_autofocus_delay", focus_delay)
         
-        logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}")
+        # Сохраняем настройки адреса
+        address_config = self._get_address_config_from_ui()
+        self._settings_service.set_setting("address_format", address_config)
+        
+        logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}, address_format={address_config}")
         
         # Уведомляем об изменениях через колбэк
         if self._on_settings_changed:
             self._on_settings_changed("search_font_size", font_size)
             self._on_settings_changed("search_autofocus", autofocus)
             self._on_settings_changed("search_autofocus_delay", focus_delay)
+            self._on_settings_changed("address_format", address_config)
         
         self.destroy()

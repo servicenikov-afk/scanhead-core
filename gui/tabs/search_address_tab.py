@@ -74,12 +74,19 @@ class SearchAddressTab(ctk.CTkFrame):
         settings_service = self._container.get(ISettingsService)
         font_size = settings_service.get_setting("search_font_size", 18)
         
+
+        # Получаем AddressFormatter с настройками из сервиса настроек
+        from libs.utils import AddressFormatConfig, AddressFormatter
+        address_config_dict = settings_service.get_setting("address_format", {})
+        address_config = AddressFormatConfig.from_dict(address_config_dict) if address_config_dict else AddressFormatConfig()
+        address_formatter = AddressFormatter(config=address_config)
         self._product_details = ProductDetails(
             details_frame,
             product_repo=self._container.get(IProductRepository),
             on_add_to_queue=self._add_product_to_queue,
             font_size=font_size,
-            details_service=self._container.get("product_details_service") if self._container.has("product_details_service") else None
+            details_service=self._container.get("product_details_service") if self._container.has("product_details_service") else None,
+            address_formatter=address_formatter
         )
         self._product_details.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
     

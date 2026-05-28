@@ -11,6 +11,7 @@ import customtkinter as ctk
 from services.interfaces import IProductRepository
 from libs.domain_models import Product, Address
 from gui.dialogs.field_editor import FieldEditor
+from libs.utils import AddressFormatter, AddressFormatConfig
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,8 @@ class ProductDetails(ctk.CTkFrame):
         product_repo: IProductRepository,
         on_add_to_queue: callable = None,
         font_size: int = 14,
-        details_service: Optional[Any] = None
+        details_service: Optional[Any] = None,
+        address_formatter: Optional[AddressFormatter] = None
     ):
         super().__init__(master)
         self._product_repo = product_repo
@@ -37,6 +39,7 @@ class ProductDetails(ctk.CTkFrame):
         self._current_product: Optional[Product] = None
         self._font_size = font_size
         self._details_service = details_service
+        self._address_formatter = address_formatter or AddressFormatter()
         self._address_entries: list = []  # Список виджетов адресов
         
         logger.debug(f"[ProductDetails] Инициализация (font_size={self._font_size})")
@@ -249,15 +252,8 @@ class ProductDetails(ctk.CTkFrame):
                 return ""
     
     def _render_addresses(self) -> None:
-        """Отрисовка адресов в виде отдельных полей с переносом после каждого 3-го."""
-        # DEBUG_TEMP: Логирование входных данных
-        logger.debug(f"[DEBUG_TEMP] _render_addresses вызван")
-        if not self._current_product:
-            logger.debug(f"[DEBUG_TEMP] _current_product = None")
-        else:
-            logger.debug(f"[DEBUG_TEMP] _current_product.article = {self._current_product.article}")
-            logger.debug(f"[DEBUG_TEMP] storage_locations = {self._current_product.storage_locations}")
-            logger.debug(f"[DEBUG_TEMP] len(storage_locations) = {len(self._current_product.storage_locations) if self._current_product.storage_locations else 0}")
+        """Отрисовка адресов с учётом формата (компактный/с подписями)."""
+        logger.debug(f"[ProductDetails] _render_addresses вызван")
         
         # Очищаем контейнер
         for widget in self._address_container.winfo_children():
@@ -265,30 +261,97 @@ class ProductDetails(ctk.CTkFrame):
         self._address_entries.clear()
         
         if not self._current_product or not self._current_product.storage_locations:
-            logger.debug(f"[DEBUG_TEMP] Прерываем отрисовку: нет товара или адресов")
+            logger.debug(f"[ProductDetails] Прерываем отрисовку: нет товара или адресов")
             return
         
         addresses = self._current_product.storage_locations
-        row, col = 0, 0
+        config = self._address_formatter.config
         
-        # Получаем доступную ширину контейнера для ограничения максимального размера
+        # Если форматирование включено и режим "с подписями"
+        if config.enabled and config.display_mode == "with_labels":
+            self._render_addresses_with_labels(addresses)
+        else:
+            # Компактный режим или форматирование отключено
+            self._render_addresses_compact(addresses)
+    
+    def _render_addresses_with_labels(self, addresses: list) -> None:
+        """Отрисовка адресов в режиме 'с подписями' (Label + Entry)."""
+        row, col = 0, 0
         container_width = self._address_container.winfo_width()
-        if container_width <= 1:  # Если геометрия ещё не рассчитана, берём примерное значение
+        if container_width <= 1:
+            container_width = 1600
+        
+        for addr_str in addresses:
+            # Пытаемся распарсить адрес
+            parsed_values = self._address_formatter.parse(addr_str)
+            is_compatible, _ = self._address_formatter.is_compatible(addr_str)
+            
+            if is_compatible and len(parsed_values) == len(self._address_formatter.get_level_names()):
+                # Адрес совместим - рисуем красиво с подписями
+                labels_with_values = self._address_formatter.format_with_labels(parsed_values)
+                
+                # Создаём фрейм для этого адреса
+                addr_frame = ctk.CTkFrame(self._address_container, fg_color="transparent")
+                
+                for i, (label_name, value) in enumerate(labels_with_values):
+                    # Label с названием уровня
+                    lbl = ctk.CTkLabel(
+                        addr_frame,
+                        text=f"{label_name}: ",
+                        font=ctk.CTkFont(size=self._font_size),
+                        text_color="#000000"
+                    )
+                    lbl.pack(side="left")
+                    
+                    # Readonly Entry со значением
+                    entry_width = max(40, int(len(value) * self._font_size * 0.6) + 10)
+                    entry = ctk.CTkEntry(
+                        addr_frame,
+                        height=self._font_size + 16,
+                        font=ctk.CTkFont(size=self._font_size, family="Arial"),
+                        fg_color="#FFFFFF",
+                        text_color="#000000",
+                        border_color="#AAAAAA",
+                        corner_radius=6,
+                        width=entry_width
+                    )
+                    entry.insert(0, value)
+                    entry.configure(state="disabled")
+                    entry.pack(side="left", padx=(0, 5))
+                
+                addr_frame.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
+                self._address_entries.append(addr_frame)
+            else:
+                # Адрес не совместим - рисуем как простой текст с предупреждением
+                self._render_incompatible_address(addr_str, row, col)
+            
+            col += 1
+            if col >= 3:
+                col = 0
+                row += 1
+        
+        # Настройка grid
+        for c in range(min(3, col if col > 0 else 1)):
+            self._address_container.grid_columnconfigure(c, weight=0)
+        
+        self._address_container.update_idletasks()
+        logger.debug(f"[ProductDetails] Отрисовано {len(self._address_entries)} адресов (режим с подписями)")
+    
+    def _render_addresses_compact(self, addresses: list) -> None:
+        """Отрисовка адресов в компактном режиме (простые поля)."""
+        row, col = 0, 0
+        container_width = self._address_container.winfo_width()
+        if container_width <= 1:
             container_width = 1600
         
         for i, addr in enumerate(addresses):
-            # Оптимизированный расчет ширины поля
-            char_width = self._font_size * 0.6  # Примерная ширина одного символа в пикселях
-            text_width = int(len(addr) * char_width) + 20  # Ширина текста + отступы
-            
-            # Минимальная и максимальная ширина
-            min_width = 60  # Минимум для коротких адресов типа '100'
-            max_width = int(container_width * 0.55)  # Максимум ~55% от ширины контейнера
-            
-            # Ограничиваем ширину
+            char_width = self._font_size * 0.6
+            text_width = int(len(addr) * char_width) + 20
+            min_width = 60
+            max_width = int(container_width * 0.55)
             width = max(min_width, min(text_width, max_width))
             
-            logger.debug(f"[DEBUG_TEMP] Отрисовка адреса[{i}]: '{addr}' (длина={len(addr)}, ширина={width})")
+            logger.debug(f"[ProductDetails] Отрисовка адреса[{i}]: '{addr}' (ширина={width})")
             
             entry = ctk.CTkEntry(
                 self._address_container,
@@ -300,7 +363,6 @@ class ProductDetails(ctk.CTkFrame):
                 corner_radius=6,
                 width=width
             )
-            # Сначала вставляем текст, потом отключаем (в CTkEntry нельзя insert() в disabled state)
             entry.insert(0, addr)
             entry.configure(state="disabled")
             entry.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
@@ -308,38 +370,60 @@ class ProductDetails(ctk.CTkFrame):
             self._address_entries.append(entry)
             
             col += 1
-            # Перенос после каждого 3-го адреса
             if col >= 3:
                 col = 0
                 row += 1
         
-        # Настройка grid контейнера: не растягиваем колонки равномерно, чтобы сохранить заданную ширину полей
         for c in range(3):
             self._address_container.grid_columnconfigure(c, weight=0)
         
-        # Принудительное обновление геометрии для немедленного отображения
         self._address_container.update_idletasks()
+        logger.debug(f"[ProductDetails] Отрисовано {len(self._address_entries)} адресов (компактный режим)")
+    
+    def _render_incompatible_address(self, addr_str: str, row: int, col: int) -> None:
+        """Отрисовка несовместимого адреса с предупреждением."""
+        addr_frame = ctk.CTkFrame(
+            self._address_container,
+            fg_color="#FFF3CD",  # Светло-жёлтый фон для предупреждения
+            border_color="#FFC107",
+            corner_radius=6
+        )
         
-        # Диагностика видимости
-        logger.debug(f"[DEBUG_TEMP] Контейнер адресов: width={self._address_container.winfo_width()}, height={self._address_container.winfo_height()}")
-        logger.debug(f"[DEBUG_TEMP] Контейнер адресов видим: {self._address_container.winfo_ismapped()}")
+        # Иконка предупреждения
+        warning_lbl = ctk.CTkLabel(
+            addr_frame,
+            text="⚠️",
+            font=ctk.CTkFont(size=self._font_size)
+        )
+        warning_lbl.pack(side="left", padx=5)
         
-        # Проверка родителя (fields_frame)
-        fields_frame = self._address_container.master
-        logger.debug(f"[DEBUG_TEMP] Родитель (fields_frame): width={fields_frame.winfo_width()}, height={fields_frame.winfo_height()}")
-        logger.debug(f"[DEBUG_TEMP] Родитель видим: {fields_frame.winfo_ismapped()}")
+        # Текст адреса
+        entry = ctk.CTkEntry(
+            addr_frame,
+            height=self._font_size + 16,
+            font=ctk.CTkFont(size=self._font_size, family="Arial"),
+            fg_color="#FFFFFF",
+            text_color="#000000",
+            border_color="#AAAAAA",
+            corner_radius=6,
+            width=200
+        )
+        entry.insert(0, addr_str)
+        entry.configure(state="disabled")
+        entry.pack(side="left", padx=5, pady=2)
         
-        # Проверка самого ProductDetails
-        logger.debug(f"[DEBUG_TEMP] ProductDetails: width={self.winfo_width()}, height={self.winfo_height()}")
-        logger.debug(f"[DEBUG_TEMP] ProductDetails видим: {self.winfo_ismapped()}")
+        # Метка "нестандартный"
+        info_lbl = ctk.CTkLabel(
+            addr_frame,
+            text="(нестандартный)",
+            font=ctk.CTkFont(size=self._font_size - 2),
+            text_color="#666666"
+        )
+        info_lbl.pack(side="left", padx=5)
         
-        for i, entry in enumerate(self._address_entries):
-            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] виджет: width={entry.winfo_width()}, height={entry.winfo_height()}, visible={entry.winfo_ismapped()}")
-            # Проверка конфигурации grid
-            grid_info = entry.grid_info()
-            logger.debug(f"[DEBUG_TEMP] Адрес[{i}] grid: row={grid_info.get('row')}, col={grid_info.get('column')}, sticky={grid_info.get('sticky')}")
-        
-        logger.debug(f"[DEBUG_TEMP] Отрисовано {len(self._address_entries)} адресов")
+        addr_frame.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
+        self._address_entries.append(addr_frame)
+        logger.debug(f"[ProductDetails] Отрисован несовместимый адрес: {addr_str}")
     
     def _on_field_saved(self, field_name: str, new_value: str) -> None:
         """Обработчик сохранения поля из диалога."""
