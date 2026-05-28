@@ -119,6 +119,13 @@ class StubSettingsService(ISettingsService):
             'language': 'ru',
             'columns_visible': ['article', 'article2', 'name', 'address'],
             'columns_order': ['article', 'article2', 'name', 'address'],
+            'address_format': {
+                'enabled': True,
+                'separator': '-',
+                'custom_separator': '',
+                'levels': ['Блок', 'Стеллаж', 'Секция', 'Ряд', 'Ячейка'],
+                'display_mode': 'with_labels'
+            }
         }
     
     def get_setting(self, key: str, default: Any = None) -> Any:

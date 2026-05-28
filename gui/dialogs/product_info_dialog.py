@@ -21,7 +21,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
         store_adapter: Any = None,
         css_adapter: Any = None,
         font_size: int = 14,
-        details_service: Optional[ProductDetailsService] = None
+        details_service: Optional[ProductDetailsService] = None,
+        address_formatter: Any = None  # AddressFormatter из libs.utils
     ):
         super().__init__(master)
         
@@ -31,6 +32,7 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._css_adapter = css_adapter
         self._font_size = font_size
         self._details_service = details_service
+        self._address_formatter = address_formatter
         self._models_label = None
         self._detail_labels = []
         self._last_width = 800  # Для отслеживания изменений размера
@@ -510,16 +512,27 @@ class ProductInfoDialog(ctk.CTkToplevel):
         )
         lbl_num.grid(row=0, column=0, padx=(0, 5))
         
-        # Entry для адреса
-        entry = ctk.CTkEntry(
-            row_frame,
-            placeholder_text="Введите адрес",
-            height=self._font_size + 16,
-            font=ctk.CTkFont(size=self._font_size, family="Arial")
+        # Проверяем, включено ли форматирование адресов
+        use_formatting = (
+            self._address_formatter is not None and 
+            hasattr(self._address_formatter, 'config') and
+            getattr(self._address_formatter.config, 'enabled', False)
         )
-        entry.insert(0, initial_value)
-        entry.grid(row=0, column=1, sticky="ew", padx=5)
-        self._location_entries.append(entry)
+        
+        if use_formatting:
+            # Создаём сетку полей с подписями согласно формату
+            self._create_formatted_address_fields(row_frame, initial_value)
+        else:
+            # Обычное одно поле ввода
+            entry = ctk.CTkEntry(
+                row_frame,
+                placeholder_text="Введите адрес",
+                height=self._font_size + 16,
+                font=ctk.CTkFont(size=self._font_size, family="Arial")
+            )
+            entry.insert(0, initial_value)
+            entry.grid(row=0, column=1, sticky="ew", padx=5)
+            self._location_entries.append(entry)
         
         # Кнопка "Удалить" (корзина)
         btn_delete = ctk.CTkButton(
@@ -550,6 +563,45 @@ class ProductInfoDialog(ctk.CTkToplevel):
         # Отслеживаем оригинальное значение
         if is_original:
             self._unsaved_changes[row_index] = initial_value
+    
+    def _create_formatted_address_fields(self, parent: ctk.CTkFrame, initial_value: str) -> None:
+        """Создать сетку полей с подписями для форматированного адреса."""
+        levels = self._address_formatter.get_level_names()
+        values = self._address_formatter.parse(initial_value) if initial_value else [""] * len(levels)
+        
+        # Контейнер для полей с подписями
+        fields_container = ctk.CTkFrame(parent, fg_color="transparent")
+        fields_container.grid(row=0, column=1, sticky="ew", padx=5)
+        
+        for i, level_name in enumerate(levels):
+            value = values[i] if i < len(values) else ""
+            
+            # Label с названием уровня
+            lbl = ctk.CTkLabel(
+                fields_container,
+                text=f"{level_name}: ",
+                font=ctk.CTkFont(size=self._font_size),
+                text_color="#000000"
+            )
+            lbl.pack(side="left")
+            
+            # Entry со значением
+            entry_width = max(40, int(len(value) * self._font_size * 0.6) + 10)
+            entry = ctk.CTkEntry(
+                fields_container,
+                height=self._font_size + 16,
+                font=ctk.CTkFont(size=self._font_size, family="Arial"),
+                fg_color="#FFFFFF",
+                text_color="#000000",
+                border_color="#AAAAAA",
+                corner_radius=6,
+                width=entry_width
+            )
+            entry.insert(0, value)
+            entry.pack(side="left", padx=(0, 5))
+            
+            # Сохраняем ссылку на entry для последующего получения значения
+            self._location_entries.append(entry)
     
     def _delete_address_row(self, index: int) -> None:
         """Удалить строку адреса с подтверждением."""
@@ -628,7 +680,37 @@ class ProductInfoDialog(ctk.CTkToplevel):
         if index < 0 or index >= len(self._location_entries):
             return
         
-        new_value = self._location_entries[index].get().strip()
+        # Собираем значение из полей в зависимости от режима форматирования
+        use_formatting = (
+            self._address_formatter is not None and 
+            hasattr(self._address_formatter, 'config') and
+            getattr(self._address_formatter.config, 'enabled', False)
+        )
+        
+        if use_formatting:
+            # Для форматированного адреса собираем значения из всех entry этой строки
+            # Находим все entry, принадлежащие этой строке
+            row_frame = self._location_frames[index]
+            entry_widgets = [w for w in row_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
+            if entry_widgets:
+                fields_container = entry_widgets[0]  # Первый фрейм - это fields_container
+                values = []
+                for widget in fields_container.winfo_children():
+                    if isinstance(widget, tuple) and len(widget) == 2:
+                        # Это кортеж (label, entry)
+                        values.append(widget[1].get().strip())
+                    elif hasattr(widget, 'get'):
+                        # Это entry
+                        values.append(widget.get().strip())
+                
+                # Форматируем обратно в строку
+                new_value = self._address_formatter.format(values) if values else ""
+            else:
+                new_value = ""
+        else:
+            # Для обычного режима просто берём значение entry
+            new_value = self._location_entries[index].get().strip()
+        
         if not new_value:
             return
         
@@ -692,7 +774,33 @@ class ProductInfoDialog(ctk.CTkToplevel):
     def _save_all_locations(self) -> None:
         """Сохранить все адреса."""
         article = self._product.get('article', '')
-        all_locations = [entry.get().strip() for entry in self._location_entries if entry.get().strip()]
+        
+        # Собираем значения с учётом форматирования
+        use_formatting = (
+            self._address_formatter is not None and 
+            hasattr(self._address_formatter, 'config') and
+            getattr(self._address_formatter.config, 'enabled', False)
+        )
+        
+        all_locations = []
+        if use_formatting:
+            # Для каждого фрейма собираем значения из полей
+            for row_frame in self._location_frames:
+                entry_widgets = [w for w in row_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
+                if entry_widgets:
+                    fields_container = entry_widgets[0]
+                    values = []
+                    for widget in fields_container.winfo_children():
+                        if hasattr(widget, 'get'):
+                            values.append(widget.get().strip())
+                    
+                    if values:
+                        formatted = self._address_formatter.format(values)
+                        if formatted:
+                            all_locations.append(formatted)
+        else:
+            # Обычный режим - просто берём значения entry
+            all_locations = [entry.get().strip() for entry in self._location_entries if entry.get().strip()]
         
         if not all_locations:
             return

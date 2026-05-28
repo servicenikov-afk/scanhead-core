@@ -190,7 +190,8 @@ class ProductDetails(ctk.CTkFrame):
             store_adapter=self._product_repo,
             css_adapter=None,
             font_size=self._font_size,
-            details_service=self._details_service
+            details_service=self._details_service,
+            address_formatter=self._address_formatter  # Передаём AddressFormatter
         )
     
     def _on_add_to_queue_click(self) -> None:
