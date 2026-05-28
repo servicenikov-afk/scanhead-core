@@ -32,10 +32,10 @@ class SettingsDialog(ctk.CTkToplevel):
         
         logger.debug("[SettingsDialog] Открытие диалога настроек")
         
-        # Настройки окна (размер 800x500 - на 100px меньше по высоте)
+        # Настройки окна (увеличили высоту до 650px для вкладки "Адрес")
         self.title("⚙ Настройки приложения")
-        self.geometry("800x500+50+50")
-        self.minsize(600, 450)
+        self.geometry("800x650+50+50")
+        self.minsize(600, 550)
         
         self.transient(master)
         
@@ -271,13 +271,14 @@ class SettingsDialog(ctk.CTkToplevel):
         )
         lbl_levels.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
         
-        # Контейнер для списка уровней
+        # Контейнер для списка уровней (с прокруткой)
         self._levels_container = ctk.CTkScrollableFrame(
             self._format_controls_frame,
-            height=150,
+            height=200,  # Увеличили высоту
             fg_color="transparent"
         )
         self._levels_container.grid(row=r+1, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
+        self._format_controls_frame.grid_rowconfigure(r+1, weight=1)  # Растягиваем контейнер уровней
         
         # Кнопка добавления уровня
         self._add_level_button = ctk.CTkButton(
