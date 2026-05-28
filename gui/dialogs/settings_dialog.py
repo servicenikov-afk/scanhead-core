@@ -215,13 +215,20 @@ class SettingsDialog(ctk.CTkToplevel):
     
     def _create_address_tab(self, parent: Any) -> None:
         """Создание вкладки 'Адрес' с настройками форматирования."""
-        parent.grid_columnconfigure(1, weight=1)
+        # Обёртка с прокруткой для всего содержимого вкладки
+        scrollable_frame = ctk.CTkScrollableFrame(parent, fg_color="transparent")
+        scrollable_frame.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        parent.grid_columnconfigure(0, weight=1)
+        parent.grid_rowconfigure(0, weight=1)
+        
+        content_frame = scrollable_frame
+        content_frame.grid_columnconfigure(1, weight=1)
         
         # === СЕКЦИЯ: Переключатель режима ===
         row = 0
         self._address_enabled_var = ctk.BooleanVar(value=False)
         self._address_enabled_checkbox = ctk.CTkCheckBox(
-            parent,
+            content_frame,
             text="Использовать форматированный адрес",
             variable=self._address_enabled_var,
             command=self._toggle_address_format_controls
@@ -229,7 +236,7 @@ class SettingsDialog(ctk.CTkToplevel):
         self._address_enabled_checkbox.grid(row=row, column=0, columnspan=2, padx=10, pady=10, sticky="w")
         
         # Контейнер для настроек формата (изначально скрыт)
-        self._format_controls_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        self._format_controls_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
         self._format_controls_frame.grid(row=row+1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
         self._format_controls_frame.grid_columnconfigure(1, weight=1)
         
@@ -271,14 +278,14 @@ class SettingsDialog(ctk.CTkToplevel):
         )
         lbl_levels.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
         
-        # Контейнер для списка уровней (с прокруткой)
+        # Контейнер для списка уровней (с собственной прокруткой для длинных списков)
         self._levels_container = ctk.CTkScrollableFrame(
             self._format_controls_frame,
-            height=200,  # Увеличили высоту
-            fg_color="transparent"
+            height=250,
+            fg_color=("gray85", "gray25")
         )
         self._levels_container.grid(row=r+1, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
-        self._format_controls_frame.grid_rowconfigure(r+1, weight=1)  # Растягиваем контейнер уровней
+        self._format_controls_frame.grid_rowconfigure(r+1, weight=1)
         
         # Кнопка добавления уровня
         self._add_level_button = ctk.CTkButton(
