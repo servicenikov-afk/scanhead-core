@@ -298,11 +298,11 @@ class ProductDetails(ctk.CTkFrame):
                     # Label с названием уровня
                     lbl = ctk.CTkLabel(
                         addr_frame,
-                        text=f"{label_name}: ",
+                        text=f"{label_name}:",
                         font=ctk.CTkFont(size=self._font_size),
                         text_color="#000000"
                     )
-                    lbl.pack(side="left")
+                    lbl.grid(row=0, column=i*2, padx=(0, 3), pady=2, sticky="e")
                     
                     # Readonly Entry со значением
                     entry_width = max(40, int(len(value) * self._font_size * 0.6) + 10)
@@ -318,12 +318,12 @@ class ProductDetails(ctk.CTkFrame):
                     )
                     entry.insert(0, value)
                     entry.configure(state="disabled")
-                    entry.pack(side="left", padx=(0, 5))
+                    entry.grid(row=0, column=i*2+1, padx=(0, 8), pady=2, sticky="w")
                 
                 addr_frame.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
                 self._address_entries.append(addr_frame)
             else:
-                # Адрес не совместим - рисуем как простой текст с предупреждением
+                # Адрес не совместим - рисуем как простой текст
                 self._render_incompatible_address(addr_str, row, col)
             
             col += 1
@@ -335,7 +335,6 @@ class ProductDetails(ctk.CTkFrame):
         for c in range(min(3, col if col > 0 else 1)):
             self._address_container.grid_columnconfigure(c, weight=0)
         
-        self._address_container.update_idletasks()
         logger.debug(f"[ProductDetails] Отрисовано {len(self._address_entries)} адресов (режим с подписями)")
     
     def _render_addresses_compact(self, addresses: list) -> None:
@@ -378,29 +377,12 @@ class ProductDetails(ctk.CTkFrame):
         for c in range(3):
             self._address_container.grid_columnconfigure(c, weight=0)
         
-        self._address_container.update_idletasks()
         logger.debug(f"[ProductDetails] Отрисовано {len(self._address_entries)} адресов (компактный режим)")
     
     def _render_incompatible_address(self, addr_str: str, row: int, col: int) -> None:
-        """Отрисовка несовместимого адреса с предупреждением."""
-        addr_frame = ctk.CTkFrame(
-            self._address_container,
-            fg_color="#FFF3CD",  # Светло-жёлтый фон для предупреждения
-            border_color="#FFC107",
-            corner_radius=6
-        )
-        
-        # Иконка предупреждения
-        warning_lbl = ctk.CTkLabel(
-            addr_frame,
-            text="⚠️",
-            font=ctk.CTkFont(size=self._font_size)
-        )
-        warning_lbl.pack(side="left", padx=5)
-        
-        # Текст адреса
+        """Отрисовка несовместимого адреса (простой текст без предупреждения)."""
         entry = ctk.CTkEntry(
-            addr_frame,
+            self._address_container,
             height=self._font_size + 16,
             font=ctk.CTkFont(size=self._font_size, family="Arial"),
             fg_color="#FFFFFF",
@@ -411,10 +393,9 @@ class ProductDetails(ctk.CTkFrame):
         )
         entry.insert(0, addr_str)
         entry.configure(state="disabled")
-        entry.pack(side="left", padx=5, pady=2)
+        entry.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
         
-        addr_frame.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
-        self._address_entries.append(addr_frame)
+        self._address_entries.append(entry)
         logger.debug(f"[ProductDetails] Отрисован несовместимый адрес: {addr_str}")
     
     def _on_field_saved(self, field_name: str, new_value: str) -> None:
