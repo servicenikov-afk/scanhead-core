@@ -413,15 +413,6 @@ class ProductDetails(ctk.CTkFrame):
         entry.configure(state="disabled")
         entry.pack(side="left", padx=5, pady=2)
         
-        # Метка "нестандартный"
-        info_lbl = ctk.CTkLabel(
-            addr_frame,
-            text="(нестандартный)",
-            font=ctk.CTkFont(size=self._font_size - 2),
-            text_color="#666666"
-        )
-        info_lbl.pack(side="left", padx=5)
-        
         addr_frame.grid(row=row, column=col, padx=(0, 10), pady=2, sticky="w")
         self._address_entries.append(addr_frame)
         logger.debug(f"[ProductDetails] Отрисован несовместимый адрес: {addr_str}")
