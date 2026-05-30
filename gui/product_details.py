@@ -256,8 +256,14 @@ class ProductDetails(ctk.CTkFrame):
         """Отрисовка адресов с учётом формата (компактный/с подписями)."""
         logger.debug(f"[ProductDetails] _render_addresses вызван")
         
-        # Очищаем контейнер
+        # Очищаем контейнер безопасно: сначала отменяем все отложенные события
         for widget in self._address_container.winfo_children():
+            try:
+                # Отменяем любые запланированные перерисовки
+                if hasattr(widget, '_draw_engine'):
+                    widget._draw_engine.cancel()
+            except Exception:
+                pass  # Игнорируем ошибки при отмене
             widget.destroy()
         self._address_entries.clear()
         
@@ -437,7 +443,17 @@ class ProductDetails(ctk.CTkFrame):
                 entry.insert(0, value)
             entry.configure(state="disabled")
         
-        # Отрисовываем адреса отдельными полями
+        # Отрисовываем адреса отдельными полями (асинхронно, чтобы избежать race condition)
+        # Используем after_idle для гарантии завершения всех предыдущих событий
+        self.after_idle(self._render_addresses_safe)
+    
+    def _render_addresses_safe(self) -> None:
+        """Безопасная отрисовка адресов с проверкой актуальности товара."""
+        # Проверяем, что товар всё ещё актуален (не был заменён во время ожидания)
+        if not self._current_product:
+            logger.debug("[ProductDetails] Прерываем отрисовку: товар очищен")
+            return
+        
         self._render_addresses()
     
     def clear(self) -> None:
@@ -452,9 +468,17 @@ class ProductDetails(ctk.CTkFrame):
             entry.delete(0, "end")
             entry.configure(state="disabled")
         
-        # Очищаем контейнер адресов
-        for widget in self._address_container.winfo_children():
-            widget.destroy()
+        # Очищаем контейнер адресов безопасно
+        try:
+            for widget in self._address_container.winfo_children():
+                try:
+                    if hasattr(widget, '_draw_engine'):
+                        widget._draw_engine.cancel()
+                except Exception:
+                    pass
+                widget.destroy()
+        except Exception:
+            pass  # Игнорируем ошибки при очистке (виджет может быть уничтожен)
         self._address_entries.clear()
     
     def get_current_product(self) -> Optional[Product]:
