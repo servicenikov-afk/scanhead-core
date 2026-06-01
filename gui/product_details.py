@@ -30,7 +30,7 @@ class ProductDetails(ItemsListBase):
         product_repo: IProductRepository,
         details_service: ProductDetailsService,
         address_formatter: AddressFormatter,
-        app_modes: Dict[str, bool],
+        # app_modes: Dict[str, bool],  # Удален obsolete параметр
         font_size: int = 14,
         **kwargs
     ):
@@ -42,11 +42,12 @@ class ProductDetails(ItemsListBase):
             product_repo: Сервис для работы с репозиторием продуктов (интерфейс).
             details_service: Сервис для получения детальной информации о продуктах.
             address_formatter: Форматтер адресов.
-            app_modes: Словарь с режимами приложения.
+            # app_modes: Словарь с режимами приложения. (obsolete)
             font_size: Размер шрифта для виджетов.
             **kwargs: Дополнительные аргументы.
         """
-        super().__init__(master, app_modes=app_modes, **kwargs)
+        # super().__init__(master, app_modes=app_modes, **kwargs) # Удалена ссылка на app_modes
+        super().__init__(master, **kwargs) 
         
         self._product_repo = product_repo
         self._details_service = details_service
