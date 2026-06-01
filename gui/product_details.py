@@ -132,7 +132,11 @@ class ProductDetails(ItemsListBase):
             font=ctk.CTkFont(size=self._font_size - 2)
         )
 
-        self._tab_details = ctk.CTkTabview(self._frame_details, font=ctk.CTkFont(size=self._font_size - 1))
+        # Removed the unsupported 'font' parameter from CTkTabview constructor.
+        # CustomTkinter documentation and issue #1134 confirm this parameter is invalid.
+        # Font styling for tab buttons is not directly supported via constructor.
+        # Font for child widgets within tabs can be set individually.
+        self._tab_details = ctk.CTkTabview(self._frame_details) 
         self._tab_details.grid(row=1, column=0, sticky="nsew", padx=10, pady=(10, 10))
         self._tab_details.grid_columnconfigure(0, weight=1)
         self._tab_details.grid_rowconfigure(0, weight=1)
