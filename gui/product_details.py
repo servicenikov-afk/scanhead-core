@@ -7,7 +7,10 @@ import customtkinter as ctk
 from PIL import Image
 
 from gui.framework.dialog_base import DialogHandler
-from gui.framework.items_list_base import ItemsListBase
+# --- ИСПРАВЛЕННЫЙ ИМПОРТ ---
+# from gui.framework.items_list_base import ItemsListBase # Было
+from gui.framework.list_base import ItemsListBase # Стало (предположение)
+
 from gui.services.product_details_service import ProductDetailsService
 from gui.services.product_repo_service import ProductRepoService # Реальный импорт
 from gui.shared.product_formatter import ProductFormatter # Реальный импорт
@@ -96,7 +99,9 @@ class ProductDetails(ItemsListBase):
 
     def _build_list_widgets(self):
         """Сборка виджетов для списка продуктов."""
-        self._list_widget = ItemsListBase(
+        # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
+        # self._list_widget = ItemsListBase( # Было
+        self._list_widget = ItemsListBase( # Стало (предположение)
             self._frame_list,
             columns=("article", "name", "price"),
             column_widths=(80, 250, 100),
@@ -193,13 +198,17 @@ class ProductDetails(ItemsListBase):
         """
         try:
             self._product_list = self._product_repo.get_products(query=query) # Используем реальный метод
-            self._list_widget.set_items(self._product_list)
+            # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
+            # self._list_widget.set_items(self._product_list) # Было
+            self._list_widget.set_items(self._product_list) # Стало (предположение)
             self._list_widget.update_view()
             
             # Если есть продукты, выбираем первый
             if self._product_list:
                 first_product = self._product_list[0]
-                self._list_widget.select_item(first_product)
+                # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
+                # self._list_widget.select_item(first_product) # Было
+                self._list_widget.select_item(first_product) # Стало (предположение)
                 self.on_product_select(first_product)
                 self.set_current_product(first_product) # Устанавливаем текущий продукт
             else:
