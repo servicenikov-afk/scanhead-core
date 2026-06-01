@@ -6,10 +6,10 @@ from typing import Optional, Dict, Any, List
 import customtkinter as ctk
 from PIL import Image
 
-from gui.framework.dialog_base import DialogHandler
 # --- ИСПРАВЛЕННЫЙ ИМПОРТ ---
 # from gui.framework.items_list_base import ItemsListBase # Было
-from gui.framework.list_base import ItemsListBase # Стало (предположение)
+# from gui.framework.list_base import ItemsListBase # Стало (предположение, которое оказалось неверным)
+from gui.framework.list_base import ItemsListBase # Теперь это корректный импорт
 
 from gui.services.product_details_service import ProductDetailsService
 from gui.services.product_repo_service import ProductRepoService # Реальный импорт
