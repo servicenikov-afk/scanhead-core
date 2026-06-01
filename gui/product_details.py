@@ -11,7 +11,7 @@ from gui.services.product_details_service import ProductDetailsService
 from libs.utils import AddressFormatter, AddressFormatConfig
 from libs.domain_models import Product
 # from libs.domain_models.product_details import ProductDetails  # Удален, т.к. файла не существует
-from libs.i18n.i18n import I18n
+# from libs.i18n.i18n import I18n  # Удален, т.к. модуль не найден
 
 
 logger = logging.getLogger(__name__)
@@ -249,7 +249,9 @@ class ProductDetails(ItemsListBase):
             price_text = f"{price} {currency}" if price else "N/A"
             
         stock = details.get("stock", 0) # По умолчанию 0, если ключ отсутствует
-        stock_text = I18n.get("product_details.availability.in_stock", "product_details.availability.in_stock", stock) if stock > 0 else I18n.get("product_details.availability.out_of_stock", "product_details.availability.out_of_stock")
+        # Заменяем I18n.get на строку, т.к. I18n сервис недоступен
+        # stock_text = I18n.get("product_details.availability.in_stock", "product_details.availability.in_stock", stock) if stock > 0 else I18n.get("product_details.availability.out_of_stock", "product_details.availability.out_of_stock")
+        stock_text = "В наличии" if stock > 0 else "Нет в наличии" # TODO: Интегрировать сервис i18n
         
         self._lbl_product_price.configure(text=f"Цена: {price_text}")
         self._lbl_product_availability.configure(text=f"Наличие: {stock_text}")
