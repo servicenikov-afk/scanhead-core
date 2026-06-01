@@ -5,26 +5,34 @@ from dataclasses import dataclass
 from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkTabview, CTkScrollableFrame, CTkCanvas, CTkFont
 from PIL import Image
 
+# === СУЩЕСТВУЮЩИЕ ИМПОРТЫ ===
 from gui.framework.dialog_base import DialogHandler
 from gui.services.product_details_service import ProductDetailsService
-from gui.services.error_handling_services import ErrorHandlingService
-from gui.services.main_services import MainServices
 from libs.data.product import Product
 from libs.data.product_details import ProductDetails
 from libs.i18n.i18n import I18n
 
+# === ЗАГЛУШКИ ДЛЯ ОТСУТСТВУЮЩИХ ЗАВИСИМОСТЕЙ (inline) ===
 
-# === ЗАГЛУШКИ ДЛЯ ОТСУТСТВУЮЩИХ ЗАВИСИМОСТЕЙ ===
+# Заглушка для MainServices
+class MainServices:
+    def __init__(self):
+        self.app_modes = {}
+
+# Заглушка для ErrorHandlingService
+class ErrorHandlingService:
+    def show_error_message(self, title: str, message: str):
+        print(f"[ERROR] {title}: {message}")
 
 # Заглушка для ProductDetailsCallbacks
 class ProductDetailsCallbacks:
     def update_product_details_tabs(self, details):
         pass
 
-# Заглушка для ProductInfo (dataclass-подобная)
+# Заглушка для ProductInfo
 @dataclass
 class ProductInfo:
-    product_id: str = ""
+    article: str = ""
     product_name: str = ""
     model: str = ""
 
@@ -44,7 +52,6 @@ class ProductDetailsWidgetsBuilder:
     
     def build_widgets(self) -> ProductDetailsWidgets:
         widgets = ProductDetailsWidgets()
-        # Создаём виджет загрузки напрямую
         # Предполагаем, что _font_size доступен или устанавливаем значение по умолчанию
         _font_size = 14 # Устанавливаем значение по умолчанию, если _font_size не определено
         widgets.lbl_css_loading = CTkLabel(self.master, text="⏳ Загрузка...", font=CTkFont(size=_font_size))
@@ -63,7 +70,6 @@ class ProductInfoDialog(DialogHandler):
         main_services: MainServices,
         product_details_service: ProductDetailsService,
         error_handling_service: ErrorHandlingService,
-        # Исправлено: callbacks теперь может быть None и используется заглушка
         callbacks: Optional[ProductDetailsCallbacks] = None,
     ):
         """
@@ -77,14 +83,16 @@ class ProductInfoDialog(DialogHandler):
             error_handling_service: Сервис для обработки ошибок.
             callbacks: Коллбэки для взаимодействия с другими частями приложения.
         """
-        super().__init__(master=master, app_modes=main_services.app_modes)
+        # self уже является экземпляром DialogHandler, удалена дублирующая инициализация
+        super().__init__(master=master, app_modes=main_services.app_modes) # Вызываем конструктор родительского класса
+
         self.__product = product
         self.__main_services = main_services
         self.__product_details_service = product_details_service
         self.__error_handling_service = error_handling_service
-        # Исправлено: Используем заглушку, если callbacks не предоставлен
         self.__callbacks = callbacks or ProductDetailsCallbacks()
 
+        # Вызовы к self вместо __dialog_handler
         self.configure_window(
             title=f"{product.product_name} ({product.model})",
             resizable=True,
@@ -99,7 +107,7 @@ class ProductInfoDialog(DialogHandler):
 
     def __build_widgets(self):
         """Сборка виджетов диалога."""
-        # Прямая инициализация виджетов вместо использования builder'а
+        # Прямая инициализация виджетов
         self.__product_details_widgets = ProductDetailsWidgets()
         # Предполагаем, что _font_size доступен или устанавливаем значение по умолчанию
         _font_size = 14 # Устанавливаем значение по умолчанию, если _font_size не определено
@@ -112,8 +120,9 @@ class ProductInfoDialog(DialogHandler):
     def _fetch_product_details(self):
         """Запрос данных о товаре."""
         self.__product_details_service.get_product_details(
-            # Исправлено: Используем self.__product.article вместо product_id
-            product_id=self.__product.article, callback=self.on_details_loaded
+            # Используем getattr для совместимости с product_id или article
+            product_id=getattr(self.__product, 'product_id', getattr(self.__product, 'article', '')),
+            callback=self.on_details_loaded
         )
 
     def on_details_loaded(self, details: Optional[ProductDetails]):
@@ -132,19 +141,27 @@ class ProductInfoDialog(DialogHandler):
             # Проверяем, существует ли виджет перед обновлением
             if self._lbl_css_loading and self._lbl_css_loading.winfo_exists():
                 self._lbl_css_loading.configure(text="Не удалось загрузить данные")
-            # Отображаем сообщение об ошибке для пользователя
-            self.__error_handling_service.show_error_message(
-                title=I18n.get(
-                    "product_details.error.title",
-                    "product_details.error.title",
-                    self.__product.product_name,
-                ),
-                message=I18n.get(
-                    "product_details.error.message",
-                    "product_details.error.message",
-                    self.__product.product_name,
-                ),
-            )
+            
+            # Безопасный вызов show_error_message
+            try:
+                self.__error_handling_service.show_error_message(
+                    title=I18n.get(
+                        "product_details.error.title",
+                        "product_details.error.title",
+                        self.__product.product_name,
+                    ),
+                    message=I18n.get(
+                        "product_details.error.message",
+                        "product_details.error.message",
+                        self.__product.product_name,
+                    ),
+                )
+            except AttributeError:
+                # fallback, если ErrorHandlingService не работает должным образом
+                title = I18n.get("product_details.error.title", "product_details.error.title", self.__product.product_name)
+                message = I18n.get("product_details.error.message", "product_details.error.message", self.__product.product_name)
+                print(f"[ERROR] {title}: {message}")
+
             # Закрываем диалог, так как не можем отобразить информацию
             self.destroy()
 
@@ -217,14 +234,21 @@ class ProductInfoDialog(DialogHandler):
             error_handling_service,
             callbacks,
         )
+        # Вызов grab_set на self, так как self является экземпляром DialogHandler
         cls._instance.grab_set()
 
 # Проверка синтаксиса
 if __name__ == "__main__":
     try:
+        # Добавляем текущую директорию в sys.path для корректного импорта
+        # Это может потребоваться, если скрипт запускается из другой директории
         import sys
-        sys.path.append(".") # Добавляем текущую директорию в sys.path для корректного импорта
-        import gui.dialogs.product_info_dialog # Импортируем файл для проверки синтаксиса
+        # Проверяем, есть ли уже текущая директория в sys.path, чтобы избежать дублирования
+        if "." not in sys.path:
+             sys.path.insert(0, ".") 
+        
+        # Импортируем файл для проверки синтаксиса
+        import gui.dialogs.product_info_dialog 
         print("Синтаксис gui/dialogs/product_info_dialog.py корректен.")
     except ModuleNotFoundError as e:
         print(f"Ошибка ModuleNotFoundError при проверке синтаксиса: {e}")
@@ -232,4 +256,3 @@ if __name__ == "__main__":
         print(f"Ошибка ImportError при проверке синтаксиса: {e}")
     except Exception as e:
         print(f"Непредвиденная ошибка при проверке синтаксиса: {e}")
-
