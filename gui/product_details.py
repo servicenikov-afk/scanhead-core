@@ -58,16 +58,21 @@ class ProductDetails(ItemsListBase):
         super().__init__(master)
         
         # --- Инициализация виджетов ---
+        # self является CTkScrollableFrame (через ItemsListBase), поэтому его прямые дети должны использовать pack()
         self._frame_list = ctk.CTkFrame(self, fg_color="transparent")
-        self._frame_list.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
-        self._frame_list.grid_rowconfigure(0, weight=1)
-        self._frame_list.grid_columnconfigure(0, weight=1)
-
+        # Изменено с .grid() на .pack()
+        self._frame_list.pack(side="left", fill="both", expand=True, padx=(10, 5), pady=10) 
+        # Удаляем grid_rowconfigure и grid_columnconfigure, так как они не используются с pack
+        # self._frame_list.grid_rowconfigure(0, weight=1) 
+        # self._frame_list.grid_columnconfigure(0, weight=1)
+      
         self._frame_details = ctk.CTkFrame(self, width=300, fg_color="gray80")
-        self._frame_details.grid(row=0, column=1, sticky="ns", padx=(5, 10), pady=10)
-        self._frame_details.grid_rowconfigure(0, weight=1)
-        self._frame_details.grid_columnconfigure(0, weight=0)
-        self._frame_details.grid_propagate(False) # Фиксируем ширину
+        # Используем pack для _frame_details, чтобы он находился рядом с _frame_list
+        self._frame_details.pack(side="left", fill="y", padx=(5, 10), pady=10) 
+        # Удаляем grid_rowconfigure и grid_columnconfigure
+        # self._frame_details.grid_rowconfigure(0, weight=1) 
+        # self._frame_details.grid_columnconfigure(0, weight=0)
+        self._frame_details.grid_propagate(False) # Фиксируем ширину - это относится к frame_details, оставляем
 
         # --- Данные ---
         self._product_list: List[Product] = []
@@ -83,17 +88,29 @@ class ProductDetails(ItemsListBase):
     def _build_list_widgets(self):
         """Сборка виджетов для списка продуктов."""
         self._list_widget = ItemsListBase(
-            self._frame_list,
+            self._frame_list, # _list_widget is a child of _frame_list
             columns=("article", "name", "price"),
             column_widths=(80, 250, 100),
             column_texts=("Артикул", "Наименование", "Цена"),
             item_select_callback=self.on_product_select,
             font_size=self._font_size,
         )
-        self._list_widget.pack(fill="both", expand=True)
+        # ItemsListBase uses pack internally, so this should be fine.
+        self._list_widget.pack(fill="both", expand=True) 
 
     def _build_details_widgets(self):
         """Сборка виджетов для деталей продукта."""
+        # These widgets are children of _frame_details, which uses grid.
+        # This means _frame_details MUST use grid for its children.
+        # Reverting _frame_details back to grid for its children.
+        # Original structure for _frame_details children:
+        # details_header = ctk.CTkFrame(self._frame_details, fg_color="transparent")
+        # details_header.grid(row=0, column=0, sticky="nsew", padx=10, pady=(10, 0))
+        # ...
+        # self._tab_details = ctk.CTkTabview(self._frame_details, font=ctk.CTkFont(size=self._font_size - 1))
+        # self._tab_details.grid(row=1, column=0, sticky="nsew", padx=10, pady=(10, 10))
+        # This seems correct as _frame_details is not the main container of ProductDetails.
+
         details_header = ctk.CTkFrame(self._frame_details, fg_color="transparent")
         details_header.grid(row=0, column=0, sticky="nsew", padx=10, pady=(10, 0))
         details_header.grid_columnconfigure(0, weight=1)
