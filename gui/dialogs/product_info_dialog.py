@@ -5,13 +5,13 @@ from typing import Optional
 from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkTabview, CTkScrollableFrame, CTkCanvas
 from PIL import Image
 
-from gui.dialogs.common.dialog_handling import DialogHandler
+from gui.framework.dialog_base import DialogHandler  # Импортируем из нового места
 from gui.dialogs.common.error_message_dialog import ErrorMessageDialog
 from gui.dialogs.common.messages_box import MessagesBox
 from gui.dialogs.product_details.common.callbacks import ProductDetailsCallbacks
 from gui.dialogs.product_details.common.common import ProductInfo, ProductDetailsWidgets
 from gui.dialogs.product_details.common.product_details_widgets_builder import ProductDetailsWidgetsBuilder
-from gui.dialogs.product_details.services.product_details_service import ProductDetailsService
+from gui.services.product_details_service import ProductDetailsService # Корректный импорт
 from gui.services.error_handling_services import ErrorHandlingService
 from gui.services.main_services import MainServices
 from libs.data.product import Product
@@ -19,7 +19,7 @@ from libs.data.product_details import ProductDetails
 from libs.i18n.i18n import I18n
 
 
-class ProductInfoDialog(DialogHandler):
+class ProductInfoDialog(DialogHandler):  # Наследуемся от исправленного DialogHandler
     """Диалог для отображения подробной информации о товаре."""
 
     _instance = None
@@ -44,17 +44,16 @@ class ProductInfoDialog(DialogHandler):
             error_handling_service: Сервис для обработки ошибок.
             callbacks: Коллбэки для взаимодействия с другими частями приложения.
         """
-        super().__init__(master=master, app_modes=main_services.app_modes)
+        super().__init__(master=master, app_modes=main_services.app_modes)  # Передаем app_modes
         self.__product = product
         self.__main_services = main_services
         self.__product_details_service = product_details_service
         self.__error_handling_service = error_handling_service
         self.__callbacks = callbacks
 
-        self.__dialog_handler = DialogHandler(master=self, app_modes=main_services.app_modes)
-        self.__product_details_widgets: ProductDetailsWidgets = ProductDetailsWidgets()
+        # Убран дублирующий экземпляр DialogHandler
 
-        self.__dialog_handler.configure_window(
+        self.configure_window(  # Используем метод базового класса
             title=f"{product.product_name} ({product.model})",
             resizable=True,
             width=1200,
@@ -65,6 +64,8 @@ class ProductInfoDialog(DialogHandler):
 
         self.__build_widgets()
         self._fetch_product_details()
+
+    # Метод configure_window теперь в базовом классе DialogHandler
 
     def __build_widgets(self):
         """Сборка виджетов диалога."""
@@ -90,7 +91,9 @@ class ProductInfoDialog(DialogHandler):
         Args:
             details: Объект ProductDetails или None в случае ошибки.
         """
-        self._lbl_css_loading.grid_forget()  # Убираем индикатор загрузки
+        # Убираем индикатор загрузки, если он существует
+        if self._lbl_css_loading and self._lbl_css_loading.winfo_exists():
+            self._lbl_css_loading.grid_forget()
 
         if details is None:
             # Устанавливаем текст ошибки, если данные не были загружены
@@ -179,4 +182,3 @@ class ProductInfoDialog(DialogHandler):
             callbacks,
         )
         cls._instance.grab_set()
-
