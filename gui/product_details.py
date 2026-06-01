@@ -1,24 +1,16 @@
 """Модуль, отвечающий за отображение деталей продукта."""
 
 import logging
-from typing import Optional, Dict, Any, List, Type, Callable
+from typing import Optional, Dict, Any, List, Callable
 from PIL import Image
 import customtkinter as ctk
 
-from gui.framework.list_base import ItemsListBase # Теперь это корректный импорт
-
-from services.interfaces import IProductRepository # Реальный импорт, используем интерфейс
-
+from gui.framework.list_base import ItemsListBase
+from services.interfaces import IProductRepository
 from gui.services.product_details_service import ProductDetailsService
-# --- ЗАМЕНА НЕКОРРЕКТНОГО ИМПОРТА ---
-# from gui.shared.product_formatter import ProductFormatter # Этот импорт также некорректен, если ProductFormatter не существует. Заменим на заглушку или удалим, если не используется.
-# from gui.shared.product_formatter import ProductFormatter # Предполагаем, что ProductFormatter существует
-
-# --- КОРРЕКТНЫЙ ИМПОРТ ИЗ LIBS.UTILS ---
-from libs.utils import AddressFormatter, AddressFormatConfig # Адресный форматтер
-
-from libs.domain_models import Product # Реальный импорт
-from libs.domain_models.product_details import ProductDetails # Реальный импорт
+from libs.utils import AddressFormatter, AddressFormatConfig
+from libs.domain_models import Product
+# from libs.domain_models.product_details import ProductDetails  # Удален, т.к. файла не существует
 from libs.i18n.i18n import I18n
 
 
@@ -35,9 +27,9 @@ class ProductDetails(ItemsListBase):
         self,
         master: Any,
         *,
-        product_repo: IProductRepository, # Изменено с ProductRepoService на IProductRepository
+        product_repo: IProductRepository,
         details_service: ProductDetailsService,
-        address_formatter: AddressFormatter, # Используем AddressFormatter
+        address_formatter: AddressFormatter,
         app_modes: Dict[str, bool],
         font_size: int = 14,
         **kwargs
@@ -58,7 +50,7 @@ class ProductDetails(ItemsListBase):
         
         self._product_repo = product_repo
         self._details_service = details_service
-        self._address_formatter = address_formatter # Используем переданный форматтер
+        self._address_formatter = address_formatter
         self._font_size = font_size
         
         # --- Инициализация виджетов ---
@@ -76,12 +68,12 @@ class ProductDetails(ItemsListBase):
         # --- Данные ---
         self._product_list: List[Product] = []
         self._current_product: Optional[Product] = None
-        self._product_details_cache: Dict[str, ProductDetails] = {}
+        # Заменяем ProductDetails на Dict[str, Any] для кэша
+        self._product_details_cache: Dict[str, Dict[str, Any]] = {} 
 
         self._build_list_widgets()
         self._build_details_widgets()
         
-        # Загружаем продукты при старте
         self.load_products()
 
     def _build_list_widgets(self):
@@ -98,16 +90,13 @@ class ProductDetails(ItemsListBase):
 
     def _build_details_widgets(self):
         """Сборка виджетов для деталей продукта."""
-        # --- Верхняя часть — информация о товаре ---
         details_header = ctk.CTkFrame(self._frame_details, fg_color="transparent")
         details_header.grid(row=0, column=0, sticky="nsew", padx=10, pady=(10, 0))
         details_header.grid_columnconfigure(0, weight=1)
 
-        # --- Обложка продукта (если есть) ---
         self._lbl_product_image = ctk.CTkLabel(details_header, text="", width=150, height=150)
         self._lbl_product_image.grid(row=0, column=0, pady=(0, 10), sticky="n")
 
-        # --- Информация о цене и наличии ---
         self._lbl_product_price = ctk.CTkLabel(
             details_header, text="Цена:", font=ctk.CTkFont(size=self._font_size, weight="bold")
         )
@@ -117,21 +106,16 @@ class ProductDetails(ItemsListBase):
         )
         self._lbl_product_availability.grid(row=2, column=0, sticky="nw")
 
-        # --- Кнопка "Подробнее" ---
         self._btn_more_info = ctk.CTkButton(
             details_header, text="Подробнее", command=self._on_info_click,
             font=ctk.CTkFont(size=self._font_size - 2)
         )
-        # Кнопка будет отображаться только если есть дополнительная информация
-        # self._btn_more_info.grid(row=3, column=0, sticky="ew", pady=(10, 0))
 
-        # --- Нижняя часть — вкладки с деталями ---
         self._tab_details = ctk.CTkTabview(self._frame_details, font=ctk.CTkFont(size=self._font_size - 1))
         self._tab_details.grid(row=1, column=0, sticky="nsew", padx=10, pady=(10, 10))
         self._tab_details.grid_columnconfigure(0, weight=1)
         self._tab_details.grid_rowconfigure(0, weight=1)
         
-        # --- Добавляем вкладку "Описание" ---
         self._tab_description = self._tab_details.add("Описание")
         self._tab_details.tab("Описание").grid_columnconfigure(0, weight=1)
         self._tab_details.tab("Описание").grid_rowconfigure(0, weight=1)
@@ -140,11 +124,10 @@ class ProductDetails(ItemsListBase):
             self._tab_details.tab("Описание"), wrap="word",
             font=ctk.CTkFont(size=self._font_size),
             fg_color="transparent",
-            state="disabled" # Доступен только для чтения
+            state="disabled"
         )
         self._txt_description.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         
-        # --- Добавляем вкладку "Характеристики" ---
         self._tab_characteristics = self._tab_details.add("Характеристики")
         self._tab_details.tab("Характеристики").grid_columnconfigure(1, weight=1)
 
@@ -161,7 +144,6 @@ class ProductDetails(ItemsListBase):
         )
         self._lbl_characteristics.grid(row=1, column=0, columnspan=2, sticky="nw", padx=5)
         
-        # --- Добавляем вкладку "Адреса" ---
         self._tab_addresses = self._tab_details.add("Адреса")
         self._tab_details.tab("Адреса").grid_columnconfigure(0, weight=1)
 
@@ -172,8 +154,6 @@ class ProductDetails(ItemsListBase):
         )
         self._lbl_addresses.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
-    # --- Методы для загрузки данных ---
-
     def load_products(self, query: Optional[str] = None):
         """
         Загрузка списка продуктов из репозитория.
@@ -182,7 +162,7 @@ class ProductDetails(ItemsListBase):
             query: Строка поиска (не используется в этой версии).
         """
         try:
-            self._product_list = self._product_repo.get_products(query=query) # Используем реальный метод
+            self._product_list = self._product_repo.get_products(query=query)
             self._list_widget.set_items(self._product_list)
             self._list_widget.update_view()
             
@@ -221,9 +201,12 @@ class ProductDetails(ItemsListBase):
             product: Объект продукта, для которого нужно загрузить детали.
         """
         try:
+            # Используем product_details_service для получения данных
+            # Убедимся, что используем правильный идентификатор продукта
             details = self._details_service.get_product_details(product.article)
             if details:
-                self._product_details_cache[product.article] = details
+                # Сохраняем детали в кэш, используя Dict[str, Any]
+                self._product_details_cache[product.article] = details 
                 self.update_product_details_tabs(details)
             else:
                 logger.warning(f"Детальная информация для продукта {product.article} не найдена.")
@@ -233,57 +216,73 @@ class ProductDetails(ItemsListBase):
             logger.error(f"Ошибка загрузки деталей продукта {product.article}: {e}")
             self.clear_details()
 
-    def update_product_details_tabs(self, details: ProductDetails):
+    def update_product_details_tabs(self, details: Dict[str, Any]): # Изменен тип на Dict[str, Any]
         """
         Обновляет содержимое вкладок детальной информации.
         
         Args:
-            details: Объект ProductDetails.
+            details: Словарь с деталями продукта.
         """
         # Изображение
-        if details.image_path:
+        # Предполагаем, что 'image_path' есть в словаре details
+        image_path = details.get("image_path")
+        if image_path:
             try:
-                img = Image.open(details.image_path)
+                img = Image.open(image_path)
                 img.thumbnail((150, 150))
                 self._lbl_product_image.configure(image=ctk.CTkImage(img, size=(150, 150)))
             except Exception as e:
-                logger.error(f"Ошибка загрузки изображения {details.image_path}: {e}")
+                logger.error(f"Ошибка загрузки изображения {image_path}: {e}")
                 self._lbl_product_image.configure(image=None)
         else:
             self._lbl_product_image.configure(image=None)
 
         # Цена и наличие
-        price_text = self._address_formatter.format_price(details.price, details.currency) if details.price else "N/A" # Используем AddressFormatter для форматирования цены
-        stock_text = I18n.get("product_details.availability.in_stock", "product_details.availability.in_stock", details.stock) if details.stock > 0 else I18n.get("product_details.availability.out_of_stock", "product_details.availability.out_of_stock")
+        # Используем AddressFormatter для форматирования цены, предполагая наличие метода format_price
+        price = details.get("price")
+        currency = details.get("currency")
+        # Проверяем, существует ли метод format_price в AddressFormatter
+        if hasattr(self._address_formatter, 'format_price'):
+            price_text = self._address_formatter.format_price(price, currency) if price else "N/A"
+        else:
+            # Если метода нет, форматируем напрямую
+            price_text = f"{price} {currency}" if price else "N/A"
+            
+        stock = details.get("stock", 0) # По умолчанию 0, если ключ отсутствует
+        stock_text = I18n.get("product_details.availability.in_stock", "product_details.availability.in_stock", stock) if stock > 0 else I18n.get("product_details.availability.out_of_stock", "product_details.availability.out_of_stock")
         
         self._lbl_product_price.configure(text=f"Цена: {price_text}")
         self._lbl_product_availability.configure(text=f"Наличие: {stock_text}")
         
-        has_details = bool(details.description or details.characteristics)
+        # Проверяем наличие description и characteristics в словаре details
+        has_details = bool(details.get("description") or details.get("characteristics"))
         self._btn_more_info.grid(row=3, column=0, sticky="ew", pady=(10, 0)) if has_details else self._btn_more_info.grid_forget()
 
         # Описание
         self._txt_description.configure(state="normal")
         self._txt_description.delete("1.0", "end")
-        self._txt_description.insert("1.0", details.description or "Нет описания.")
+        self._txt_description.insert("1.0", details.get("description", "Нет описания."))
         self._txt_description.configure(state="disabled")
 
         # Характеристики
+        characteristics = details.get("characteristics", {})
         chars_text = ""
-        if details.characteristics:
-            for key, value in details.characteristics.items():
+        if characteristics:
+            for key, value in characteristics.items():
                 chars_text += f"- {key}: {value}\n"
         else:
             chars_text = "Нет характеристик."
         self._lbl_characteristics.configure(text=chars_text)
 
         # Адреса
-        addresses_text = "\n".join(details.storage_locations) if details.storage_locations else "Нет адресов хранения."
+        storage_locations = details.get("storage_locations", [])
+        addresses_text = "\n".join(storage_locations) if storage_locations else "Нет адресов хранения."
         self._lbl_addresses.configure(text=addresses_text)
 
     def _update_details_widgets(self):
         """Обновляет виджеты деталей на основе текущего продукта."""
         if self._current_product:
+            # Получаем детали из кэша, используя Dict[str, Any]
             details = self._product_details_cache.get(self._current_product.article)
             if details:
                 self.update_product_details_tabs(details)
@@ -313,9 +312,11 @@ class ProductDetails(ItemsListBase):
         Открывает диалог ProductInfoDialog с детальной информацией.
         """
         if self._current_product:
+            # Передаем _current_product (тип Product) в диалог
+            # Если ProductInfoDialog ожидает Dict[str, Any], нужно будет преобразовать
             dialog = ProductInfoDialog(
                 master=self,
-                product=self._current_product,
+                product=self._current_product, # Передаем Product
                 font_size=self._font_size
             )
             dialog.grab_set()
