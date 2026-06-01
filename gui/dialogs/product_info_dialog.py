@@ -1,258 +1,112 @@
-import tkinter as tk
+"""Минимальный диалог отображения информации о товаре — совместимый с gui-framework-dev."""
+
+import logging
 from typing import Optional
-from dataclasses import dataclass
 
-from customtkinter import CTkFrame, CTkLabel, CTkButton, CTkTabview, CTkScrollableFrame, CTkCanvas, CTkFont
-from PIL import Image
+import customtkinter as ctk
 
-# === СУЩЕСТВУЮЩИЕ ИМПОРТЫ ===
 from gui.framework.dialog_base import DialogHandler
-from gui.services.product_details_service import ProductDetailsService
-from libs.data.product import Product
-from libs.data.product_details import ProductDetails
-from libs.i18n.i18n import I18n
+from libs.domain_models import Product
 
-# === ЗАГЛУШКИ ДЛЯ ОТСУТСТВУЮЩИХ ЗАВИСИМОСТЕЙ (inline) ===
-
-# Заглушка для MainServices
-class MainServices:
-    def __init__(self):
-        self.app_modes = {}
-
-# Заглушка для ErrorHandlingService
-class ErrorHandlingService:
-    def show_error_message(self, title: str, message: str):
-        print(f"[ERROR] {title}: {message}")
-
-# Заглушка для ProductDetailsCallbacks
-class ProductDetailsCallbacks:
-    def update_product_details_tabs(self, details):
-        pass
-
-# Заглушка для ProductInfo
-@dataclass
-class ProductInfo:
-    article: str = ""
-    product_name: str = ""
-    model: str = ""
-
-# Заглушка для ProductDetailsWidgets
-class ProductDetailsWidgets:
-    def __init__(self):
-        self.lbl_css_loading: Optional[CTkLabel] = None
-        self.lbl_product_name: Optional[CTkLabel] = None
-        self.lbl_price: Optional[CTkLabel] = None
-        self.lbl_availability: Optional[CTkLabel] = None
-
-# Заглушка для ProductDetailsWidgetsBuilder
-class ProductDetailsWidgetsBuilder:
-    def __init__(self, master, product_details_callbacks):
-        self.master = master
-        self.callbacks = product_details_callbacks
-    
-    def build_widgets(self) -> ProductDetailsWidgets:
-        widgets = ProductDetailsWidgets()
-        # Предполагаем, что _font_size доступен или устанавливаем значение по умолчанию
-        _font_size = 14 # Устанавливаем значение по умолчанию, если _font_size не определено
-        widgets.lbl_css_loading = CTkLabel(self.master, text="⏳ Загрузка...", font=CTkFont(size=_font_size))
-        return widgets
+logger = logging.getLogger(__name__)
 
 
 class ProductInfoDialog(DialogHandler):
-    """Диалог для отображения подробной информации о товаре."""
-
-    _instance = None
+    """Простой диалог для отображения базовой информации о товаре."""
 
     def __init__(
         self,
         master: any,
         product: Product,
-        main_services: MainServices,
-        product_details_service: ProductDetailsService,
-        error_handling_service: ErrorHandlingService,
-        callbacks: Optional[ProductDetailsCallbacks] = None,
+        font_size: int = 14,
     ):
         """
         Инициализация диалога.
 
         Args:
             master: Родительский виджет.
-            product: Объект продукта, для которого отображается информация.
-            main_services: Сервисы основного приложения.
-            product_details_service: Сервис для получения данных о товаре.
-            error_handling_service: Сервис для обработки ошибок.
-            callbacks: Коллбэки для взаимодействия с другими частями приложения.
+            product: Объект продукта (из libs.domain_models).
+            font_size: Размер шрифта.
         """
-        # self уже является экземпляром DialogHandler, удалена дублирующая инициализация
-        super().__init__(master=master, app_modes=main_services.app_modes) # Вызываем конструктор родительского класса
+        super().__init__(master=master)
+        self._product = product
+        self._font_size = font_size
 
-        self.__product = product
-        self.__main_services = main_services
-        self.__product_details_service = product_details_service
-        self.__error_handling_service = error_handling_service
-        self.__callbacks = callbacks or ProductDetailsCallbacks()
+        # Настройка окна
+        self.title(f"{product.name} ({product.model if hasattr(product, 'model') else product.article})")
+        self.geometry("600x400")
+        self.resizable(True, True)
+        
+        # Контент
+        self._build_widgets()
+        
+        # Фокус
+        self.grab_set()
+        self.focus()
 
-        # Вызовы к self вместо __dialog_handler
-        self.configure_window(
-            title=f"{product.product_name} ({product.model})",
-            resizable=True,
-            width=1200,
-            height=800,
+    def _build_widgets(self):
+        """Сборка виджетов диалога — минимальная версия."""
+        # Основной фрейм с отступами
+        content = ctk.CTkFrame(self, fg_color="transparent")
+        content.pack(fill="both", expand=True, padx=20, pady=20)
+        content.grid_columnconfigure(1, weight=1)
+
+        row = 0
+        
+        # Артикул
+        ctk.CTkLabel(
+            content, text="Артикул:", font=ctk.CTkFont(size=self._font_size, weight="bold")
+        ).grid(row=row, column=0, sticky="e", padx=(0, 10), pady=5)
+        ctk.CTkLabel(
+            content, text=self._product.article, font=ctk.CTkFont(size=self._font_size)
+        ).grid(row=row, column=1, sticky="w", pady=5)
+        row += 1
+
+        # Название
+        ctk.CTkLabel(
+            content, text="Наименование:", font=ctk.CTkFont(size=self._font_size, weight="bold")
+        ).grid(row=row, column=0, sticky="ne", padx=(0, 10), pady=5)
+        name_lbl = ctk.CTkLabel(
+            content, text=self._product.name, font=ctk.CTkFont(size=self._font_size),
+            wraplength=400, justify="left"
         )
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        name_lbl.grid(row=row, column=1, sticky="w", pady=5)
+        row += 1
 
-        self.__build_widgets()
-        self._fetch_product_details()
+        # Адреса хранения (если есть)
+        if hasattr(self._product, 'storage_locations') and self._product.storage_locations:
+            ctk.CTkLabel(
+                content, text="Адреса:", font=ctk.CTkFont(size=self._font_size, weight="bold")
+            ).grid(row=row, column=0, sticky="ne", padx=(0, 10), pady=5)
+            addresses_text = "\n".join(self._product.storage_locations)
+            ctk.CTkLabel(
+                content, text=addresses_text, font=ctk.CTkFont(size=self._font_size),
+                justify="left"
+            ).grid(row=row, column=1, sticky="w", pady=5)
+            row += 1
 
-    def __build_widgets(self):
-        """Сборка виджетов диалога."""
-        # Прямая инициализация виджетов
-        self.__product_details_widgets = ProductDetailsWidgets()
-        # Предполагаем, что _font_size доступен или устанавливаем значение по умолчанию
-        _font_size = 14 # Устанавливаем значение по умолчанию, если _font_size не определено
-        self.__product_details_widgets.lbl_css_loading = CTkLabel(
-            self, text="⏳ Загрузка...", font=CTkFont(size=_font_size)
+        # Штрихкоды (если есть)
+        if hasattr(self._product, 'barcodes') and self._product.barcodes:
+            ctk.CTkLabel(
+                content, text="Штрихкоды:", font=ctk.CTkFont(size=self._font_size, weight="bold")
+            ).grid(row=row, column=0, sticky="ne", padx=(0, 10), pady=5)
+            barcodes_text = ", ".join(self._product.barcodes)
+            ctk.CTkLabel(
+                content, text=barcodes_text, font=ctk.CTkFont(size=self._font_size),
+                wraplength=400, justify="left"
+            ).grid(row=row, column=1, sticky="w", pady=5)
+            row += 1
+
+        # Кнопка закрытия
+        close_btn = ctk.CTkButton(
+            content, text="Закрыть", command=self.destroy,
+            width=100, height=30
         )
-        self._lbl_css_loading = self.__product_details_widgets.lbl_css_loading
-        self._lbl_css_loading.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-
-    def _fetch_product_details(self):
-        """Запрос данных о товаре."""
-        self.__product_details_service.get_product_details(
-            # Используем getattr для совместимости с product_id или article
-            product_id=getattr(self.__product, 'product_id', getattr(self.__product, 'article', '')),
-            callback=self.on_details_loaded
-        )
-
-    def on_details_loaded(self, details: Optional[ProductDetails]):
-        """
-        Обработчик загрузки данных о товаре.
-
-        Args:
-            details: Объект ProductDetails или None в случае ошибки.
-        """
-        # Убираем индикатор загрузки, если он существует и виджет существует
-        if self._lbl_css_loading and self._lbl_css_loading.winfo_exists():
-            self._lbl_css_loading.grid_forget()
-
-        if details is None:
-            # Устанавливаем текст ошибки, если данные не были загружены
-            # Проверяем, существует ли виджет перед обновлением
-            if self._lbl_css_loading and self._lbl_css_loading.winfo_exists():
-                self._lbl_css_loading.configure(text="Не удалось загрузить данные")
-            
-            # Безопасный вызов show_error_message
-            try:
-                self.__error_handling_service.show_error_message(
-                    title=I18n.get(
-                        "product_details.error.title",
-                        "product_details.error.title",
-                        self.__product.product_name,
-                    ),
-                    message=I18n.get(
-                        "product_details.error.message",
-                        "product_details.error.message",
-                        self.__product.product_name,
-                    ),
-                )
-            except AttributeError:
-                # fallback, если ErrorHandlingService не работает должным образом
-                title = I18n.get("product_details.error.title", "product_details.error.title", self.__product.product_name)
-                message = I18n.get("product_details.error.message", "product_details.error.message", self.__product.product_name)
-                print(f"[ERROR] {title}: {message}")
-
-            # Закрываем диалог, так как не можем отобразить информацию
-            self.destroy()
-
-        else:
-            # Данные успешно загружены, отображаем их
-            # Добавлена проверка winfo_exists() перед обращением к виджетам
-            if hasattr(self.__product_details_widgets, 'lbl_product_name') and self.__product_details_widgets.lbl_product_name and self.__product_details_widgets.lbl_product_name.winfo_exists():
-                self.__product_details_widgets.lbl_product_name.configure(
-                    text=f"{self.__product.product_name} ({self.__product.model})"
-                )
-            if hasattr(self.__product_details_widgets, 'lbl_price') and self.__product_details_widgets.lbl_price and self.__product_details_widgets.lbl_price.winfo_exists():
-                self.__product_details_widgets.lbl_price.configure(text=f"{details.price} {details.currency}")
-            if hasattr(self.__product_details_widgets, 'lbl_availability') and self.__product_details_widgets.lbl_availability and self.__product_details_widgets.lbl_availability.winfo_exists():
-                self.__product_details_widgets.lbl_availability.configure(
-                    text=I18n.get(
-                        "product_details.availability.in_stock",
-                        "product_details.availability.in_stock",
-                        details.stock,
-                    )
-                    if details.stock > 0
-                    else I18n.get(
-                        "product_details.availability.out_of_stock",
-                        "product_details.availability.out_of_stock",
-                    )
-                )
-
-            self.__callbacks.update_product_details_tabs(details)
-
-            # Убираем виджет загрузки, если он всё ещё существует
-            if self._lbl_css_loading and self._lbl_css_loading.winfo_exists():
-                self._lbl_css_loading.grid_forget()
+        close_btn.grid(row=row, column=0, columnspan=2, pady=20)
 
     def destroy(self):
-        """Переопределённый метод destroy для очистки ресурсов."""
-        # Удаляем все виджеты, связанные с этим диалогом
-        for widget in self.winfo_children():
-            widget.destroy()
+        """Переопределённый destroy для корректного закрытия."""
+        self.grab_release()
         super().destroy()
 
-    @classmethod
-    def show_dialog(
-        cls,
-        master: any,
-        product: Product,
-        main_services: MainServices,
-        product_details_service: ProductDetailsService,
-        error_handling_service: ErrorHandlingService,
-        callbacks: ProductDetailsCallbacks,
-    ):
-        """
-        Отображает диалог информации о товаре.
-
-        Args:
-            master: Родительский виджет.
-            product: Объект продукта.
-            main_services: Сервисы основного приложения.
-            product_details_service: Сервис получения данных о товаре.
-            error_handling_service: Сервис обработки ошибок.
-            callbacks: Коллбэки для взаимодействия.
-        """
-        if cls._instance is not None:
-            cls._instance.destroy()
-            cls._instance = None
-
-        cls._instance = cls(
-            master,
-            product,
-            main_services,
-            product_details_service,
-            error_handling_service,
-            callbacks,
-        )
-        # Вызов grab_set на self, так как self является экземпляром DialogHandler
-        cls._instance.grab_set()
-
-# Проверка синтаксиса
-if __name__ == "__main__":
-    try:
-        # Добавляем текущую директорию в sys.path для корректного импорта
-        # Это может потребоваться, если скрипт запускается из другой директории
-        import sys
-        # Проверяем, есть ли уже текущая директория в sys.path, чтобы избежать дублирования
-        if "." not in sys.path:
-             sys.path.insert(0, ".") 
-        
-        # Импортируем файл для проверки синтаксиса
-        import gui.dialogs.product_info_dialog 
-        print("Синтаксис gui/dialogs/product_info_dialog.py корректен.")
-    except ModuleNotFoundError as e:
-        print(f"Ошибка ModuleNotFoundError при проверке синтаксиса: {e}")
-    except ImportError as e:
-        print(f"Ошибка ImportError при проверке синтаксиса: {e}")
-    except Exception as e:
-        print(f"Непредвиденная ошибка при проверке синтаксиса: {e}")
+# --- Конец файла gui/dialogs/product_info_dialog.py ---
