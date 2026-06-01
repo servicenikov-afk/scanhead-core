@@ -1,38 +1,25 @@
 """Модуль, отвечающий за отображение деталей продукта."""
 
 import logging
-from typing import Optional, Dict, Any, List, Type, Callable # Добавил Type, Callable
+from typing import Optional, Dict, Any, List, Type, Callable
 from PIL import Image
 import customtkinter as ctk
 
-# --- ИСПРАВЛЕННЫЙ ИМПОРТ ---
-# from gui.framework.items_list_base import ItemsListBase # Было
-# from gui.framework.list_base import ItemsListBase # Стало (предположение, которое оказалось неверным)
 from gui.framework.list_base import ItemsListBase # Теперь это корректный импорт
 
-# --- УДАЛЕН НЕ СУЩЕСТВУЮЩИЙ ИМПОРТ ---
-# from gui.services.product_repo_service import ProductRepoService # Реальный импорт
-# --- ИМПОРИРУЕМ ИНТЕРФЕЙС ---
 from services.interfaces import IProductRepository # Реальный импорт, используем интерфейс
 
 from gui.services.product_details_service import ProductDetailsService
+# --- ЗАМЕНА НЕКОРРЕКТНОГО ИМПОРТА ---
 # from gui.shared.product_formatter import ProductFormatter # Этот импорт также некорректен, если ProductFormatter не существует. Заменим на заглушку или удалим, если не используется.
-from gui.shared.product_formatter import ProductFormatter # Предполагаем, что ProductFormatter существует
+# from gui.shared.product_formatter import ProductFormatter # Предполагаем, что ProductFormatter существует
+
+# --- КОРРЕКТНЫЙ ИМПОРТ ИЗ LIBS.UTILS ---
+from libs.utils import AddressFormatter, AddressFormatConfig # Адресный форматтер
 
 from libs.domain_models import Product # Реальный импорт
 from libs.domain_models.product_details import ProductDetails # Реальный импорт
 from libs.i18n.i18n import I18n
-
-# Удаляем импорты несуществующих модулей
-# from gui.dialogs.common.dialog_list_base import DialogListBase # Нет
-# from gui.dialogs.product_details.common.dialog_base import DialogBase # Нет
-# from gui.services.error_handling_services import ErrorHandlingService # Нет
-# from gui.services.main_services import MainServices # Нет
-
-# --- Импорты для ProductInfoDialog ---
-# Предполагаем, что ProductInfoDialog теперь находится в gui/dialogs/product_info_dialog.py
-# и принимает Product из libs.domain_models
-from gui.dialogs.product_info_dialog import ProductInfoDialog # Реальный импорт
 
 
 logger = logging.getLogger(__name__)
@@ -50,10 +37,7 @@ class ProductDetails(ItemsListBase):
         *,
         product_repo: IProductRepository, # Изменено с ProductRepoService на IProductRepository
         details_service: ProductDetailsService,
-        # store_adapter: Any, # Удалено
-        # nomenclature_adapter: Any, # Удалено
-        # css_adapter: Any, # Удалено
-        # address_formatter: Any, # Удалено
+        address_formatter: AddressFormatter, # Используем AddressFormatter
         app_modes: Dict[str, bool],
         font_size: int = 14,
         **kwargs
@@ -65,6 +49,7 @@ class ProductDetails(ItemsListBase):
             master: Родительский виджет.
             product_repo: Сервис для работы с репозиторием продуктов (интерфейс).
             details_service: Сервис для получения детальной информации о продуктах.
+            address_formatter: Форматтер адресов.
             app_modes: Словарь с режимами приложения.
             font_size: Размер шрифта для виджетов.
             **kwargs: Дополнительные аргументы.
@@ -73,11 +58,9 @@ class ProductDetails(ItemsListBase):
         
         self._product_repo = product_repo
         self._details_service = details_service
+        self._address_formatter = address_formatter # Используем переданный форматтер
         self._font_size = font_size
         
-        # Инициализация formatter
-        self._product_formatter = ProductFormatter() # Предполагаем, что ProductFormatter существует
-
         # --- Инициализация виджетов ---
         self._frame_list = ctk.CTkFrame(self, fg_color="transparent")
         self._frame_list.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
@@ -103,9 +86,7 @@ class ProductDetails(ItemsListBase):
 
     def _build_list_widgets(self):
         """Сборка виджетов для списка продуктов."""
-        # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
-        # self._list_widget = ItemsListBase( # Было
-        self._list_widget = ItemsListBase( # Стало (предположение)
+        self._list_widget = ItemsListBase(
             self._frame_list,
             columns=("article", "name", "price"),
             column_widths=(80, 250, 100),
@@ -201,27 +182,20 @@ class ProductDetails(ItemsListBase):
             query: Строка поиска (не используется в этой версии).
         """
         try:
-            # Используем _product_repo, который теперь является IProductRepository
             self._product_list = self._product_repo.get_products(query=query) # Используем реальный метод
-            # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
-            # self._list_widget.set_items(self._product_list) # Было
-            self._list_widget.set_items(self._product_list) # Стало (предположение)
+            self._list_widget.set_items(self._product_list)
             self._list_widget.update_view()
             
-            # Если есть продукты, выбираем первый
             if self._product_list:
                 first_product = self._product_list[0]
-                # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
-                # self._list_widget.select_item(first_product) # Было
-                self._list_widget.select_item(first_product) # Стало (предположение)
+                self._list_widget.select_item(first_product)
                 self.on_product_select(first_product)
-                self.set_current_product(first_product) # Устанавливаем текущий продукт
+                self.set_current_product(first_product)
             else:
-                self.clear_details() # Очищаем детали, если продуктов нет
+                self.clear_details()
                 
         except Exception as e:
             logger.error(f"Ошибка загрузки продуктов: {e}")
-            # TODO: Показать сообщение об ошибке пользователю
 
     def set_current_product(self, product: Product):
         """Устанавливает текущий выбранный продукт."""
@@ -236,7 +210,6 @@ class ProductDetails(ItemsListBase):
             product: Выбранный объект продукта.
         """
         self.set_current_product(product)
-        # Загружаем детали продукта, если их нет в кэше
         if product.article not in self._product_details_cache:
             self._fetch_product_details(product)
 
@@ -248,20 +221,17 @@ class ProductDetails(ItemsListBase):
             product: Объект продукта, для которого нужно загрузить детали.
         """
         try:
-            # Используем product_details_service для получения данных
-            # Убедимся, что используем правильный идентификатор продукта
             details = self._details_service.get_product_details(product.article)
             if details:
                 self._product_details_cache[product.article] = details
-                self.update_product_details_tabs(details) # Обновляем UI
+                self.update_product_details_tabs(details)
             else:
                 logger.warning(f"Детальная информация для продукта {product.article} не найдена.")
-                self.clear_details() # Очищаем, если деталей нет
+                self.clear_details()
                 
         except Exception as e:
             logger.error(f"Ошибка загрузки деталей продукта {product.article}: {e}")
-            # TODO: Показать сообщение об ошибке пользователю
-            self.clear_details() # Очищаем детали в случае ошибки
+            self.clear_details()
 
     def update_product_details_tabs(self, details: ProductDetails):
         """
@@ -270,7 +240,6 @@ class ProductDetails(ItemsListBase):
         Args:
             details: Объект ProductDetails.
         """
-        # --- Обновляем виджеты деталей ---
         # Изображение
         if details.image_path:
             try:
@@ -284,22 +253,20 @@ class ProductDetails(ItemsListBase):
             self._lbl_product_image.configure(image=None)
 
         # Цена и наличие
-        price_text = self._product_formatter.format_price(details.price, details.currency) if details.price else "N/A"
+        price_text = self._address_formatter.format_price(details.price, details.currency) if details.price else "N/A" # Используем AddressFormatter для форматирования цены
         stock_text = I18n.get("product_details.availability.in_stock", "product_details.availability.in_stock", details.stock) if details.stock > 0 else I18n.get("product_details.availability.out_of_stock", "product_details.availability.out_of_stock")
         
         self._lbl_product_price.configure(text=f"Цена: {price_text}")
         self._lbl_product_availability.configure(text=f"Наличие: {stock_text}")
         
-        # Кнопка "Подробнее" — активируем, если есть описание или характеристики
         has_details = bool(details.description or details.characteristics)
         self._btn_more_info.grid(row=3, column=0, sticky="ew", pady=(10, 0)) if has_details else self._btn_more_info.grid_forget()
 
-        # --- Обновляем вкладки ---
         # Описание
-        self._txt_description.configure(state="normal") # Разрешаем редактирование
+        self._txt_description.configure(state="normal")
         self._txt_description.delete("1.0", "end")
         self._txt_description.insert("1.0", details.description or "Нет описания.")
-        self._txt_description.configure(state="disabled") # Запрещаем редактирование
+        self._txt_description.configure(state="disabled")
 
         # Характеристики
         chars_text = ""
@@ -317,12 +284,10 @@ class ProductDetails(ItemsListBase):
     def _update_details_widgets(self):
         """Обновляет виджеты деталей на основе текущего продукта."""
         if self._current_product:
-            # Попробуем загрузить детали из кэша
             details = self._product_details_cache.get(self._current_product.article)
             if details:
                 self.update_product_details_tabs(details)
             else:
-                # Если в кэше нет, пробуем загрузить
                 self._fetch_product_details(self._current_product)
         else:
             self.clear_details()
@@ -348,31 +313,12 @@ class ProductDetails(ItemsListBase):
         Открывает диалог ProductInfoDialog с детальной информацией.
         """
         if self._current_product:
-            # --- МИНИМАЛЬНЫЙ ВЫЗОВ ДИАЛОГА ---
-            # Используем реальный объект Product из libs.domain_models
-            # И font_size из текущего виджета
             dialog = ProductInfoDialog(
                 master=self,
                 product=self._current_product,
                 font_size=self._font_size
             )
-            dialog.grab_set() # Делаем диалог модальным
-            dialog.wait_window() # Ждем закрытия диалога
-            # --- КОНЕЦ МИНИМАЛЬНОГО ВЫЗОВА ---
-
-            # Удален старый блок формирования product_data (dict)
-            # Убран вызов несуществующих сервисов
-            # dialog = ProductInfoDialog(
-            #     self,
-            #     product=product_data,  # dict, а не Product
-            #     nomenclature_adapter=self._product_repo,
-            #     store_adapter=self._product_repo,
-            #     css_adapter=None,
-            #     font_size=self._font_size,
-            #     details_service=self._details_service,
-            #     address_formatter=self._address_formatter
-            # )
-            # dialog.grab_set()
-            # dialog.wait_window()
+            dialog.grab_set()
+            dialog.wait_window()
 
 # --- Конец файла gui/product_details.py ---
