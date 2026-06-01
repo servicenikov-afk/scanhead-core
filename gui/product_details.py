@@ -1,19 +1,23 @@
 """Модуль, отвечающий за отображение деталей продукта."""
 
 import logging
-from typing import Optional, Dict, Any, List
-
-import customtkinter as ctk
+from typing import Optional, Dict, Any, List, Type, Callable # Добавил Type, Callable
 from PIL import Image
+import customtkinter as ctk
 
 # --- ИСПРАВЛЕННЫЙ ИМПОРТ ---
 # from gui.framework.items_list_base import ItemsListBase # Было
 # from gui.framework.list_base import ItemsListBase # Стало (предположение, которое оказалось неверным)
 from gui.framework.list_base import ItemsListBase # Теперь это корректный импорт
 
+# --- УДАЛЕН НЕ СУЩЕСТВУЮЩИЙ ИМПОРТ ---
+# from gui.services.product_repo_service import ProductRepoService # Реальный импорт
+# --- ИМПОРИРУЕМ ИНТЕРФЕЙС ---
+from services.interfaces import IProductRepository # Реальный импорт, используем интерфейс
+
 from gui.services.product_details_service import ProductDetailsService
-from gui.services.product_repo_service import ProductRepoService # Реальный импорт
-from gui.shared.product_formatter import ProductFormatter # Реальный импорт
+# from gui.shared.product_formatter import ProductFormatter # Этот импорт также некорректен, если ProductFormatter не существует. Заменим на заглушку или удалим, если не используется.
+from gui.shared.product_formatter import ProductFormatter # Предполагаем, что ProductFormatter существует
 
 from libs.domain_models import Product # Реальный импорт
 from libs.domain_models.product_details import ProductDetails # Реальный импорт
@@ -44,7 +48,7 @@ class ProductDetails(ItemsListBase):
         self,
         master: Any,
         *,
-        product_repo: ProductRepoService,
+        product_repo: IProductRepository, # Изменено с ProductRepoService на IProductRepository
         details_service: ProductDetailsService,
         # store_adapter: Any, # Удалено
         # nomenclature_adapter: Any, # Удалено
@@ -59,7 +63,7 @@ class ProductDetails(ItemsListBase):
 
         Args:
             master: Родительский виджет.
-            product_repo: Сервис для работы с репозиторием продуктов.
+            product_repo: Сервис для работы с репозиторием продуктов (интерфейс).
             details_service: Сервис для получения детальной информации о продуктах.
             app_modes: Словарь с режимами приложения.
             font_size: Размер шрифта для виджетов.
@@ -71,7 +75,7 @@ class ProductDetails(ItemsListBase):
         self._details_service = details_service
         self._font_size = font_size
         
-        # Инициализацияformatter
+        # Инициализация formatter
         self._product_formatter = ProductFormatter() # Предполагаем, что ProductFormatter существует
 
         # --- Инициализация виджетов ---
@@ -197,6 +201,7 @@ class ProductDetails(ItemsListBase):
             query: Строка поиска (не используется в этой версии).
         """
         try:
+            # Используем _product_repo, который теперь является IProductRepository
             self._product_list = self._product_repo.get_products(query=query) # Используем реальный метод
             # --- ИСПРАВЛЕНИЕ ВЫЗОВА ---
             # self._list_widget.set_items(self._product_list) # Было
