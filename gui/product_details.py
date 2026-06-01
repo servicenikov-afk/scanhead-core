@@ -26,13 +26,11 @@ class ProductDetails(ItemsListBase):
     def __init__(
         self,
         master: Any,
-        *,
         product_repo: IProductRepository,
-        details_service: ProductDetailsService,
-        address_formatter: AddressFormatter,
-        # app_modes: Dict[str, bool],  # Удален obsolete параметр
+        on_add_to_queue: Callable = None,
         font_size: int = 14,
-        **kwargs
+        details_service: Optional[Any] = None,
+        address_formatter: Optional[AddressFormatter] = None
     ):
         """
         Инициализация виджета ProductDetails.
@@ -40,19 +38,24 @@ class ProductDetails(ItemsListBase):
         Args:
             master: Родительский виджет.
             product_repo: Сервис для работы с репозиторием продуктов (интерфейс).
+            on_add_to_queue: Callback функция для добавления в очередь.
+            font_size: Размер шрифта для виджетов.
             details_service: Сервис для получения детальной информации о продуктах.
             address_formatter: Форматтер адресов.
-            # app_modes: Словарь с режимами приложения. (obsolete)
-            font_size: Размер шрифта для виджетов.
-            **kwargs: Дополнительные аргументы.
         """
-        # super().__init__(master, app_modes=app_modes, **kwargs) # Удалена ссылка на app_modes
-        super().__init__(master, **kwargs) 
-        
+        # 1. Сохраняем свои параметры в атрибуты
         self._product_repo = product_repo
-        self._details_service = details_service
-        self._address_formatter = address_formatter
+        self._on_add_to_queue = on_add_to_queue
         self._font_size = font_size
+        self._details_service = details_service
+        # Используем AddressFormatter по умолчанию, если он не передан
+        self._address_formatter = address_formatter or AddressFormatter() 
+        self._current_product: Optional[Product] = None
+        # _address_entries was present in the user's suggested code, so adding it here.
+        self._address_entries: list = [] 
+
+        # 2. Инициализируем родительский класс ТОЛЬКО с его параметрами
+        super().__init__(master)
         
         # --- Инициализация виджетов ---
         self._frame_list = ctk.CTkFrame(self, fg_color="transparent")
@@ -68,7 +71,7 @@ class ProductDetails(ItemsListBase):
 
         # --- Данные ---
         self._product_list: List[Product] = []
-        self._current_product: Optional[Product] = None
+        # _current_product is already initialized above
         # Заменяем ProductDetails на Dict[str, Any] для кэша
         self._product_details_cache: Dict[str, Dict[str, Any]] = {} 
 
