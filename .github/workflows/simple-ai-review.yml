@@ -41,7 +41,7 @@ jobs:
           github_token = os.environ["GITHUB_TOKEN"]
           openrouter_key = os.environ["OPENROUTER_KEY"]
           
-          # Подключаемся к GitHub (новый способ без deprecation warning)
+          # Подключаемся к GitHub
           auth = Auth.Token(github_token)
           g = Github(auth=auth)
           repo = g.get_repo(repo_name)
@@ -50,20 +50,23 @@ jobs:
           # Получаем diff
           files = pr.get_files()
           diff_text = ""
-          for file in list(files)[:20]:  # Ограничиваем 20 файлами
+          file_count = 0
+          for file in files:
+              if file_count >= 15:  # Ограничиваем 15 файлами
+                  break
               diff_text += f"\n--- {file.filename} ---\n"
               if file.patch:
-                  # Ограничиваем размер патча
-                  patch = file.patch[:3000]
+                  patch = file.patch[:2000]  # Ограничиваем размер патча
                   diff_text += patch + "\n"
+              file_count += 1
           
           if not diff_text:
               print("No changes found")
               exit(0)
           
-          print(f"Analyzing {len(diff_text)} characters of changes...")
+          print(f"📊 Analyzing {len(diff_text)} characters from {file_count} files...")
           
-          # Отправляем в OpenRouter (используем работающую бесплатную модель)
+          # Отправляем в OpenRouter
           client = OpenAI(
               base_url="https://openrouter.ai/api/v1",
               api_key=openrouter_key,
@@ -74,22 +77,29 @@ jobs:
           
           {diff_text[:20000]}
           
-          Напиши краткий отчёт на русском языке:
-          1. Основные изменения (2-3 предложения)
-          2. Потенциальные проблемы (если есть) — укажи конкретные файлы
-          3. Общая оценка (отлично/хорошо/требует доработок)
+          Напиши краткий отчёт на русском языке в формате Markdown:
+          ## 📝 Основные изменения
+          (2-3 предложения)
           
-          Будь конструктивен."""
+          ## ⚠️ Потенциальные проблемы
+          (если есть — укажи конкретные файлы и строки, предложи исправления. Если проблем нет, напиши "Проблем не обнаружено")
           
+          ## ✅ Общая оценка
+          (отлично/хорошо/требует доработок)
+          
+          Будь конструктивен и краток."""
+          
+          # Используем Qwen3 Coder — специализированная модель для кода
           response = client.chat.completions.create(
-              model="google/gemini-2.0-flash-exp:free",  # Работающая бесплатная модель
+              model="qwen/qwen3-coder:free",
               messages=[{"role": "user", "content": prompt}],
               max_tokens=1500,
+              temperature=0.3,
           )
           
           review = response.choices[0].message.content
           
           # Постим комментарий
-          pr.create_issue_comment(f"## 🤖 AI Review (Gemini Flash)\n\n{review}\n\n---\n*Проверено через OpenRouter | Модель: google/gemini-2.0-flash-exp:free*")
+          pr.create_issue_comment(f"## 🤖 AI Review (Qwen3 Coder)\n\n{review}\n\n---\n*Проверено через OpenRouter | Модель: qwen/qwen3-coder:free*")
           print("✅ Review posted successfully!")
           EOF
