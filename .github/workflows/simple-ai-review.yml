@@ -1,0 +1,90 @@
+name: Simple AI Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install openai PyGithub
+      
+      - name: Run AI Review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          python - << 'EOF'
+          import os
+          from github import Github
+          from openai import OpenAI
+          
+          # Настройки
+          repo_name = os.environ["REPO"]
+          pr_number = int(os.environ["PR_NUMBER"])
+          github_token = os.environ["GITHUB_TOKEN"]
+          openrouter_key = os.environ["OPENROUTER_KEY"]
+          
+          # Подключаемся к GitHub
+          g = Github(github_token)
+          repo = g.get_repo(repo_name)
+          pr = repo.get_pull(pr_number)
+          
+          # Получаем diff
+          diff = pr.get_files()
+          diff_text = ""
+          for file in diff[:20]:  # Ограничиваем 20 файлами для экономии токенов
+              diff_text += f"\n--- {file.filename} ---\n"
+              if file.patch:
+                  diff_text += file.patch[:2000] + "\n"
+          
+          if not diff_text:
+              print("No changes found")
+              exit(0)
+          
+          # Отправляем в OpenRouter
+          client = OpenAI(
+              base_url="https://openrouter.ai/api/v1",
+              api_key=openrouter_key,
+          )
+          
+          prompt = f"""Ты — строгий ревьювер Python кода.
+          Проверь следующие изменения в Pull Request #{pr_number}:
+          
+          {diff_text[:20000]}
+          
+          Напиши краткий отчёт:
+          1. Основные изменения (2-3 предложения)
+          2. Потенциальные проблемы (если есть)
+          3. Общая оценка (отлично/хорошо/требует доработок)
+          
+          Будь конструктивен и укажи конкретные файлы при наличии проблем."""
+          
+          response = client.chat.completions.create(
+              model="deepseek/deepseek-r1:free",
+              messages=[{"role": "user", "content": prompt}],
+              max_tokens=1000,
+          )
+          
+          review = response.choices[0].message.content
+          
+          # Постим комментарий
+          pr.create_issue_comment(f"## 🤖 AI Review\n\n{review}\n\n---\n*Проверено через OpenRouter (deepseek/deepseek-r1:free)*")
+          print("Review posted successfully!")
+          EOF
