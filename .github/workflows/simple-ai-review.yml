@@ -32,7 +32,7 @@ jobs:
         run: |
           python - << 'EOF'
           import os
-          from github import Github
+          from github import Github, Auth
           from openai import OpenAI
           
           # Настройки
@@ -41,24 +41,29 @@ jobs:
           github_token = os.environ["GITHUB_TOKEN"]
           openrouter_key = os.environ["OPENROUTER_KEY"]
           
-          # Подключаемся к GitHub
-          g = Github(github_token)
+          # Подключаемся к GitHub (новый способ без deprecation warning)
+          auth = Auth.Token(github_token)
+          g = Github(auth=auth)
           repo = g.get_repo(repo_name)
           pr = repo.get_pull(pr_number)
           
           # Получаем diff
-          diff = pr.get_files()
+          files = pr.get_files()
           diff_text = ""
-          for file in diff[:20]:  # Ограничиваем 20 файлами для экономии токенов
+          for file in list(files)[:20]:  # Ограничиваем 20 файлами
               diff_text += f"\n--- {file.filename} ---\n"
               if file.patch:
-                  diff_text += file.patch[:2000] + "\n"
+                  # Ограничиваем размер патча
+                  patch = file.patch[:3000]
+                  diff_text += patch + "\n"
           
           if not diff_text:
               print("No changes found")
               exit(0)
           
-          # Отправляем в OpenRouter
+          print(f"Analyzing {len(diff_text)} characters of changes...")
+          
+          # Отправляем в OpenRouter (используем работающую бесплатную модель)
           client = OpenAI(
               base_url="https://openrouter.ai/api/v1",
               api_key=openrouter_key,
@@ -69,22 +74,22 @@ jobs:
           
           {diff_text[:20000]}
           
-          Напиши краткий отчёт:
+          Напиши краткий отчёт на русском языке:
           1. Основные изменения (2-3 предложения)
-          2. Потенциальные проблемы (если есть)
+          2. Потенциальные проблемы (если есть) — укажи конкретные файлы
           3. Общая оценка (отлично/хорошо/требует доработок)
           
-          Будь конструктивен и укажи конкретные файлы при наличии проблем."""
+          Будь конструктивен."""
           
           response = client.chat.completions.create(
-              model="deepseek/deepseek-r1:free",
+              model="google/gemini-2.0-flash-exp:free",  # Работающая бесплатная модель
               messages=[{"role": "user", "content": prompt}],
-              max_tokens=1000,
+              max_tokens=1500,
           )
           
           review = response.choices[0].message.content
           
           # Постим комментарий
-          pr.create_issue_comment(f"## 🤖 AI Review\n\n{review}\n\n---\n*Проверено через OpenRouter (deepseek/deepseek-r1:free)*")
-          print("Review posted successfully!")
+          pr.create_issue_comment(f"## 🤖 AI Review (Gemini Flash)\n\n{review}\n\n---\n*Проверено через OpenRouter | Модель: google/gemini-2.0-flash-exp:free*")
+          print("✅ Review posted successfully!")
           EOF
