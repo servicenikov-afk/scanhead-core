@@ -32,8 +32,9 @@ jobs:
         run: |
           python - << 'EOF'
           import os
+          import time
           from github import Github, Auth
-          from openai import OpenAI
+          from openai import OpenAI, RateLimitError
           
           # Настройки
           repo_name = os.environ["REPO"]
@@ -52,11 +53,11 @@ jobs:
           diff_text = ""
           file_count = 0
           for file in files:
-              if file_count >= 15:  # Ограничиваем 15 файлами
+              if file_count >= 15:
                   break
               diff_text += f"\n--- {file.filename} ---\n"
               if file.patch:
-                  patch = file.patch[:2000]  # Ограничиваем размер патча
+                  patch = file.patch[:2000]
                   diff_text += patch + "\n"
               file_count += 1
           
@@ -89,17 +90,56 @@ jobs:
           
           Будь конструктивен и краток."""
           
-          # Используем Qwen3 Coder — специализированная модель для кода
-          response = client.chat.completions.create(
-              model="qwen/qwen3-coder:free",
-              messages=[{"role": "user", "content": prompt}],
-              max_tokens=1500,
-              temperature=0.3,
-          )
+          # Список моделей для fallback (от лучшей к запасной)
+          models_to_try = [
+              "nvidia/nemotron-3-ultra-550b-a55b:free",  # 550B параметров, 1M контекст
+              "poolside/laguna-xs.2:free",               # Специализирована для кода
+              "qwen/qwen3-coder:free",                   # Qwen3 Coder (может быть rate-limited)
+          ]
           
-          review = response.choices[0].message.content
+          review = None
+          used_model = None
+          
+          for model in models_to_try:
+              print(f"🔄 Пробую модель: {model}")
+              try:
+                  response = client.chat.completions.create(
+                      model=model,
+                      messages=[{"role": "user", "content": prompt}],
+                      max_tokens=1500,
+                      temperature=0.3,
+                  )
+                  review = response.choices[0].message.content
+                  used_model = model
+                  print(f"✅ Модель {model} сработала!")
+                  break
+              except RateLimitError as e:
+                  print(f"⚠️  Rate limit для {model}, жду 35 секунд...")
+                  time.sleep(35)
+                  # Пробуем ещё раз ту же модель
+                  try:
+                      response = client.chat.completions.create(
+                          model=model,
+                          messages=[{"role": "user", "content": prompt}],
+                          max_tokens=1500,
+                          temperature=0.3,
+                      )
+                      review = response.choices[0].message.content
+                      used_model = model
+                      print(f"✅ Модель {model} сработала после retry!")
+                      break
+                  except Exception as retry_error:
+                      print(f"❌ Retry не помог для {model}: {retry_error}")
+                      continue
+              except Exception as e:
+                  print(f"❌ Ошибка с моделью {model}: {e}")
+                  continue
+          
+          if not review:
+              print("❌ Все модели недоступны!")
+              exit(1)
           
           # Постим комментарий
-          pr.create_issue_comment(f"## 🤖 AI Review (Qwen3 Coder)\n\n{review}\n\n---\n*Проверено через OpenRouter | Модель: qwen/qwen3-coder:free*")
-          print("✅ Review posted successfully!")
+          pr.create_issue_comment(f"## 🤖 AI Review\n\n{review}\n\n---\n*Проверено через OpenRouter | Модель: {used_model}*")
+          print(f"✅ Review posted successfully with model: {used_model}")
           EOF
