@@ -14,21 +14,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: AI PR Reviewer
-        uses: flosoy/ai-pr-reviewer@main
+      - name: AI PR Review
+        uses: jonit-dev/openrouter-github-action@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          openai-api-key: ${{ secrets.OPENROUTER_API_KEY }}
-          openai-base-url: "https://openrouter.ai/api/v1"
-          model: "deepseek/deepseek-r1:free"
-          instructions: |
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          open_router_key: ${{ secrets.OPENROUTER_API_KEY }}
+          model_id: 'deepseek/deepseek-r1:free'
+          custom_prompt: |
             Ты — строгий ревьювер Python кода.
             Проверь изменения в этом Pull Request.
             
             Особое внимание обрати на:
             1. Гибридный стек ttk+tk: должны использоваться оба (import tkinter as tk, from tkinter import ttk)
-            2. Потокобезопасность: все обновления GUI из фона должны идти через after()
-            3. DI контейнер: зависимости внедряются через DIContainer, а не создаются в виджетах
-            4. Безопасность: SQLite соединения должны быть read-only (?mode=ro)
-            
-            Оставь подробный отчёт в комментарии. Если всё хорошо — разреши мёрж.
+            2. Потокобезопасность: обновления GUI из фона через after()
+            3. DI контейнер: зависимости внедряются через DIContainer
+            4. SQLite соединения: read-only (?mode=ro)
