@@ -1,26 +1,50 @@
-# Python
+# Byte-compiled / optimized
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+sdist/
+var/
+wheels/
+
+# Virtual environments
+.env
+.venv
 env/
 venv/
-.venv/
 ENV/
+
+# IDE
 .idea/
 .vscode/
-*.db
-*.sqlite3
+*.swp
+*.swo
+*~
 
-# Testing
+# Testing / coverage
 .pytest_cache/
+.mypy_cache/
 .coverage
 htmlcov/
 .tox/
-.mypy_cache/
+.nox/
+coverage.xml
+*.cover
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.tmp
+
+# Database
+*.db
+*.db-journal
