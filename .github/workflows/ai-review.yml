@@ -30,10 +30,3 @@ jobs:
           VCS__PIPELINE__PULL_NUMBER: ${{ github.event.pull_request.number }}
           VCS__HTTP_CLIENT__API_URL: "https://api.github.com"
           VCS__HTTP_CLIENT__API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-          # Принудительно указываем режим
-          REVIEW__MODE: "FULL_FILE_DIFF"
-          REVIEW__ALLOW_CHANGES: "['gui/**/*.py', 'libs/**/*.py', 'services/**/*.py', 'main.py']"
-          
-          # Используем custom_prompt из .ai-review.yaml
-          REVIEW__CUSTOM_PROMPT_FILE: ".ai-review.yaml"

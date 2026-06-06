@@ -18,51 +18,6 @@ vcs:
 review:
   mode: FULL_FILE_DIFF
   inline_comment_fallback: true
-  
-  # Исключаем старые проекты и бинарные файлы
-  ignore_changes:
-    - "projects/**"
-    - "**/*.png"
-    - "**/*.ico"
-    - "**/*.pyc"
-    - "**/__pycache__/**"
-    - "data/databases/**/*.db"
-    - "**/*.db"
-  
-  # Включаем только актуальные файлы
-  allow_changes:
-    - "gui/**/*.py"
-    - "libs/**/*.py"
-    - "services/**/*.py"
-    - "main.py"
-    - "config/**/*.json"
-    - "data/icons/**"
-    - "docs/**/*.md"
-  
-  # Инструкция для AI
-  custom_prompt: |
-    Ты — строгий ревьювер Python кода. Проверь изменения в этом Pull Request.
-    
-    Контекст проекта:
-    - Проект использует ГИБРИДНЫЙ стек ttk+tk (import tkinter as tk И from tkinter import ttk)
-    - Старые проекты (projects/project_a, projects/project_b) УДАЛЕНЫ — не обращай на них внимания
-    - Ветка main-gui — это ОТКАТ к рабочей версии с ttk+tk
-    
-    Что проверять:
-    1. Гибридный стек ttk+tk: в каждом GUI-файле должны быть оба импорта
-    2. Потокобезопасность: все обновления GUI из фона через root.after()
-    3. DI контейнер: зависимости внедряются через DIContainer (services/di_container.py)
-    4. SQLite: соединения должны быть read-only (?mode=ro)
-    
-    Что игнорировать:
-    - Папки projects/ (старый код, не относится к проекту)
-    - Бинарные файлы (.png, .ico, .db)
-    
-    Формат ответа:
-    - Если всё хорошо: "Код готов к мёржу. Гибридный стек ttk+tk используется корректно."
-    - Если есть проблемы: укажи конкретный файл, строку и предложи исправление.
-    
-    Будь краток и конструктивен.
 
 logger:
   level: INFO
