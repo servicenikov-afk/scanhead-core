@@ -14,21 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: AI PR Review
-        uses: reviewpad/action@v4
+      - name: AI PR Reviewer
+        uses: flosoy/ai-pr-reviewer@main
         with:
-          openai_api_key: ${{ secrets.OPENROUTER_API_KEY }}
-          openai_base_url: "https://openrouter.ai/api/v1"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          openai-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+          openai-base-url: "https://openrouter.ai/api/v1"
           model: "deepseek/deepseek-r1:free"
           instructions: |
-            Ты — строгий, но конструктивный ревьювер Python-кода.
-            Проанализируй изменения в этом Pull Request.
-            Обрати особое внимание на:
-            1. Корректность использования гибридного стека ttk+tk.
-            2. Потенциальные проблемы с потоками (обновление GUI из фона).
-            3. Следование принципам Dependency Injection (DIContainer).
-            4. Безопасность работы с БД (SQL-инъекции, read-only соединения).
+            Ты — строгий ревьювер Python кода.
+            Проверь изменения в этом Pull Request.
             
-            Оставь свой отчет в виде комментария к PR.
-            Если код хорош, кратко похвали и скажи, что можно мёржить.
-            Если есть проблемы, укажи на конкретные файлы и строки и предложи исправления.
+            Особое внимание обрати на:
+            1. Гибридный стек ttk+tk: должны использоваться оба (import tkinter as tk, from tkinter import ttk)
+            2. Потокобезопасность: все обновления GUI из фона должны идти через after()
+            3. DI контейнер: зависимости внедряются через DIContainer, а не создаются в виджетах
+            4. Безопасность: SQLite соединения должны быть read-only (?mode=ro)
+            
+            Оставь подробный отчёт в комментарии. Если всё хорошо — разреши мёрж.
