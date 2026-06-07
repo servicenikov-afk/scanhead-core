@@ -117,6 +117,13 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._css_tab = self._notebook.add("📎 Дополнительно")
         self._create_css_tab(self._css_tab)
     
+    def _populate_basic_info(self) -> None:
+        """Заполнить основные поля из словаря product."""
+        self._lbl_article.configure(text=self._product.get('article', ''))
+        self._lbl_article2.configure(text=self._product.get('article2', ''))
+        self._lbl_name.configure(text=self._wrap_text_at_word(self._product.get('name', '')))
+        self._lbl_barcodes.configure(text=self._product.get('barcodes', ''))
+    
     def _create_nomenclature_tab(self, parent: ctk.CTkFrame) -> None:
         """Создать вкладку номенклатуры."""
         # Сетка для полей (6 строк вместо 7 - убрано Описание)
@@ -168,6 +175,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
         )
         self._lbl_model = ctk.CTkLabel(parent, text="", anchor="nw", font=ctk.CTkFont(size=self._font_size))
         self._lbl_model.grid(row=5, column=1, sticky="ew", pady=5, padx=5)
+        # Заполняем базовые поля из словаря product
+        self._populate_basic_info()
     
     def _wrap_text_at_word(self, text: str, max_length: int = 45) -> str:
         """Перенести текст на границе слова после max_length символов."""
@@ -250,32 +259,32 @@ class ProductInfoDialog(ctk.CTkToplevel):
         self._lbl_css_loading.pack(pady=20)
     
     def _load_details(self) -> None:
-        """Загрузить данные в форму."""
-        # Основные данные из переданного product
-        self._lbl_article.configure(text=self._product.get('article', ''))
-        self._lbl_article2.configure(text=self._product.get('article2', ''))
-        # Применяем перенос строк на 45 символе для наименования
-        name_text = self._product.get('name', '')
-        self._lbl_name.configure(text=self._wrap_text_at_word(name_text))
-        self._lbl_barcodes.configure(text=self._product.get('barcodes', ''))
-        # Поле description удалено, category переименовано в model
-        
-        # Если есть details_service, загружаем полные данные из всех БД
+        """Загрузить детальную информацию из всех источников."""
         if self._details_service:
             article = self._product.get('article', '')
             self._lbl_css_loading.configure(text="Загрузка данных из всех источников...")
-            
-            # Загружаем данные асинхронно
-            def on_details_loaded(product: Optional[Product]):
-                if product:
-                    self._update_ui_with_full_data(product)
-                else:
-                    self._lbl_css_loading.configure(text="Не удалось загрузить данные")
-            
-            self._details_service.get_product_details(article, callback=on_details_loaded)
+            self._details_service.get_product_details(article, self.on_details_loaded)
         else:
             # Старый режим с адаптерами
             self._load_details_legacy()
+            
+    def on_details_loaded(self, result) -> None:
+        """Обработчик завершения загрузки данных."""
+        # Проверяем, существует ли ещё диалог
+        if not self.winfo_exists():
+            return
+        
+        try:
+            if result:
+                self._update_ui_with_full_data(result)
+                self._has_unsaved_changes = False
+                if self._lbl_css_loading.winfo_exists():
+                    self._lbl_css_loading.configure(text="")
+            else:
+                if self._lbl_css_loading.winfo_exists():
+                    self._lbl_css_loading.configure(text="Не удалось загрузить данные")
+        except Exception as e:
+            logger.error(f"[ProductInfoDialog] Ошибка при обработке результатов: {e}")
     
     def _update_ui_with_full_data(self, product: Product) -> None:
         """Обновить UI с полными данными из ProductDetailsService."""

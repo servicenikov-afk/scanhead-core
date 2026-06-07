@@ -21,7 +21,7 @@ class SearchBar(ctk.CTkFrame):
         master: Any, 
         search_service: ISearchService,
         on_search_result: Callable[[list], None],
-        debounce_ms: int = 300,
+        debounce_ms: int = 600,
         font_size: int = 18,
         auto_focus: bool = True,
         config: Optional[Dict[str, Any]] = None
