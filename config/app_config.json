@@ -1,0 +1,12 @@
+{
+  "app_name": "ScanHead Combine",
+  "version": "0.2.3",
+  "log_level": "INFO",
+  "log_file": "app.log",
+  "db_paths": {
+    "nomenclature": "data/databases/nomenclature/nomenclature.db",
+    "store": "data/databases/store/store.db",
+    "temp": "temp/temp.db",
+    "css_export": "data/databases/css_export/css_export.db"
+  }
+}

@@ -1,0 +1,131 @@
+name: Update Module Documentation
+
+on:
+  workflow_dispatch: # Запуск вручную из вкладки Actions
+  pull_request:
+    types: [opened, synchronize]
+    paths:
+      - '**.py'
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install openai PyGithub
+      
+      - name: Generate Module Docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          python - << 'EOF'
+          import os
+          import time
+          from github import Github, Auth
+          from openai import OpenAI, RateLimitError
+
+          repo_name = os.environ["REPO"]
+          pr_number = int(os.environ["PR_NUMBER"])
+          github_token = os.environ["GITHUB_TOKEN"]
+          openrouter_key = os.environ["OPENROUTER_KEY"]
+
+          auth = Auth.Token(github_token)
+          g = Github(auth=auth)
+          repo = g.get_repo(repo_name)
+          pr = repo.get_pull(pr_number)
+
+          # Берем только Python-файлы, измененные в этом PR
+          files = [f for f in pr.get_files() if f.filename.endswith('.py')]
+          
+          if not files:
+              print("No Python files changed in this PR.")
+              exit(0)
+
+          print(f"📊 Found {len(files)} Python files to document.")
+
+          client = OpenAI(
+              base_url="https://openrouter.ai/api/v1",
+              api_key=openrouter_key,
+          )
+
+          models_to_try = [
+              "nvidia/nemotron-3-ultra-550b-a55b:free",
+              "qwen/qwen3-coder:free",
+              "meta-llama/llama-3.3-70b-instruct:free"
+          ]
+
+          doc_report = "## 📚 Актуализация описания модулей\n\n"
+          doc_report += "> *Сгенерировано AI на основе полного кода файлов из этого PR. Скопируйте соответствующие блоки в `current_structure.md` или `MANIFEST.md`.*\n\n"
+
+          for file in files:
+              print(f"📖 Reading full content of: {file.filename}")
+              try:
+                  # ВАЖНО: Получаем ПОЛНОЕ содержимое файла из ветки PR, а не только diff!
+                  file_content = repo.get_contents(file.filename, ref=pr.head.sha).decoded_content.decode('utf-8')
+                  
+                  # Ограничиваем размер на случай огромных файлов (50k символов ~ 12k токенов)
+                  content_snippet = file_content[:50000] 
+                  
+                  prompt = f"""Ты — технический писатель и архитектор Python-проекта.
+                  Проанализируй исходный код модуля `{file.filename}` и составь краткое архитектурное описание для документации проекта.
+
+                  Исходный код:
+                  ```python
+                  {content_snippet}
+                  ```
+
+                  Выведи результат СТРОГО в следующем формате Markdown:
+                  ### 📦 `{file.filename}`
+                  - **Назначение:** (1-2 предложения: за что отвечает этот модуль)
+                  - **Слой архитектуры:** (UI / Application Services / Adapters / Domain Models / Infrastructure)
+                  - **Ключевые зависимости:** (какие основные модули импортирует)
+                  - **Основные классы/функции:** (краткий список 2-3 главных сущностей)
+                  - **Соответствие манифесту:** (✅ Да / ⚠️ Есть вопросы: укажи, если нарушает правила из MANIFEST.md)
+                  """
+
+                  review_text = None
+                  for model in models_to_try:
+                      try:
+                          response = client.chat.completions.create(
+                              model=model,
+                              messages=[{"role": "user", "content": prompt}],
+                              max_tokens=1000,
+                              temperature=0.2, # Низкая температура для точности документации
+                          )
+                          review_text = response.choices[0].message.content
+                          break
+                      except RateLimitError:
+                          time.sleep(30)
+                          continue
+                      except Exception as e:
+                          continue
+
+                  if review_text:
+                      doc_report += review_text + "\n\n---\n\n"
+                  else:
+                      doc_report += f"### ⚠️ `{file.filename}`\nНе удалось сгенерировать описание (ошибка API).\n\n---\n\n"
+                      
+              except Exception as e:
+                  print(f"❌ Error reading {file.filename}: {e}")
+                  doc_report += f"### ⚠️ `{file.filename}`\nОшибка чтения файла: {e}\n\n---\n\n"
+
+          # Постим комментарий
+          pr.create_issue_comment(doc_report)
+          print("✅ Documentation report posted to PR!")
+          EOF
+          
+          
