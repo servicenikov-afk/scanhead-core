@@ -105,8 +105,8 @@ class PrintQueue(ctk.CTkFrame):
         table_frame = ctk.CTkFrame(self)
         table_frame.pack(fill="both", expand=True, padx=3, pady=3)
         
-        # Создаём Treeview
-        columns = ("article", "article2", "name", "address")
+        # Создаём Treeview с 5 колонками
+        columns = ("num", "article", "article2", "name", "address")
         self._tree = ttk.Treeview(
             table_frame,
             columns=columns,
@@ -115,15 +115,18 @@ class PrintQueue(ctk.CTkFrame):
         )
         
         # Настройка колонок
+        self._tree.heading("num", text="№")
         self._tree.heading("article", text="Артикул")
         self._tree.heading("article2", text="Артикул 2")
         self._tree.heading("name", text="Наименование")
         self._tree.heading("address", text="Адрес")
         
-        self._tree.column("article", width=100, minwidth=80)
-        self._tree.column("article2", width=100, minwidth=80)
-        self._tree.column("name", width=200, minwidth=150)
-        self._tree.column("address", width=150, minwidth=100)
+        # Начальные ширины (уменьшаем minwidth, чтобы окно не растягивалось при запуске)
+        self._tree.column("num", width=40, minwidth=30, anchor="center", stretch=False)
+        self._tree.column("article", width=100, minwidth=60)
+        self._tree.column("article2", width=100, minwidth=60)
+        self._tree.column("name", width=200, minwidth=100)
+        self._tree.column("address", width=150, minwidth=80)
         
         # Скроллбары
         v_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self._tree.yview)
@@ -141,8 +144,26 @@ class PrintQueue(ctk.CTkFrame):
         # Привязка двойного клика для редактирования
         self._tree.bind("<Double-1>", self._on_double_click)
         
+        # Привязка изменения размера для динамической ширины
+        self._tree.bind("<Configure>", self._on_tree_resize)
+        
         logger.debug("[PrintQueue] Treeview создан")
-    
+        
+    def _on_tree_resize(self, event) -> None:
+        """Динамическая подгонка ширины колонок при изменении размера таблицы."""
+        # Получаем ширину таблицы
+        table_width = event.width - 20  # Минус скроллбар
+        
+        if table_width < 100:
+            return
+        
+        # Распределяем ширину: № (5%), Артикул (15%), Артикул 2 (15%), Наименование (35%), Адрес (30%)
+        self._tree.column("num", width=int(table_width * 0.05))
+        self._tree.column("article", width=int(table_width * 0.15))
+        self._tree.column("article2", width=int(table_width * 0.15))
+        self._tree.column("name", width=int(table_width * 0.35))
+        self._tree.column("address", width=int(table_width * 0.30))        
+
     def _load_column_settings(self) -> None:
         """Загрузка настроек колонок из сервиса настроек."""
         config = self._settings_service.get_column_config()
@@ -158,6 +179,9 @@ class PrintQueue(ctk.CTkFrame):
     def _apply_column_visibility(self) -> None:
         """Применение видимости колонок."""
         visible = self._column_config.get('visible', [])
+        
+        # Колонка "num" всегда видима
+        self._tree.column("num", width=40, minwidth=30, anchor="center")
         
         for col in ["article", "article2", "name", "address"]:
             if col in visible:
@@ -188,7 +212,7 @@ class PrintQueue(ctk.CTkFrame):
     
     def _get_column_index(self, column: str) -> int:
         """Получение индекса колонки."""
-        columns = ["article", "article2", "name", "address"]
+        columns = ["num", "article", "article2", "name", "address"]
         return columns.index(column) if column in columns else -1
     
     def _start_inline_edit(self, item_id: str, column: str, value: str) -> None:
@@ -227,62 +251,71 @@ class PrintQueue(ctk.CTkFrame):
     def add_item(self, product: Product) -> None:
         """Добавить товар в очередь."""
         logger.info(f"[PrintQueue] Добавление товара {product.article} в очередь")
-        
+
         # Генерируем новый ID
         item_id = len(self._products) + 1
-        
+
         # Формируем значения для колонок
+        # Артикул 2 - второй штрихкод, исключая основной артикул
         article2_val = ""
-        if len(product.barcodes) > 1:
-            article2_val = product.barcodes[1]
-        
+        other_barcodes = [b for b in product.barcodes if b != product.article]
+        if other_barcodes:
+            article2_val = other_barcodes[0]
+
+        # Адрес - все адреса через запятую
         address_val = ""
-        if product.address:
-            address_val = product.address
-        
+        if product.storage_locations:
+            address_val = ", ".join(product.storage_locations)
+
+        # № п/п добавляем в начало values
         values = (
-            item_id,
-            product.article,
-            article2_val,
-            product.name,
-            address_val
+            str(item_id),                # № п/п
+            product.article,             # Артикул
+            article2_val,                # Артикул 2
+            product.name,                # Наименование
+            address_val                  # Адрес
         )
-        
-        self._tree.insert("", "end", iid=item_id, values=values)
+
+        self._tree.insert("", "end", iid=str(item_id), values=values)
         self._products.append(product)
     
     def set_products(self, products: List[Product]) -> None:
         """
         Установка списка товаров в очередь.
-        
+        ЗАМЕНЯЕТ всё содержимое очереди.
+
         :param products: Список товаров для отображения
         """
         self._products = products
         logger.info(f"[PrintQueue] Установка {len(products)} товаров в очередь")
-        
+
         # Очищаем таблицу
         for item in self._tree.get_children():
             self._tree.delete(item)
-        
+
         # Добавляем товары
         for i, product in enumerate(products, start=1):
             # Формируем значения для колонок
+            # Артикул 2 - второй штрихкод, исключая основной артикул
             article2_val = ""
-            if len(product.barcodes) > 1:
-                article2_val = product.barcodes[1]
-            
+            other_barcodes = [b for b in product.barcodes if b != product.article]
+            if other_barcodes:
+                article2_val = other_barcodes[0]
+
+            # Адрес - все адреса через запятую
             address_val = ""
-            if product.address:
-                address_val = product.address
-            
+            if product.storage_locations:
+                address_val = ", ".join(product.storage_locations)
+
+            # № п/п добавляем в начало values
             values = (
-                i,  # № п/п
-                product.article,
-                article2_val,
-                product.name,
-                address_val
+                str(i),                    # № п/п
+                product.article,           # Артикул
+                article2_val,              # Артикул 2
+                product.name,              # Наименование
+                address_val                # Адрес
             )
-            self._tree.insert("", "end", iid=i, values=values)
+            self._tree.insert("", "end", iid=str(i), values=values)
     
     def clear(self) -> None:
         """Очистка очереди."""

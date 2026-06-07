@@ -170,15 +170,16 @@ class SearchAddressTab(ctk.CTkFrame):
             # Показываем первый товар в деталях
             self._product_details.set_product(products[0])
             
-            # Добавляем товары в очередь
-            self._print_queue.set_products(products)
+            # НЕ добавляем автоматически в очередь!
+            # Товары добавляются только по нажатию кнопки "⤵️"
             
             # Обновляем превью для первого товара
             self._sticker_preview.set_product(products[0])
         else:
-            # Очищаем всё
+            # Очищаем всё 
             self._product_details.clear()
-            self._print_queue.clear()
+            # НЕ очищаем очередь при поиске!
+            # self._print_queue.clear()
             self._sticker_preview.clear()
     
     def get_current_product(self) -> Product | None:
