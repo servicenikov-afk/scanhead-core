@@ -656,22 +656,70 @@ class ProductInfoDialog(ctk.CTkToplevel):
     
     def _do_delete_address_row(self, index: int) -> None:
         """Выполнить удаление строки адреса."""
-        # Удаляем виджеты
-        self._location_frames[index].destroy()
-        self._location_frames.pop(index)
-        self._location_entries.pop(index)
+        # Защита от повторных кликов и невалидных индексов
+        if index < 0 or index >= len(self._location_frames):
+            return
+        # Получаем фрейм до удаления
+        frame_to_delete = self._location_frames[index]
         
+        # Считаем сколько entry в этом фрейме (для форматированных адресов их несколько)
+        entries_in_frame = 0
+        for widget in frame_to_delete.winfo_children():
+            if isinstance(widget, ctk.CTkFrame):  # fields_container
+                entries_in_frame = len([w for w in widget.winfo_children() if hasattr(w, 'get')])
+                break
+        
+        # Если не нашли вложенный фрейм, считаем что это простое entry
+        if entries_in_frame == 0:
+            entries_in_frame = 1
+        
+        # Удаляем фрейм
+        frame_to_delete.destroy()
+        self._location_frames.pop(index)
+        
+        # Удаляем ВСЕ entry этой строки (не одно, а все что принадлежат этому фрейму)
+        for _ in range(entries_in_frame):
+            if index < len(self._location_entries):
+                self._location_entries.pop(index)
+
         # Пересоздаём строки с правильными номерами
         self._rebuild_address_rows()
     
     def _rebuild_address_rows(self) -> None:
         """Перестроить строки адресов после удаления."""
-        # Сохраняем текущие значения
-        current_values = [entry.get() for entry in self._location_entries]
+        # Собираем значения по строкам (фреймам), а не по отдельным entry
+        current_values = []
+        
+        # Проверяем, используется ли форматирование
+        use_formatting = (
+            self._address_formatter is not None and
+            hasattr(self._address_formatter, 'config') and
+            getattr(self._address_formatter.config, 'enabled', False)
+        )
+        
+        if use_formatting:
+            # Для форматированных адресов: собираем поля по фреймам
+            for frame in self._location_frames:
+                # Находим все entry в этом фрейме
+                frame_entries = []
+                for widget in frame.winfo_children():
+                    if isinstance(widget, ctk.CTkFrame):  # fields_container
+                        for child in widget.winfo_children():
+                            if hasattr(child, 'get'):
+                                frame_entries.append(child)
+                        break
+                
+                # Если нашли поля, форматируем их в одну строку
+                if frame_entries and self._address_formatter:
+                    values = [entry.get() for entry in frame_entries]
+                    formatted = self._address_formatter.format(values)
+                    current_values.append(formatted)
+        else:
+            # Для простых адресов: одно entry = одна строка
+            current_values = [entry.get() for entry in self._location_entries]
         
         # Очищаем и пересоздаём
         self._clear_address_rows()
-        
         for value in current_values:
             self._add_address_row(value, is_original=False)
     
