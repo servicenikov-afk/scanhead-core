@@ -39,24 +39,21 @@ jobs:
           github_token = os.environ["GITHUB_TOKEN"]
           openrouter_key = os.environ["OPENROUTER_KEY"]
 
-          # Получаем информацию о коммите через git (безопасно от YAML-ошибок)
           try:
               commit_sha = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], text=True).strip()
               commit_msg = subprocess.check_output(["git", "log", "-1", "--format=%s"], text=True).strip()
               diff_stat = subprocess.check_output(["git", "diff", "HEAD~1", "HEAD", "--stat"], text=True, timeout=30)
               changed_files = subprocess.check_output(["git", "diff", "HEAD~1", "HEAD", "--name-only"], text=True, timeout=30).strip().split('\n')
           except subprocess.CalledProcessError as e:
-              print(f"Could not get git info (maybe first commit?): {e}")
+              print(f"Could not get git info: {e}")
               exit(0)
 
           if not any(changed_files):
               print("No changes detected. Skipping...")
               exit(0)
 
-          # Фильтруем бинарные файлы
           text_files = [f for f in changed_files if f and not f.endswith(('.png', '.ico', '.db', '.pyc', '.bin'))]
 
-          # Собираем содержимое изменённых файлов
           file_contents = ""
           for filename in text_files[:15]:
               try:
@@ -80,39 +77,35 @@ jobs:
 
           files_list = ', '.join(text_files[:20]) if text_files else 'Нет текстовых файлов'
 
-          prompt = f"""Ты — технический ревьювер Python-проекта ScanHead Core.
+          prompt = f"""Ты технический ревьювер Python проекта ScanHead Core.
 
-## Контекст проекта
-Проект использует гибридный стек ttk+tk, многослойную архитектуру (UI -> Services -> Adapters -> DB).
-Ключевые правила в MANIFEST.md: гибридный ttk+tk, потокобезопасность через root.after(), DI-контейнер, read-only SQLite.
+Контекст проекта:
+Проект использует гибридный стек ttk и tk, многослойную архитектуру UI, Services, Adapters, DB.
+Ключевые правила в MANIFEST.md: гибридный ttk и tk, потокобезопасность через root.after, DI контейнер, read only SQLite.
 
-## Коммит для ревью
-- SHA: {commit_sha}
-- Сообщение: {commit_msg}
-- Изменённые файлы: {files_list}
+Коммит для ревью:
+SHA: {commit_sha}
+Сообщение: {commit_msg}
+Изменённые файлы: {files_list}
 
-## Статистика изменений
+Статистика изменений:
 {diff_stat[:3000]}
 
-## Содержимое изменённых файлов (фрагменты)
+Содержимое изменённых файлов (фрагменты):
 {file_contents[:25000]}
 
-## Задача
+Задача:
 Напиши краткий обзор изменений на русском языке в формате Markdown:
 
-### Что изменено
-(2-4 предложения о сути изменений)
+Что изменено: 2-4 предложения о сути изменений
 
-### Потенциальные проблемы
-(если есть — укажи конкретные файлы. Если всё ок — напиши "Проблем не обнаружено")
+Потенциальные проблемы: если есть, укажи конкретные файлы. Если всё ок, напиши Проблем не обнаружено
 
-### Соответствие архитектуре
-(соблюдены ли правила из MANIFEST.md: гибридный стек, потокобезопасность, DI, read-only БД)
+Соответствие архитектуре: соблюдены ли правила из MANIFEST.md (гибридный стек, потокобезопасность, DI, read only БД)
 
-### Общая оценка
-(отлично/хорошо/требует внимания)
+Общая оценка: отлично, хорошо или требует внимания
 
-Будь краток и конструктивен. Максимум 300 слов."""
+Будь краток и конструктивен. Максимум 500 слов."""
 
           models_to_try = [
               "nvidia/nemotron-3-ultra-550b-a55b:free",
@@ -129,7 +122,7 @@ jobs:
                   response = client.chat.completions.create(
                       model=model,
                       messages=[{"role": "user", "content": prompt}],
-                      max_tokens=1500,
+                      max_tokens=7500,
                       temperature=0.3,
                   )
                   review = response.choices[0].message.content
@@ -160,7 +153,6 @@ jobs:
               print("All models unavailable!")
               exit(1)
 
-          # Закрываем старые Issues с лейблом ai-review
           try:
               label = repo.get_label("ai-review")
           except Exception:
@@ -172,21 +164,20 @@ jobs:
               issue.edit(state="closed")
               print(f"Closed old review issue #{issue.number}")
 
-          # Создаём новый Issue
           title = f"AI Review: {commit_msg[:50]} ({commit_sha})"
-          body = f"""## Автоматический обзор коммита
+          body = f"""Автоматический обзор коммита
 
-**Commit:** {commit_sha}
-**Message:** {commit_msg}
-**Files changed:** {len(text_files)}
-**Model:** {used_model}
+Commit: {commit_sha}
+Message: {commit_msg}
+Files changed: {len(text_files)}
+Model: {used_model}
 
 ---
 
 {review}
 
 ---
-*Автоматически создано GitHub Actions при push в main*
+Автоматически создано GitHub Actions при push в main
 """
           issue = repo.create_issue(title=title, body=body, labels=[label])
           print(f"Created issue #{issue.number}: {title}")
