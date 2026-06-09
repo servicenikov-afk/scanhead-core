@@ -1,0 +1,207 @@
+name: Push Review to Issue
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Нужно минимум 2 коммита для diff
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install openai PyGithub
+
+      - name: Run Push Review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENROUTER_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          python - << 'EOF'
+          import os
+          import time
+          import subprocess
+          from github import Github, Auth
+          from openai import OpenAI, RateLimitError
+
+          repo_name = os.environ["REPO"]
+          github_token = os.environ["GITHUB_TOKEN"]
+          openrouter_key = os.environ["OPENROUTER_KEY"]
+          commit_sha = os.environ["COMMIT_SHA"][:7]
+          commit_msg = os.environ["COMMIT_MSG"]
+
+          # Получаем diff между последним и предпоследним коммитом
+          try:
+              diff_output = subprocess.check_output(
+                  ["git", "diff", "HEAD~1", "HEAD", "--stat"],
+                  text=True, timeout=30
+              )
+              diff_full = subprocess.check_output(
+                  ["git", "diff", "HEAD~1", "HEAD"],
+                  text=True, timeout=30
+              )
+          except subprocess.CalledProcessError as e:
+              print(f"⚠️  Could not get git diff: {e}")
+              print("This might be the first commit in the repository. Skipping...")
+              exit(0)
+
+          if not diff_full.strip():
+              print("No changes detected. Skipping...")
+              exit(0)
+
+          # Получаем список изменённых файлов
+          changed_files = subprocess.check_output(
+              ["git", "diff", "HEAD~1", "HEAD", "--name-only"],
+              text=True, timeout=30
+          ).strip().split('\n')
+
+          # Фильтруем бинарные файлы и ограничиваем diff
+          text_files = [f for f in changed_files if not f.endswith(('.png', '.ico', '.db', '.pyc'))]
+          
+          # Собираем содержимое изменённых файлов (первые 2000 символов каждого)
+          file_contents = ""
+          for filename in text_files[:15]:
+              try:
+                  with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
+                      content = f.read(3000)
+                      file_contents += f"\n--- {filename} ---\n{content}\n"
+              except Exception as e:
+                  file_contents += f"\n--- {filename} ---\n[Error reading: {e}]\n"
+
+          print(f"📊 Analyzing commit {commit_sha}: {commit_msg}")
+          print(f"📁 Changed files: {len(text_files)}")
+
+          # Подключаемся к GitHub и OpenRouter
+          auth = Auth.Token(github_token)
+          g = Github(auth=auth)
+          repo = g.get_repo(repo_name)
+
+          client = OpenAI(
+              base_url="https://openrouter.ai/api/v1",
+              api_key=openrouter_key,
+          )
+
+          prompt = f"""Ты — технический ревьювер Python-проекта ScanHead Core.
+
+## Контекст проекта
+Проект использует гибридный стек ttk+tk, многослойную архитектуру (UI → Services → Adapters → DB).
+Ключевые правила в MANIFEST.md: гибридный ttk+tk, потокобезопасность через root.after(), DI-контейнер, read-only SQLite.
+
+## Коммит для ревью
+- **SHA:** {commit_sha}
+- **Сообщение:** {commit_msg}
+- **Изменённые файлы:** {', '.join(text_files[:20])}
+
+## Статистика изменений
+{diff_output[:3000]}
+
+## Содержимое изменённых файлов (фрагменты)
+{file_contents[:25000]}
+
+## Задача
+Напиши краткий обзор изменений на русском языке в формате Markdown:
+
+### 📝 Что изменено
+(2-4 предложения о сути изменений)
+
+### ⚠️ Потенциальные проблемы
+(если есть — укажи конкретные файлы и что может пойти wrong. Если всё ок — напиши "Проблем не обнаружено")
+
+### ✅ Соответствие архитектуре
+(соблюдены ли правила из MANIFEST.md: гибридный стек, потокобезопасность, DI, read-only БД)
+
+### 📊 Общая оценка
+(отлично/хорошо/требует внимания)
+
+Будь краток и конструктивен. Максимум 300 слов."""
+
+          models_to_try = [
+              "nvidia/nemotron-3-ultra-550b-a55b:free",
+              "poolside/laguna-xs.2:free",
+              "qwen/qwen3-coder:free",
+          ]
+
+          review = None
+          used_model = None
+
+          for model in models_to_try:
+              print(f"🔄 Пробую модель: {model}")
+              try:
+                  response = client.chat.completions.create(
+                      model=model,
+                      messages=[{"role": "user", "content": prompt}],
+                      max_tokens=1500,
+                      temperature=0.3,
+                  )
+                  review = response.choices[0].message.content
+                  used_model = model
+                  print(f"✅ Модель {model} сработала!")
+                  break
+              except RateLimitError:
+                  print(f"⚠️  Rate limit для {model}, жду 35 секунд...")
+                  time.sleep(35)
+                  try:
+                      response = client.chat.completions.create(
+                          model=model,
+                          messages=[{"role": "user", "content": prompt}],
+                          max_tokens=1500,
+                          temperature=0.3,
+                      )
+                      review = response.choices[0].message.content
+                      used_model = model
+                      print(f"✅ Модель {model} сработала после retry!")
+                      break
+                  except Exception:
+                      continue
+              except Exception as e:
+                  print(f"❌ Ошибка с моделью {model}: {e}")
+                  continue
+
+          if not review:
+              print("❌ Все модели недоступны!")
+              exit(1)
+
+          # Закрываем старые Issues с лейблом ai-review (чтобы не засорять)
+          try:
+              label = repo.get_label("ai-review")
+          except Exception:
+              label = repo.create_label("ai-review", "0e8a16")
+              print("🏷️  Created label 'ai-review'")
+
+          open_issues = repo.get_issues(state="open", labels=[label])
+          for issue in open_issues:
+              issue.edit(state="closed")
+              print(f"🔒 Closed old review issue #{issue.number}")
+
+          # Создаём новый Issue
+          title = f"🤖 AI Review: {commit_msg[:60]} ({commit_sha})"
+          body = f"""## 📬 Автоматический обзор коммита
+
+**Commit:** `{commit_sha}`  
+**Message:** {commit_msg}  
+**Files changed:** {len(text_files)}  
+**Model:** {used_model}
+
+---
+
+{review}
+
+---
+*Автоматически создано GitHub Actions при push в main*
+"""
+          issue = repo.create_issue(title=title, body=body, labels=[label])
+          print(f"✅ Created issue #{issue.number}: {title}")
+          EOF
