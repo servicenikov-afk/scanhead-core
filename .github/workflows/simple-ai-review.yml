@@ -39,7 +39,7 @@ jobs:
           # Проверяем, что это PR
           pr_number_str = os.environ.get("PR_NUMBER", "")
           if not pr_number_str:
-              print("⚠️  This workflow was triggered outside of a Pull Request (e.g., workflow_dispatch or push).")
+              print("⚠️  This workflow was triggered outside of a Pull Request.")
               print("AI Review only runs on Pull Requests. Skipping...")
               exit(0)
           
@@ -96,11 +96,11 @@ jobs:
           
           Будь конструктивен и краток."""
           
-          # Список моделей для fallback (от лучшей к запасной)
+          # Список моделей для fallback
           models_to_try = [
-              "nvidia/nemotron-3-ultra-550b-a55b:free",  # 550B параметров, 1M контекст
-              "poolside/laguna-xs.2:free",               # Специализирована для кода
-              "qwen/qwen3-coder:free",                   # Qwen3 Coder (может быть rate-limited)
+              "nvidia/nemotron-3-ultra-550b-a55b:free",
+              "poolside/laguna-xs.2:free",
+              "qwen/qwen3-coder:free",
           ]
           
           review = None
@@ -122,7 +122,6 @@ jobs:
               except RateLimitError as e:
                   print(f"⚠️  Rate limit для {model}, жду 35 секунд...")
                   time.sleep(35)
-                  # Пробуем ещё раз ту же модель
                   try:
                       response = client.chat.completions.create(
                           model=model,
