@@ -36,9 +36,15 @@ jobs:
           from github import Github, Auth
           from openai import OpenAI, RateLimitError
           
-          # Настройки
+          # Проверяем, что это PR
+          pr_number_str = os.environ.get("PR_NUMBER", "")
+          if not pr_number_str:
+              print("⚠️  This workflow was triggered outside of a Pull Request (e.g., workflow_dispatch or push).")
+              print("AI Review only runs on Pull Requests. Skipping...")
+              exit(0)
+          
+          pr_number = int(pr_number_str)
           repo_name = os.environ["REPO"]
-          pr_number = int(os.environ["PR_NUMBER"])
           github_token = os.environ["GITHUB_TOKEN"]
           openrouter_key = os.environ["OPENROUTER_KEY"]
           
@@ -106,7 +112,7 @@ jobs:
                   response = client.chat.completions.create(
                       model=model,
                       messages=[{"role": "user", "content": prompt}],
-                      max_tokens=1500,
+                      max_tokens=20000,
                       temperature=0.3,
                   )
                   review = response.choices[0].message.content
