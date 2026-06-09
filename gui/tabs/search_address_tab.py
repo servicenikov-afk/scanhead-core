@@ -32,8 +32,11 @@ class SearchAddressTab(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=3)
         self.grid_rowconfigure(2, weight=1)
-        self.grid_columnconfigure(0, weight=3)
-        self.grid_columnconfigure(1, weight=1)
+        
+        # uniform="bottom" заставляет grid строго соблюдать пропорции 3:1 (75% / 25%)
+        # независимо от минимальных размеров содержимого
+        self.grid_columnconfigure(0, weight=3, uniform="bottom")
+        self.grid_columnconfigure(1, weight=1, uniform="bottom")
         
         self._create_search_bar()
         self._create_details_panel()

@@ -49,8 +49,36 @@ class MainWindow(ctk.CTkFrame):
         # Создаём UI
         self._create_ui()
 
+        # Разворачиваем окно ПОСЛЕ создания UI (отложенный вызов)
+        # Используем after() чтобы окно успело инициализироваться и определиться с монитором
+        self.after(100, self._maximize_window)
+
         logger.info("[MainWindow] Главное окно инициализировано")
 
+    def _maximize_window(self) -> None:
+        """Развернуть окно на весь экран текущего монитора."""
+        try:
+            # Для Windows
+            if hasattr(self.master, 'state'):
+                self.master.state('zoomed')
+                logger.info("[MainWindow] Окно развёрнуто (Windows)")
+        except Exception as e:
+            logger.warning(f"[MainWindow] Не удалось развернуть окно через state(): {e}")
+            try:
+                # Альтернатива для Windows/Linux
+                self.master.attributes('-zoomed', True)
+                logger.info("[MainWindow] Окно развёрнуто через attributes()")
+            except Exception as e2:
+                logger.warning(f"[MainWindow] Не удалось развернуть окно через attributes(): {e2}")
+                # Fallback: ручная установка размеров
+                try:
+                    screen_width = self.master.winfo_screenwidth()
+                    screen_height = self.master.winfo_screenheight()
+                    self.master.geometry(f"{screen_width}x{screen_height}+0+0")
+                    logger.info(f"[MainWindow] Окно развёрнуто вручную: {screen_width}x{screen_height}")
+                except Exception as e3:
+                    logger.error(f"[MainWindow] Все способы разворачивания окна не сработали: {e3}")
+    
     def _load_icon(self, filename: str, size: tuple = (20, 20)) -> ctk.CTkImage | None:
         """Загрузить иконку или вернуть None."""
         try:
