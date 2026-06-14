@@ -1,12 +1,11 @@
-import logging, customtkinter as ctk
+import logging
+import customtkinter as ctk
 from typing import Any, Optional
 from services.interfaces import ISettingsService
 from libs.domain_models import Product
 from libs.printing.sticker_generator import StickerGenerator
 from PIL import Image
-
 logger = logging.getLogger(__name__)
-
 class MiniSpinbox(ctk.CTkFrame):
     def __init__(self, master, from_=0, to=100, width=60, command=None, **kwargs):
         super().__init__(master, **kwargs)
@@ -15,6 +14,7 @@ class MiniSpinbox(ctk.CTkFrame):
         ctk.CTkButton(self, text="−", width=24, command=self._dec).grid(row=0, column=0, padx=1)
         self._entry = ctk.CTkEntry(self, width=width, justify="center")
         self._entry.grid(row=0, column=1, padx=1)
+        self._entry.bind("<KeyRelease>", lambda e: self._fire()) # Фикс: реакция на ввод с клавиатуры
         ctk.CTkButton(self, text="+", width=24, command=self._inc).grid(row=0, column=2, padx=1)
         self.set(from_)
     def _inc(self):
@@ -30,8 +30,8 @@ class MiniSpinbox(ctk.CTkFrame):
     def get(self):
         try: return int(self._entry.get())
         except: return 0
-    def set(self, v): self._entry.delete(0, "end"); self._entry.insert(0, str(v))
-
+    def set(self, v): 
+        self._entry.delete(0, "end"); self._entry.insert(0, str(v))
 class StickerEditor(ctk.CTkToplevel):
     FIELDS = {
         "📏 Размеры": [
@@ -75,7 +75,7 @@ class StickerEditor(ctk.CTkToplevel):
             {"label": "Рамка", "key": "address_border", "type": "check", "default": False},
             {"label": "Смещение X / Y", "key": "address_offset_x", "key2": "address_offset_y", "type": "pair_spin", "min": -500, "max": 500, "default": 0, "default2": 0}
         ],
-        " Коды": [
+        "Коды": [
             {"label": "Включить", "key": "barcode_enabled", "type": "check", "default": True},
             {"label": "Тип", "key": "barcode_type", "type": "combo", "values": ["auto", "code128", "qr", "none"], "default": "auto"},
             {"label": "Позиция", "key": "barcode_position", "type": "combo", "values": ["top_right", "top_left", "bottom_right", "bottom_left", "right", "left", "top", "bottom"], "default": "top_right"},
@@ -90,7 +90,6 @@ class StickerEditor(ctk.CTkToplevel):
             {"label": "Пропускать если невозможно", "key": "skip_invalid", "type": "check", "default": False}
         ]
     }
-
     def __init__(self, master: Any, settings_service: ISettingsService, product: Optional[Product] = None):
         super().__init__(master)
         self._settings_service = settings_service
@@ -108,28 +107,22 @@ class StickerEditor(ctk.CTkToplevel):
         self._create_ui()
         self._show_group(list(self.FIELDS.keys())[0])
         self._update_preview()
-
     def _create_ui(self):
         self.grid_columnconfigure(0, weight=1, minsize=180)
         self.grid_columnconfigure(1, weight=4)
         self.grid_columnconfigure(2, weight=2)
         self.grid_rowconfigure(0, weight=1)
-        
         left = ctk.CTkFrame(self)
         left.grid(row=0, column=0, rowspan=2, sticky="nsew", padx=5, pady=5)
-        
         ctk.CTkLabel(left, text="Пресеты", font=ctk.CTkFont(weight="bold")).pack(pady=(5, 2))
         self._preset_list = ctk.CTkComboBox(left, values=list(self._presets.keys()), command=self._on_select)
         self._preset_list.pack(fill="x", padx=5, pady=2)
         self._preset_list.set(self._current_name)
-        
         btn_frame = ctk.CTkFrame(left, fg_color="transparent")
         btn_frame.pack(fill="x", padx=5, pady=2)
         ctk.CTkButton(btn_frame, text="+", width=30, command=self._add).pack(side="left", padx=2)
         ctk.CTkButton(btn_frame, text="−", width=30, fg_color="#808080", command=self._del).pack(side="left", padx=2)
-        
         ctk.CTkFrame(left, height=2, fg_color=("gray50", "gray50")).pack(fill="x", padx=10, pady=10)
-        
         ctk.CTkLabel(left, text="Группы", font=ctk.CTkFont(weight="bold")).pack(pady=(0, 2))
         self._nav_btns = {}
         for group in self.FIELDS.keys():
@@ -137,29 +130,23 @@ class StickerEditor(ctk.CTkToplevel):
                                 text_color=("black", "white"), anchor="w", command=lambda g=group: self._show_group(g))
             btn.pack(fill="x", padx=5, pady=1)
             self._nav_btns[group] = btn
-        
         self._right_frame = ctk.CTkScrollableFrame(self)
         self._right_frame.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=5, pady=5)
-        
         preview_container = ctk.CTkFrame(self)
         preview_container.grid(row=0, column=2, rowspan=2, sticky="nsew", padx=5, pady=5)
         preview_container.grid_rowconfigure(0, weight=1)
         preview_container.grid_columnconfigure(0, weight=1)
-        
         self._preview_frame = ctk.CTkFrame(preview_container, fg_color=("gray90", "gray20"))
         self._preview_frame.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         self._preview_frame.grid_rowconfigure(0, weight=1)
         self._preview_frame.grid_columnconfigure(0, weight=1)
-        
         self._preview_label = ctk.CTkLabel(self._preview_frame, text="Нет данных", text_color="gray")
         self._preview_label.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
-        
         bottom = ctk.CTkFrame(self, fg_color="transparent")
         bottom.grid(row=2, column=0, columnspan=3, sticky="e", padx=10, pady=10)
         ctk.CTkButton(bottom, text="Сброс", fg_color="#808080", command=self._reset).pack(side="right", padx=5)
         ctk.CTkButton(bottom, text="Отмена", fg_color="#808080", command=self.destroy).pack(side="right", padx=5)
         ctk.CTkButton(bottom, text="Сохранить", command=self._save).pack(side="right", padx=5)
-
     def _show_group(self, group: str):
         for btn in self._nav_btns.values(): btn.configure(fg_color=("gray60", "gray40"))
         self._nav_btns[group].configure(fg_color=("gray40", "gray60"))
@@ -168,39 +155,28 @@ class StickerEditor(ctk.CTkToplevel):
         for row, item in enumerate(self.FIELDS[group]):
             ctk.CTkLabel(self._right_frame, text=item["label"]).grid(row=row, column=0, padx=5, pady=3, sticky="w")
             self._render_widget(self._right_frame, row, item)
-
     def _schedule_preview_update(self):
         if not self._preview_update_scheduled:
             self._preview_update_scheduled = True
             self.after(300, self._debounced_preview_update)
-
     def _debounced_preview_update(self):
         self._preview_update_scheduled = False
         self._update_preview()
-
     def _update_preview(self):
         try:
             preset = self._collect_current_preset()
-            if self._product:
-                article = self._product.article or "TEST-001"
-                name = self._product.name or "Тестовый товар для превью"
-            else:
-                article = "TEST-001"
-                name = "Тестовый товар для превью"
-            
+            article = self._product.article if self._product else "TEST-001"
+            name = self._product.name if self._product else "Тестовый товар для превью"
             pil_img = StickerGenerator(preset).generate(article=article, name=name)
-            
             fw, fh = self._preview_frame.winfo_width(), self._preview_frame.winfo_height()
             if fw > 10 and fh > 10:
                 pil_img = pil_img.copy()
                 pil_img.thumbnail((fw-20, fh-20), Image.Resampling.LANCZOS)
-            
             self._ctk_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=pil_img.size)
             self._preview_label.configure(image=self._ctk_image, text="")
         except Exception as e:
             logger.warning(f"Preview update failed: {e}")
             self._preview_label.configure(image=None, text=f"Ошибка: {str(e)[:40]}")
-
     def _collect_current_preset(self):
         preset = dict(self._current_preset)
         for group in self.FIELDS.values():
@@ -214,7 +190,6 @@ class StickerEditor(ctk.CTkToplevel):
                 elif dtype == "entry": preset[key] = w.get()
                 elif dtype == "dual_check": preset[key] = bool(w.get())
                 elif dtype == "dual_entry": preset[key] = w.get()
-                
                 if "key2" in item:
                     k2, w2 = item["key2"], self._widgets.get(item["key2"])
                     if w2:
@@ -222,15 +197,12 @@ class StickerEditor(ctk.CTkToplevel):
                         elif dtype == "dual_check": preset[k2] = bool(w2.get())
                         else: preset[k2] = w2.get()
         return preset
-
     def _update_preset_value(self, key: str, value: Any):
         self._current_preset[key] = value
         self._schedule_preview_update()
-
     def _render_widget(self, parent, row, item):
         key, dtype, default = item["key"], item["type"], item["default"]
         val = self._current_preset.get(key, default)
-        
         def make_callback(k):
             def cb(v=None):
                 w = self._widgets.get(k)
@@ -241,7 +213,6 @@ class StickerEditor(ctk.CTkToplevel):
                     elif isinstance(w, ctk.CTkEntry): val = w.get()
                     self._update_preset_value(k, val)
             return cb
-        
         if dtype == "spin":
             w = MiniSpinbox(parent, from_=item["min"], to=item["max"], width=70, command=make_callback(key))
             w.grid(row=row, column=1, padx=5, pady=3, sticky="w"); w.set(val); self._widgets[key] = w
@@ -259,14 +230,12 @@ class StickerEditor(ctk.CTkToplevel):
         elif dtype in ("pair_spin", "pair_spin_wrap", "dual_check", "dual_entry"):
             f = ctk.CTkFrame(parent, fg_color="transparent")
             f.grid(row=row, column=1, columnspan=2, padx=5, pady=3, sticky="w")
-            
             if dtype == "pair_spin_wrap":
                 f.grid_columnconfigure(0, weight=1)
                 w1 = MiniSpinbox(f, from_=item["min"], to=item["max"], width=60, command=make_callback(key))
                 w1.grid(row=0, column=0, sticky="w", padx=(0, 5))
                 w1.set(self._current_preset.get(key, default))
                 self._widgets[key] = w1
-                
                 k2 = item["key2"]
                 val2 = self._current_preset.get(k2, item["default2"])
                 w2 = MiniSpinbox(f, from_=item.get("min2", item["min"]), to=item.get("max2", item["max"]), width=60, command=make_callback(k2))
@@ -286,7 +255,6 @@ class StickerEditor(ctk.CTkToplevel):
                     w1.bind("<KeyRelease>", lambda e, k=key: self._update_preset_value(k, self._widgets[k].get()))
                 w1.pack(side="left", padx=(0, 5))
                 self._widgets[key] = w1
-                
                 k2 = item["key2"]
                 val2 = self._current_preset.get(k2, item["default2"])
                 if dtype == "pair_spin":
@@ -301,33 +269,36 @@ class StickerEditor(ctk.CTkToplevel):
                     w2.bind("<KeyRelease>", lambda e, k=k2: self._update_preset_value(k, self._widgets[k].get()))
                 w2.pack(side="left")
                 self._widgets[k2] = w2
-
-    def _on_select(self, choice: str): self._load_preset(choice)
+    def _on_select(self, choice: str): 
+        self._load_preset(choice)
     def _load_preset(self, name: str):
         self._current_name = name
-        self._current_preset = self._presets.get(name, {})
+        saved = self._presets.get(name, {})
+        self._current_preset = {}
+        for group in self.FIELDS.values():
+            for item in group:
+                self._current_preset[item["key"]] = item["default"]
+                if "key2" in item:
+                    self._current_preset[item["key2"]] = item.get("default2", item["default"])
+        self._current_preset.update(saved)
         self._preset_list.set(name)
         self._show_group(list(self.FIELDS.keys())[0])
         self._update_preview()
-
     def _add(self):
         name = f"preset_{len(self._presets) + 1}"
         self._presets[name] = {"name": name}
         self._preset_list.configure(values=list(self._presets.keys()))
         self._load_preset(name)
-
     def _del(self):
         if len(self._presets) <= 1: return
         del self._presets[self._current_name]
         self._preset_list.configure(values=list(self._presets.keys()))
         self._load_preset(next(iter(self._presets)))
-
     def _save(self):
         preset = self._collect_current_preset()
         self._presets[self._current_name] = preset
         self._settings_service.set_setting('sticker_presets', self._presets)
         self._settings_service.set_setting('current_preset_name', self._current_name)
         self.destroy()
-
     def _reset(self):
         self._load_preset(self._current_name)
