@@ -38,7 +38,6 @@ class StickerEditor(ctk.CTkToplevel):
             {"label": "Ширина (мм)", "key": "width_mm", "type": "spin", "min": 10, "max": 200, "default": 60},
             {"label": "Высота (мм)", "key": "height_mm", "type": "spin", "min": 10, "max": 200, "default": 40},
             {"label": "Ориентация", "key": "orientation", "type": "combo", "values": ["portrait", "landscape"], "default": "portrait"},
-            {"label": "Цвет фона", "key": "background_color", "type": "entry", "default": "#FFFFFF"},
             {"label": "Рамка", "key": "border", "type": "check", "default": False}
         ],
         "🔤 Артикул": [
@@ -140,6 +139,8 @@ class StickerEditor(ctk.CTkToplevel):
         self._preview_frame.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         self._preview_frame.grid_rowconfigure(0, weight=1)
         self._preview_frame.grid_columnconfigure(0, weight=1)
+        self._preview_frame.grid_propagate(False)
+        self._preview_frame.configure(width=420, height=320)
         self._preview_label = ctk.CTkLabel(self._preview_frame, text="Нет данных", text_color="gray")
         self._preview_label.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         bottom = ctk.CTkFrame(self, fg_color="transparent")
@@ -162,21 +163,46 @@ class StickerEditor(ctk.CTkToplevel):
     def _debounced_preview_update(self):
         self._preview_update_scheduled = False
         self._update_preview()
+    def _to_nested(self, flat: dict) -> dict:
+        return {
+            'sticker': {
+                'width_mm': flat.get('width_mm', 60),
+                'height_mm': flat.get('height_mm', 40),
+                'orientation': flat.get('orientation', 'portrait'),
+                'background_color': flat.get('background_color', '#FFFFFF'),
+                'border': flat.get('border', False),
+                'dpi': 300,
+            },
+            'fonts': {
+                'name_size': flat.get('name_size', 6),
+                'article_size': flat.get('article_size', 8),
+                'address_size': flat.get('address_size', 6),
+            },
+            'layout': {
+                'show_barcode': flat.get('barcode_enabled', True),
+                'show_qr': flat.get('barcode_type') == 'qr',
+                'article_position': 'top' if flat.get('article_enabled', True) else 'hidden',
+                'show_address': flat.get('address_enabled', False),
+            }
+        }
     def _update_preview(self):
         try:
-            preset = self._collect_current_preset()
-            article = self._product.article if self._product else "TEST-001"
-            name = self._product.name if self._product else "Тестовый товар для превью"
-            pil_img = StickerGenerator(preset).generate(article=article, name=name)
+            self.update_idletasks()
             fw, fh = self._preview_frame.winfo_width(), self._preview_frame.winfo_height()
-            if fw > 10 and fh > 10:
-                pil_img = pil_img.copy()
-                pil_img.thumbnail((fw-20, fh-20), Image.Resampling.LANCZOS)
-            self._ctk_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=pil_img.size)
+            max_w, max_h = (fw-20, fh-20) if fw > 20 and fh > 20 else (380, 280)
+            preset = self._to_nested(self._collect_current_preset())  # ← БЫЛО: self._collect_current_preset()
+            pil_img = StickerGenerator(preset).generate(
+                article=self._product.article if self._product else "TEST-001",
+                name=self._product.name if self._product else "Тест")
+            iw, ih = pil_img.size
+            ratio = min(max_w/iw, max_h/ih, 1.0)
+            new_size = (max(1, int(iw*ratio)), max(1, int(ih*ratio)))
+            pil_img = pil_img.resize(new_size, Image.Resampling.LANCZOS)
+            self._ctk_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=new_size)
             self._preview_label.configure(image=self._ctk_image, text="")
         except Exception as e:
             logger.warning(f"Preview update failed: {e}")
-            self._preview_label.configure(image=None, text=f"Ошибка: {str(e)[:40]}")
+            self._preview_label.configure(image=None, text=f"Ошибка: {str(e)[:30]}")
     def _collect_current_preset(self):
         preset = dict(self._current_preset)
         for group in self.FIELDS.values():
@@ -295,7 +321,7 @@ class StickerEditor(ctk.CTkToplevel):
         self._preset_list.configure(values=list(self._presets.keys()))
         self._load_preset(next(iter(self._presets)))
     def _save(self):
-        preset = self._collect_current_preset()
+        preset = self._to_nested(self._collect_current_preset())
         self._presets[self._current_name] = preset
         self._settings_service.set_setting('sticker_presets', self._presets)
         self._settings_service.set_setting('current_preset_name', self._current_name)
