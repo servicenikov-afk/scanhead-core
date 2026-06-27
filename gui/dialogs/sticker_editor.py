@@ -14,7 +14,7 @@ class MiniSpinbox(ctk.CTkFrame):
         ctk.CTkButton(self, text="−", width=24, command=self._dec).grid(row=0, column=0, padx=1)
         self._entry = ctk.CTkEntry(self, width=width, justify="center")
         self._entry.grid(row=0, column=1, padx=1)
-        self._entry.bind("<KeyRelease>", lambda e: self._fire()) # Фикс: реакция на ввод с клавиатуры
+        self._entry.bind("<KeyRelease>", lambda e: self._fire())
         ctk.CTkButton(self, text="+", width=24, command=self._inc).grid(row=0, column=2, padx=1)
         self.set(from_)
     def _inc(self):
@@ -30,7 +30,7 @@ class MiniSpinbox(ctk.CTkFrame):
     def get(self):
         try: return int(self._entry.get())
         except: return 0
-    def set(self, v): 
+    def set(self, v):
         self._entry.delete(0, "end"); self._entry.insert(0, str(v))
 class StickerEditor(ctk.CTkToplevel):
     FIELDS = {
@@ -103,6 +103,8 @@ class StickerEditor(ctk.CTkToplevel):
         self._widgets = {}
         self._ctk_image = None
         self._preview_update_scheduled = False
+        self._last_preview_size = (0, 0)
+        self._actual_preview_size = (420, 320)
         self._create_ui()
         self._show_group(list(self.FIELDS.keys())[0])
         self._update_preview()
@@ -135,19 +137,28 @@ class StickerEditor(ctk.CTkToplevel):
         preview_container.grid(row=0, column=2, rowspan=2, sticky="nsew", padx=5, pady=5)
         preview_container.grid_rowconfigure(0, weight=1)
         preview_container.grid_columnconfigure(0, weight=1)
-        self._preview_frame = ctk.CTkFrame(preview_container, fg_color=("gray90", "gray20"))
+        self._preview_frame = ctk.CTkFrame(preview_container, fg_color=("gray70", "gray35"))
         self._preview_frame.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         self._preview_frame.grid_rowconfigure(0, weight=1)
         self._preview_frame.grid_columnconfigure(0, weight=1)
         self._preview_frame.grid_propagate(False)
         self._preview_frame.configure(width=420, height=320)
-        self._preview_label = ctk.CTkLabel(self._preview_frame, text="Нет данных", text_color="gray")
-        self._preview_label.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        self._preview_frame.bind("<Configure>", self._on_preview_frame_resize)
+        import tkinter as tk
+        self._preview_canvas = tk.Canvas(self._preview_frame, bg="white", highlightthickness=0)
+        self._preview_canvas.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         bottom = ctk.CTkFrame(self, fg_color="transparent")
         bottom.grid(row=2, column=0, columnspan=3, sticky="e", padx=10, pady=10)
         ctk.CTkButton(bottom, text="Сброс", fg_color="#808080", command=self._reset).pack(side="right", padx=5)
         ctk.CTkButton(bottom, text="Отмена", fg_color="#808080", command=self.destroy).pack(side="right", padx=5)
         ctk.CTkButton(bottom, text="Сохранить", command=self._save).pack(side="right", padx=5)
+    def _on_preview_frame_resize(self, event=None):
+        fw = self._preview_frame.winfo_width()
+        fh = self._preview_frame.winfo_height()
+        if abs(fw - self._last_preview_size[0]) > 10 or abs(fh - self._last_preview_size[1]) > 10:
+            self._last_preview_size = (fw, fh)
+            self._actual_preview_size = (fw, fh)
+            self._schedule_preview_update()
     def _show_group(self, group: str):
         for btn in self._nav_btns.values(): btn.configure(fg_color=("gray60", "gray40"))
         self._nav_btns[group].configure(fg_color=("gray40", "gray60"))
@@ -188,21 +199,34 @@ class StickerEditor(ctk.CTkToplevel):
     def _update_preview(self):
         try:
             self.update_idletasks()
-            fw, fh = self._preview_frame.winfo_width(), self._preview_frame.winfo_height()
-            max_w, max_h = (fw-20, fh-20) if fw > 20 and fh > 20 else (380, 280)
-            preset = self._to_nested(self._collect_current_preset())  # ← БЫЛО: self._collect_current_preset()
-            pil_img = StickerGenerator(preset).generate(
-                article=self._product.article if self._product else "TEST-001",
-                name=self._product.name if self._product else "Тест")
-            iw, ih = pil_img.size
-            ratio = min(max_w/iw, max_h/ih, 1.0)
-            new_size = (max(1, int(iw*ratio)), max(1, int(ih*ratio)))
-            pil_img = pil_img.resize(new_size, Image.Resampling.LANCZOS)
-            self._ctk_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=new_size)
-            self._preview_label.configure(image=self._ctk_image, text="")
+            self.after(50, self._do_update_preview)
         except Exception as e:
             logger.warning(f"Preview update failed: {e}")
-            self._preview_label.configure(image=None, text=f"Ошибка: {str(e)[:30]}")
+    def _do_update_preview(self):
+        try:
+            self.update_idletasks()
+            cw = self._preview_canvas.winfo_width()
+            ch = self._preview_canvas.winfo_height()
+            if cw <= 1 or ch <= 1:
+                cw, ch = 400, 300
+            max_w, max_h = cw - 10, ch - 10
+            preset = self._to_nested(self._collect_current_preset())
+            pil_img = StickerGenerator(preset).generate(
+                article=self._product.article if self._product else "TEST-001",
+                name=self._product.name if self._product else "Тест"
+            )
+            iw, ih = pil_img.size
+            ratio = min(max_w / iw, max_h / ih, 1.0)
+            new_size = (max(1, int(iw * ratio)), max(1, int(ih * ratio)))
+            pil_img = pil_img.resize(new_size, Image.Resampling.LANCZOS)
+            from PIL import ImageOps
+            pil_img = ImageOps.expand(pil_img, border=2, fill='black')
+            from PIL import ImageTk
+            self._photo_image = ImageTk.PhotoImage(pil_img)
+            self._preview_canvas.delete("all")
+            self._preview_canvas.create_image(cw//2, ch//2, image=self._photo_image, anchor="center")
+        except Exception as e:
+            logger.warning(f"Preview update failed: {e}")
     def _collect_current_preset(self):
         preset = dict(self._current_preset)
         for group in self.FIELDS.values():
