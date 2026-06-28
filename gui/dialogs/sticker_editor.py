@@ -45,7 +45,7 @@ FIELDS={
 		{"label":"Размер шрифта","key":"article_size","type":"spin","min":2,"max":72,"default":8},
 		{"label":"Выравнивание","key":"article_align","type":"combo","values":["left","center","right"],"default":"left"},
 		{"label":"Жирный","key":"article_bold","type":"check","default":True},
-		{"label":"Смещение X","key":"article_offset_x","type":"pair_spin_wrap","key2":"article_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ","key":"article_offset_x","type":"pair_spin_wrap","key2":"article_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"📝 Название":[
 		{"label":"Включить","key":"name_enabled","type":"check","default":True},
@@ -54,7 +54,7 @@ FIELDS={
 		{"label":"Макс. строк","key":"name_max_lines","type":"spin","min":0,"max":20,"default":5},
 		{"label":"Жирный","key":"name_bold","type":"check","default":False},
 		{"label":"Курсив","key":"name_italic","type":"check","default":False},
-		{"label":"Смещение X","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"🏢 Адрес":[
 		{"label":"Включить","key":"address_enabled","type":"check","default":False},
@@ -62,7 +62,7 @@ FIELDS={
 		{"label":"Выравнивание","key":"address_align","type":"combo","values":["left","center","right"],"default":"right"},
 		{"label":"Жирный","key":"address_bold","type":"check","default":False},
 		{"label":"Курсив","key":"address_italic","type":"check","default":False},
-		{"label":"Смещение X","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"Коды":[
 		{"label":"Включить","key":"barcode_enabled","type":"check","default":True},
@@ -73,8 +73,8 @@ FIELDS={
 		{"label":"Code128 Высота (мм)","key":"code128_height_mm","type":"spin","min":2,"max":64,"default":6},
 		{"label":"Текст под кодом","key":"barcode_show_text","type":"check","default":False},
 		{"label":"Размер текста","key":"barcode_text_size","type":"spin","min":2,"max":72,"default":4},
-		{"label":"Смещение кода X","key":"barcode_offset_x","type":"pair_spin_wrap","key2":"barcode_offset_y","min":-500,"max":500,"default":0,"default2":0},
-		{"label":"Смещение текста X","key":"barcode_text_offset_x","type":"pair_spin_wrap","key2":"barcode_text_offset_y","min":-500,"max":500,"default":0,"default2":0},
+		{"label":"Смещение кода ","key":"barcode_offset_x","type":"pair_spin_wrap","key2":"barcode_offset_y","min":-500,"max":500,"default":0,"default2":0},
+		{"label":"Смещение текста ","key":"barcode_text_offset_x","type":"pair_spin_wrap","key2":"barcode_text_offset_y","min":-500,"max":500,"default":0,"default2":0},
 		{"label":"Масштаб текста X (×0.1)","key":"barcode_text_scale_x","type":"spin","min":1,"max":30,"default":10},
 		{"label":"Масштаб текста Y (×0.1)","key":"barcode_text_scale_y","type":"spin","min":1,"max":30,"default":10}
 	]
@@ -93,8 +93,8 @@ class StickerEditor(ctk.CTkToplevel):
 		self._current_preset=self._presets.get(self._current_name,{})
 		self._widgets={}
 		self._photo_image=None
-		self._preview_update_scheduled=False
 		self._last_preview_size=(0,0)
+		self._preview_after_id=None
 		self._create_ui()
 		if self._current_name not in self._presets:self._presets[self._current_name]={}
 		self._show_group(list(FIELDS.keys())[0])
@@ -123,6 +123,8 @@ class StickerEditor(ctk.CTkToplevel):
 			self._nav_btns[group]=btn
 		self._right_frame=ctk.CTkFrame(self)
 		self._right_frame.grid(row=0,column=1,rowspan=2,sticky="nsew",padx=5,pady=5)
+		self._right_frame.grid_propagate(False)
+		self._right_frame.configure(width=320)
 		preview_container=ctk.CTkFrame(self)
 		preview_container.grid(row=0,column=2,rowspan=2,sticky="nsew",padx=5,pady=5)
 		preview_container.grid_rowconfigure(0,weight=1)
@@ -160,15 +162,13 @@ class StickerEditor(ctk.CTkToplevel):
 			ctk.CTkLabel(self._right_frame,text=item["label"]).grid(row=r,column=0,padx=5,pady=3,sticky="w")
 			self._render_widget(self._right_frame,r,item)
 	def _schedule_preview_update(self):
-		if not self._preview_update_scheduled:
-			self._preview_update_scheduled=True
-			self.after(300,self._debounced_preview_update)
-	def _debounced_preview_update(self):
-		self._preview_update_scheduled=False
-		self._update_preview()
+		try:
+			if self._preview_after_id:self.after_cancel(self._preview_after_id)
+		except Exception:pass
+		self._preview_after_id=self.after(150,self._update_preview)
 	def _to_nested(self,flat:dict)->dict:
 		return {
-			'sticker':{'width_mm':flat.get('width_mm',60),'height_mm':flat.get('height_mm',40),'orientation':flat.get('orientation','portrait'),'border':flat.get('border',False),'dpi':300},
+			'sticker':{'width_mm':flat.get('width_mm',60),'height_mm':flat.get('height_mm',40),'orientation':flat.get('orientation','portrait'),'border':flat.get('border',False),'background_color':'#FFFFFF','dpi':300},
 			'fonts':{'name_size':flat.get('name_size',6),'article_size':flat.get('article_size',8),'address_size':flat.get('address_size',6)},
 			'layout':{'show_barcode':flat.get('barcode_enabled',True),'show_qr':flat.get('barcode_type')=='qr','article_position':'top' if flat.get('article_enabled',True) else 'hidden','show_address':flat.get('address_enabled',False),'address_position':'bottom'},
 			'article':{'enabled':flat.get('article_enabled',True),'size':flat.get('article_size',8),'align':flat.get('article_align','left'),'bold':flat.get('article_bold',True),'offset_x':flat.get('article_offset_x',0),'offset_y':flat.get('article_offset_y',0)},
@@ -177,9 +177,8 @@ class StickerEditor(ctk.CTkToplevel):
 			'barcode':{'enabled':flat.get('barcode_enabled',True),'type':flat.get('barcode_type','auto'),'position':flat.get('barcode_position','top_right'),'qr_size_mm':flat.get('barcode_qr_size_mm',16),'code128_width_mm':flat.get('code128_width_mm',36),'code128_height_mm':flat.get('code128_height_mm',6),'show_text':flat.get('barcode_show_text',False),'text_size':flat.get('barcode_text_size',4),'offset_x':flat.get('barcode_offset_x',0),'offset_y':flat.get('barcode_offset_y',0),'text_offset_x':flat.get('barcode_text_offset_x',0),'text_offset_y':flat.get('barcode_text_offset_y',0),'text_scale_x':flat.get('barcode_text_scale_x',10)/10.0,'text_scale_y':flat.get('barcode_text_scale_y',10)/10.0}
 		}
 	def _update_preview(self):
-		try:
-			self.update_idletasks()
-			self.after(50,self._do_update_preview)
+		self._preview_after_id=None
+		try:self._do_update_preview()
 		except Exception as e:logger.warning(f"Preview update failed: {e}")
 	def _do_update_preview(self):
 		try:
@@ -192,9 +191,7 @@ class StickerEditor(ctk.CTkToplevel):
 			article_text=self._product.article if self._product else "TEST-001"
 			name_text=self._product.name if self._product else "Тестовый товар"
 			address_text=""
-			if self._product and hasattr(self._product,'storage_locations') and self._product.storage_locations:
-				locs=self._product.storage_locations
-				address_text=locs[0] if isinstance(locs,list) else str(locs)
+			if self._product and hasattr(self._product,'address') and self._product.address:address_text=self._product.address
 			pil_img=StickerGenerator(preset).generate(article=article_text,name=name_text,address=address_text)
 			iw,ih=pil_img.size
 			ratio=min(max_w/iw,max_h/ih,1.0)

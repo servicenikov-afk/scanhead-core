@@ -175,7 +175,7 @@ scanhead-core/
 | **Импорты** | ✅ **НЕ СОКРАЩАТЬ** | `from services.interfaces import ISettingsService` |
 | **Строковые литералы** | ✅ **НЕ СОКРАЩАТЬ** | Ключи конфигов, тексты UI |
 | **Логика и алгоритмы** | ✅ **НЕ МЕНЯТЬ** | Только синтаксическое уплотнение |
-
+⚠️Отступы от левого края только tab'ами! (не по стандарту PEP 8)
 ### 9.4. Пример: до и после минификации
 **До (читаемый, но не минифицированный):**
 
@@ -199,13 +199,13 @@ def _load_preset(self, name: str):
 
 ```python
 def _load_preset(self,name:str):
- self._current_name=name
- saved=self._presets.get(name,{})
- self._current_preset={}
- for group in FIELDS.values():
-  for item in group:self._current_preset[item["key"]]=item["default"]
- self._current_preset.update(saved)
- self._update_preview()
+	self._current_name=name
+	saved=self._presets.get(name,{})
+	self._current_preset={}
+	for group in FIELDS.values():
+		for item in group:self._current_preset[item["key"]]=item["default"]
+	self._current_preset.update(saved)
+	self._update_preview()
 ```
 ### 9.5. Допустимые приёмы уплотнения
 - Объединение простых присваиваний через `;`: `self._min, self._max = from_, to`
