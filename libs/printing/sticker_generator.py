@@ -1,7 +1,5 @@
-"""
-Генератор изображений этикеток (стикеров) с штрих-кодами.
-Независимый модуль для создания печатных форм.
-"""
+# --- sticker_generator.py ---
+# ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 from PIL import Image, ImageDraw, ImageFont
 import qrcode
 from barcode import Code128, EAN13
@@ -10,49 +8,23 @@ from pathlib import Path
 from typing import Tuple, Optional, Dict, Any, Union, List
 from io import BytesIO
 import logging
-
 logger = logging.getLogger(__name__)
-
-
 class StickerGenerator:
-    """
-    Генератор этикеток на основе конфигурации.
-    
-    Поддерживает:
-        - Разные размеры (в мм)
-        - Штрих-коды Code128 и EAN13
-        - QR-коды
-        - Произвольный текст с переносом строк
-        - Пресеты оформления
-    """
-
     def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """
-        Инициализация генератора.
-        
-        Args:
-            config: Словарь конфигурации. Если None, используются значения по умолчанию.
-        """
         self.config = config or {}
         self.dpi = self._get('sticker.dpi', 300)
         self.mm_to_inch = 1 / 25.4
         self.font_cache: Dict[str, ImageFont.FreeTypeFont] = {}
         self.available_fonts = self._find_fonts()
-
     def _get(self, key_path: str, default: Any = None) -> Any:
-        """Безопасное получение вложенного значения из конфига."""
         if isinstance(self.config, dict):
-            v, keys = self.config, key_path.split('.')
+            value, keys = self.config, key_path.split('.')
             try:
-                for k in keys:
-                    v = v[k]
-                return v
-            except (KeyError, TypeError):
-                return default
+                for key in keys: value = value[key]
+                return value
+            except (KeyError, TypeError): return default
         return default
-
     def _find_fonts(self) -> Dict[str, str]:
-        """Поиск доступных системных шрифтов (Windows)."""
         fonts = {}
         win_fonts = "C:\\Windows\\Fonts"
         font_map = [
@@ -62,238 +34,173 @@ class StickerGenerator:
             ("tahoma.ttf", "tahoma", "n"), ("tahomabd.ttf", "tahoma", "b"),
             ("verdana.ttf", "verdana", "n"), ("verdanab.ttf", "verdana", "b"),
         ]
-        
         for fname, family, style in font_map:
             path = f"{win_fonts}\\{fname}"
-            if Path(path).exists():
-                fonts[f"{family}_{style}"] = path
-        
-        if not fonts:
-            fonts['default'] = None
+            if Path(path).exists(): fonts[f"{family}_{style}"] = path
+        if not fonts: fonts['default'] = None
         return fonts
-
-    def _get_font(self, size_pt: int, bold: bool = False, italic: bool = False, 
-                  font_family: Optional[str] = None) -> ImageFont.FreeTypeFont:
-        """Получить объект шрифта с кэшированием."""
-        ff = (font_family or self._get('fonts.default_font', 'Arial')).lower()
+    def _get_font(self, size_pt: int, bold: bool = False, italic: bool = False, font_family: Optional[str] = None) -> ImageFont.FreeTypeFont:
+        font_family = (font_family or self._get('fonts.default_font', 'Arial')).lower()
         style = ('b' if bold else '') + ('i' if italic else '') or 'n'
         size_px = int(size_pt * self.dpi / 72)
-        key = f"{ff}_{style}_{size_px}"
-        
-        if key in self.font_cache:
-            return self.font_cache[key]
-        
+        key = f"{font_family}_{style}_{size_px}"
+        if key in self.font_cache: return self.font_cache[key]
         font_path = None
-        # Поиск точного совпадения
-        for k, p in self.available_fonts.items():
-            if k.startswith(f"{ff}_{style}"):
-                font_path = p
-                break
-        
-        # Поиск семейства без стиля
+        for font_key, path in self.available_fonts.items():
+            if font_key.startswith(f"{font_family}_{style}"): font_path = path; break
         if not font_path:
-            for k, p in self.available_fonts.items():
-                if k.startswith(f"{ff}_"):
-                    font_path = p
-                    break
-        
-        # Любой доступный шрифт
-        if not font_path and self.available_fonts:
-            font_path = next(iter(self.available_fonts.values()))
-            
-        try:
-            font = ImageFont.truetype(font_path, size_px) if font_path else ImageFont.load_default()
-        except Exception:
-            font = ImageFont.load_default()
-            
+            for font_key, path in self.available_fonts.items():
+                if font_key.startswith(f"{font_family}_"): font_path = path; break
+        if not font_path and self.available_fonts: font_path = next(iter(self.available_fonts.values()))
+        try: font = ImageFont.truetype(font_path, size_px) if font_path else ImageFont.load_default()
+        except Exception: font = ImageFont.load_default()
         self.font_cache[key] = font
         return font
-
     def _mm_to_pixels(self, mm: float) -> int:
-        """Конвертация миллиметров в пиксели."""
         return int(mm * self.mm_to_inch * self.dpi)
-
     def _get_sticker_size(self) -> Tuple[int, int]:
-        """Получить размер стикера в пикселях."""
         width_mm = self._get('sticker.width_mm', 40)
         height_mm = self._get('sticker.height_mm', 20)
-        
-        if self._get('sticker.orientation') == 'landscape':
-            width_mm, height_mm = height_mm, width_mm
-            
+        if self._get('sticker.orientation') == 'landscape': width_mm, height_mm = height_mm, width_mm
         return self._mm_to_pixels(width_mm), self._mm_to_pixels(height_mm)
-
     def _wrap_text(self, text: str, font: ImageFont.FreeTypeFont, max_width: int) -> List[str]:
-        """Разбить текст на строки для размещения в заданной ширине."""
         words = text.split()
         lines = []
         current_line = []
-        
         for word in words:
             test_line = ' '.join(current_line + [word])
             bbox = font.getbbox(test_line)
-            if bbox[2] <= max_width:
-                current_line.append(word)
+            if bbox[2] <= max_width: current_line.append(word)
             else:
-                if current_line:
-                    lines.append(' '.join(current_line))
-                # Если слово само по себе длиннее строки, разбиваем его (упрощенно)
-                if font.getbbox(word)[2] > max_width:
-                    lines.append(word)
-                    current_line = []
-                else:
-                    current_line = [word]
-                    
-        if current_line:
-            lines.append(' '.join(current_line))
-            
+                if current_line: lines.append(' '.join(current_line))
+                if font.getbbox(word)[2] > max_width: lines.append(word); current_line = []
+                else: current_line = [word]
+        if current_line: lines.append(' '.join(current_line))
         return lines
-
-    def generate(
-        self,
-        article: str,
-        name: str,
-        address: Optional[str] = None,
-        quantity: Optional[Union[int, float]] = None,
-        unit: str = "шт",
-        barcode_type: str = "code128",
-        preset: Optional[Dict[str, Any]] = None
-    ) -> Image.Image:
-        """
-        Сгенерировать изображение этикетки.
-        
-        Args:
-            article: Артикул товара.
-            name: Наименование товара.
-            address: Адрес хранения (ячейка).
-            quantity: Количество.
-            unit: Единица измерения.
-            barcode_type: Тип штрих-кода ('code128', 'ean13', 'qr').
-            preset: Переопределение настроек пресета.
-            
-        Returns:
-            Объект PIL.Image с готовой этикеткой.
-        """
-        # Применение пресета к конфигурации (временное)
+    def generate(self, article: str, name: str, address: Optional[str] = None, quantity: Optional[Union[int, float]] = None, unit: str = "шт", barcode_type: str = "code128", preset: Optional[Dict[str, Any]] = None) -> Image.Image:
         old_config = self.config.copy() if self.config else {}
-        if preset:
-            self.config.update(preset)
-            
+        if preset: self.config.update(preset)
         try:
-            img, draw = self._create_base_image()
-            width, height = img.size
-            
-            # Нормализация артикула
+            image, draw = self._create_base_image()
+            width, height = image.size
             clean_article = str(article).strip()
-            if '/' in clean_article:
-                clean_article = clean_article.split('/')[0].strip()
-            
-            # Параметры макета
-            show_barcode = self._get('layout.show_barcode', True)
-            show_qr = self._get('layout.show_qr', False)
-            font_size_title = self._get('fonts.name_size', 10)
-            font_size_article = self._get('fonts.article_size', 12)
-            font_size_addr = self._get('fonts.address_size', 8)
-            
-            y_cursor = 5
+            if '/' in clean_article: clean_article = clean_article.split('/')[0].strip()
+            article_cfg = self._get('article', {}); name_cfg = self._get('name', {}); address_cfg = self._get('address', {}); barcode_cfg = self._get('barcode', {})
             padding = 5
-            
-            # 1. Артикул (крупно сверху или снизу)
-            if self._get('layout.article_position') == 'top':
-                f_art = self._get_font(font_size_article, bold=True)
-                draw.text((padding, y_cursor), clean_article, fill='black', font=f_art)
-                y_cursor += font_size_article + 2
-            
-            # 2. Наименование
-            max_text_w = width - (2 * padding)
-            f_name = self._get_font(font_size_title)
-            lines = self._wrap_text(name, f_name, max_text_w)
-            
-            for line in lines:
-                if y_cursor < height - 20: # Оставить место под штрих-код
-                    draw.text((padding, y_cursor), line, fill='black', font=f_name)
-                    y_cursor += font_size_title + 1
-            
-            # 3. Адрес
-            if address and self._get('layout.show_address', True):
-                f_addr = self._get_font(font_size_addr, italic=True)
-                addr_y = height - 15 if self._get('layout.address_position') == 'bottom' else y_cursor
-                if addr_y < height - 10:
-                    draw.text((padding, addr_y), f"Яч: {address}", fill='gray', font=f_addr)
-            
-            # 4. Количество
-            if quantity is not None:
-                qty_str = f"{quantity} {unit}"
-                f_qty = self._get_font(14, bold=True)
-                # Справа сверху или снизу
-                qx = width - padding - 50
-                qy = 5 if self._get('layout.quantity_position') == 'top_right' else height - 20
-                draw.text((qx, qy), qty_str, fill='blue', font=f_qty)
-            
-            # 5. Штрих-код
-            if show_barcode and barcode_type != 'qr':
-                bc_h = self._mm_to_pixels(self._get('sticker.barcode_height_mm', 10))
-                bc_y = height - bc_h - 2
-                
+            y_cursor = padding
+            if article_cfg.get('enabled', True):
+                article_font = self._get_font(article_cfg.get('size', 8), bold=article_cfg.get('bold', True))
+                article_text = clean_article
+                text_width = article_font.getbbox(article_text)[2]
+                align = article_cfg.get('align', 'left')
+                if align == 'center': article_x = (width - text_width) // 2
+                elif align == 'right': article_x = width - text_width - padding
+                else: article_x = padding
+                article_x += article_cfg.get('offset_x', 0); article_y = padding + article_cfg.get('offset_y', 0)
+                draw.text((article_x, article_y), article_text, fill='black', font=article_font)
+                y_cursor = article_y + article_cfg.get('size', 8) + 2
+            if name_cfg.get('enabled', True):
+                name_font = self._get_font(name_cfg.get('size', 6), bold=name_cfg.get('bold', False), italic=name_cfg.get('italic', False))
+                max_text_width = width - (2 * padding)
+                lines = self._wrap_text(name, name_font, max_text_width)[:name_cfg.get('max_lines', 5)]
+                for line in lines:
+                    if y_cursor >= height - 20: break
+                    line_width = name_font.getbbox(line)[2]
+                    align = name_cfg.get('align', 'left')
+                    if align == 'center': line_x = (width - line_width) // 2
+                    elif align == 'right': line_x = width - line_width - padding
+                    else: line_x = padding
+                    line_x += name_cfg.get('offset_x', 0); line_y = y_cursor + name_cfg.get('offset_y', 0)
+                    draw.text((line_x, line_y), line, fill='black', font=name_font)
+                    y_cursor += name_cfg.get('size', 6) + 1
+            if address and address_cfg.get('enabled', False):
+                address_font = self._get_font(address_cfg.get('size', 6), bold=address_cfg.get('bold', False), italic=address_cfg.get('italic', False))
+                address_text = f"Яч: {address}"
+                text_width = address_font.getbbox(address_text)[2]
+                align = address_cfg.get('align', 'right')
+                if align == 'center': address_x = (width - text_width) // 2
+                elif align == 'left': address_x = padding
+                else: address_x = width - text_width - padding
+                address_x += address_cfg.get('offset_x', 0); address_y = height - address_cfg.get('size', 6) - padding + address_cfg.get('offset_y', 0)
+                draw.text((address_x, address_y), address_text, fill='gray', font=address_font)
+            show_barcode = barcode_cfg.get('enabled', True) and self._get('layout.show_barcode', True)
+            show_qr = barcode_cfg.get('type') == 'qr' or self._get('layout.show_qr', False)
+            barcode_position = barcode_cfg.get('position', 'top_right')
+            barcode_offset_x = barcode_cfg.get('offset_x', 0)
+            barcode_offset_y = barcode_cfg.get('offset_y', 0)
+            if show_barcode and not show_qr:
+                code128_width_mm = barcode_cfg.get('code128_width_mm', 36)
+                code128_height_mm = barcode_cfg.get('code128_height_mm', 6)
+                barcode_height = self._mm_to_pixels(code128_height_mm)
                 try:
-                    if barcode_type == 'ean13':
-                        # EAN13 требует 12-13 цифр, иначе fallback на Code128
-                        digits = ''.join(filter(str.isdigit, clean_article))
-                        if len(digits) >= 12:
-                            code = EAN13(digits[:13], writer=ImageWriter())
+                    digits = ''.join(filter(str.isdigit, clean_article))
+                    if barcode_type == 'ean13' and len(digits) >= 12: code = EAN13(digits[:13], writer=ImageWriter())
+                    else: code = Code128(clean_article, writer=ImageWriter())
+                    buffer = BytesIO()
+                    code.write(buffer, options={'module_width': 0.2, 'module_height': code128_height_mm})
+                    barcode_image = Image.open(buffer)
+                    target_width = self._mm_to_pixels(code128_width_mm)
+                    if barcode_image.width != target_width:
+                        ratio = target_width / barcode_image.width
+                        barcode_image = barcode_image.resize((target_width, int(barcode_image.height * ratio)), Image.Resampling.LANCZOS)
+                    if 'right' in barcode_position: barcode_x = width - barcode_image.width - padding
+                    elif 'left' in barcode_position: barcode_x = padding
+                    else: barcode_x = (width - barcode_image.width) // 2
+                    if 'top' in barcode_position: barcode_y = padding
+                    elif 'bottom' in barcode_position: barcode_y = height - barcode_image.height - padding
+                    else: barcode_y = height - barcode_image.height - padding
+                    barcode_x += barcode_offset_x; barcode_y += barcode_offset_y
+                    image.paste(barcode_image, (barcode_x, barcode_y))
+                    if barcode_cfg.get('show_text', False):
+                        text_size = barcode_cfg.get('text_size', 4)
+                        text_font = self._get_font(text_size)
+                        text_scale_x = barcode_cfg.get('text_scale_x', 1.0)
+                        text_scale_y = barcode_cfg.get('text_scale_y', 1.0)
+                        text_offset_x = barcode_cfg.get('text_offset_x', 0)
+                        text_offset_y = barcode_cfg.get('text_offset_y', 0)
+                        text_bbox = text_font.getbbox(clean_article)
+                        text_width = int((text_bbox[2] - text_bbox[0]) * text_scale_x)
+                        text_height = int((text_bbox[3] - text_bbox[1]) * text_scale_y)
+                        text_x = barcode_x + (barcode_image.width - text_width) // 2 + text_offset_x
+                        text_y = barcode_y + barcode_image.height + 2 + text_offset_y
+                        if text_scale_x != 1.0 or text_scale_y != 1.0:
+                            text_image = Image.new('RGBA', (text_width, text_height), (255, 255, 255, 0))
+                            text_draw = ImageDraw.Draw(text_image)
+                            text_draw.text((0, 0), clean_article, fill='black', font=text_font)
+                            text_image = text_image.resize((text_width, text_height), Image.Resampling.LANCZOS)
+                            image.paste(text_image, (text_x, text_y), text_image)
                         else:
-                            code = Code128(clean_article, writer=ImageWriter())
-                    else:
-                        code = Code128(clean_article, writer=ImageWriter())
-                    
-                    # Генерация в буфер
-                    buf = BytesIO()
-                    code.write(buf, options={'module_width': 0.2, 'module_height': bc_h})
-                    bc_img = Image.open(buf)
-                    
-                    # Центрирование
-                    bc_x = (width - bc_img.width) // 2
-                    img.paste(bc_img, (bc_x, bc_y))
-                except Exception as e:
-                    logger.warning(f"Ошибка генерации штрих-кода: {e}")
-                    draw.text((padding, bc_y), "[Barcode Error]", fill='red', font=f_addr)
-            
-            # 6. QR-код (если нужен отдельно)
-            if show_qr or barcode_type == 'qr':
-                qr_size = self._mm_to_pixels(15)
-                qr_data = clean_article
-                qr = qrcode.QRCode(version=1, box_size=10, border=2)
-                qr.add_data(qr_data)
-                qr.make(fit=True)
-                qr_img = qr.make_image(fill_color="black", back_color="white")
-                qr_img = qr_img.resize((qr_size, qr_size))
-                
-                qr_x = width - qr_size - padding
-                qr_y = height - qr_size - padding
-                img.paste(qr_img, (qr_x, qr_y))
-                
-            return img
-            
+                            draw.text((text_x, text_y), clean_article, fill='black', font=text_font)
+                except Exception as barcode_error:
+                    logger.warning(f"Barcode generation failed: {barcode_error}")
+                    draw.text((padding, height - 15), "[Barcode Error]", fill='red', font=self._get_font(6))
+            if show_qr:
+                qr_size_mm = barcode_cfg.get('qr_size_mm', 16)
+                qr_size = self._mm_to_pixels(qr_size_mm)
+                qr_code = qrcode.QRCode(version=1, box_size=10, border=2)
+                qr_code.add_data(clean_article)
+                qr_code.make(fit=True)
+                qr_image = qr_code.make_image(fill_color="black", back_color="white").resize((qr_size, qr_size))
+                if 'right' in barcode_position: qr_x = width - qr_size - padding
+                elif 'left' in barcode_position: qr_x = padding
+                else: qr_x = (width - qr_size) // 2
+                if 'top' in barcode_position: qr_y = padding
+                elif 'bottom' in barcode_position: qr_y = height - qr_size - padding
+                else: qr_y = height - qr_size - padding
+                qr_x += barcode_offset_x; qr_y += barcode_offset_y
+                image.paste(qr_image, (qr_x, qr_y))
+            return image
         finally:
-            # Восстановление оригинальной конфигурации
-            if preset:
-                self.config = old_config
-
+            if preset: self.config = old_config
     def _create_base_image(self) -> Tuple[Image.Image, ImageDraw.ImageDraw]:
-        """Создать пустое изображение стикера."""
         width, height = self._get_sticker_size()
         bg_color = self._get('sticker.background_color', '#FFFFFF')
-        
         img = Image.new('RGB', (width, height), color=bg_color)
         draw = ImageDraw.Draw(img)
-        
         if self._get('sticker.border', False):
             border_w = max(1, self.dpi // 300)
             draw.rectangle([(0, 0), (width - 1, height - 1)], outline='black', width=border_w)
-            
         return img, draw
-
     def save(self, image: Image.Image, path: Union[str, Path]) -> None:
-        """Сохранить изображение в файл."""
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         image.save(path, 'PNG')
