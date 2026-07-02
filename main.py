@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# --- main.py ---
+# ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 import sys
 import logging
 import json
@@ -20,7 +22,6 @@ quick_bootstrap(
 )
 logger = logging.getLogger(__name__)
 def main() -> None:
-    """Точка входа приложения."""
     logger.info("=" * 60)
     logger.info("ScanHead Combine - Запуск приложения")
     logger.info("=" * 60)
@@ -74,6 +75,12 @@ def main() -> None:
     root = ctk.CTk()
     root.title("ScanHead Combine")
     root.state('zoomed')
+    def _handle_tcl_error(exc_type, exc_value, exc_tb):
+        if issubclass(exc_type, tk.TclError) and "invalid command name" in str(exc_value):
+            return
+        root.report_callback_exception(exc_type, exc_value, exc_tb)
+    import tkinter as tk
+    root.report_callback_exception = _handle_tcl_error
     app = MainWindow(root, di_container=container)
     app.pack(fill="both", expand=True)
     logger.info("Главное окно создано")

@@ -137,7 +137,7 @@ class StickerGenerator:
                     if barcode_type == 'ean13' and len(digits) >= 12: code = EAN13(digits[:13], writer=ImageWriter())
                     else: code = Code128(clean_article, writer=ImageWriter())
                     buffer = BytesIO()
-                    code.write(buffer, options={'module_width': 0.2, 'module_height': code128_height_mm})
+                    code.write(buffer, options={'module_width': 0.2, 'module_height': code128_height_mm, 'write_text': False})
                     barcode_image = Image.open(buffer)
                     target_width = self._mm_to_pixels(code128_width_mm)
                     if barcode_image.width != target_width:

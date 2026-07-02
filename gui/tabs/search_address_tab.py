@@ -73,7 +73,8 @@ class SearchAddressTab(ctk.CTkFrame):
         self._sticker_preview = StickerPreview(
             self,
             printer_service=self._container.get(IPrinterService),
-            settings_service=self._container.get(ISettingsService)
+            settings_service=self._container.get(ISettingsService),
+            search_service=self._container.get(ISearchService)
         )
         self._sticker_preview.grid(row=2, column=1, sticky="nsew", padx=3, pady=3)
     def _on_search_result(self, products: List[Product]) -> None:

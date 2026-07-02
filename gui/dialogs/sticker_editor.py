@@ -80,10 +80,13 @@ FIELDS={
 	]
 }
 class StickerEditor(ctk.CTkToplevel):
-	def __init__(self,master:Any,settings_service:ISettingsService,product:Optional[Product]=None):
+	def __init__(self,master:Any,settings_service:ISettingsService,product:Optional[Product]=None,search_service=None):
 		super().__init__(master)
 		self._settings_service=settings_service
+		self._search_service=search_service
 		self._product=product
+		self._sample_product_cache=None
+		self._sample_address_cache=None
 		self.title("⚙ Редактор пресетов")
 		self.geometry("1100x585")
 		self.resizable(True,True)
@@ -95,10 +98,23 @@ class StickerEditor(ctk.CTkToplevel):
 		self._photo_image=None
 		self._last_preview_size=(0,0)
 		self._preview_after_id=None
+		self.protocol("WM_DELETE_WINDOW",self._on_close)
 		self._create_ui()
 		if self._current_name not in self._presets:self._presets[self._current_name]={}
 		self._show_group(list(FIELDS.keys())[0])
 		self._update_preview()
+	def _on_close(self):
+		if self._preview_after_id:
+			try:self.after_cancel(self._preview_after_id)
+			except:pass
+			self._preview_after_id=None
+		self.destroy()
+	def destroy(self):
+		if self._preview_after_id:
+			try:self.after_cancel(self._preview_after_id)
+			except:pass
+			self._preview_after_id=None
+		super().destroy()
 	def _create_ui(self):
 		self.grid_columnconfigure(0,weight=1,minsize=180)
 		self.grid_columnconfigure(1,weight=4)
@@ -141,7 +157,7 @@ class StickerEditor(ctk.CTkToplevel):
 		bottom=ctk.CTkFrame(self,fg_color="transparent")
 		bottom.grid(row=2,column=0,columnspan=3,sticky="e",padx=10,pady=10)
 		ctk.CTkButton(bottom,text="Сброс",fg_color="#808080",command=self._reset).pack(side="right",padx=5)
-		ctk.CTkButton(bottom,text="Отмена",fg_color="#808080",command=self.destroy).pack(side="right",padx=5)
+		ctk.CTkButton(bottom,text="Отмена",fg_color="#808080",command=self._on_close).pack(side="right",padx=5)
 		ctk.CTkButton(bottom,text="Сохранить",command=self._save).pack(side="right",padx=5)
 	def _on_preview_frame_resize(self,event=None):
 		fw=self._preview_frame.winfo_width()
@@ -178,20 +194,53 @@ class StickerEditor(ctk.CTkToplevel):
 		}
 	def _update_preview(self):
 		self._preview_after_id=None
-		try:self._do_update_preview()
+		try:
+			if not self._preview_canvas.winfo_exists():return
+			self._do_update_preview()
 		except Exception as e:logger.warning(f"Preview update failed: {e}")
 	def _do_update_preview(self):
 		try:
+			if not self._preview_canvas.winfo_exists():return
 			self.update_idletasks()
 			cw=self._preview_canvas.winfo_width()
 			ch=self._preview_canvas.winfo_height()
 			if cw<=1 or ch<=1:cw,ch=400,300
 			max_w,max_h=cw-10,ch-10
 			preset=self._to_nested(self._collect_current_preset())
-			article_text=self._product.article if self._product else "TEST-001"
-			name_text=self._product.name if self._product else "Тестовый товар"
+			product=self._product
 			address_text=""
-			if self._product and hasattr(self._product,'address') and self._product.address:address_text=self._product.address
+			if product:
+				if hasattr(product,'storage_locations') and product.storage_locations:
+					address_text=product.storage_locations[0] if isinstance(product.storage_locations,list) else str(product.storage_locations)
+				elif hasattr(product,'address') and product.address:address_text=product.address
+			else:
+				if self._sample_product_cache is None:
+					if self._search_service:
+						try:
+							results=self._search_service.search("")
+							product_with_address=None
+							first_valid_ascii=None
+							for i,p in enumerate(results):
+								if i>=50:break
+								article=p.article or ""
+								if any(ord(c)>127 for c in article):continue
+								if first_valid_ascii is None:first_valid_ascii=p
+								if hasattr(p,'storage_locations') and p.storage_locations:
+									product_with_address=p;break
+							if product_with_address:
+								self._sample_product_cache=product_with_address
+								self._sample_address_cache=product_with_address.storage_locations[0] if isinstance(product_with_address.storage_locations,list) else str(product_with_address.storage_locations)
+							elif first_valid_ascii:
+								self._sample_product_cache=first_valid_ascii
+								self._sample_address_cache="00-00-00-00-00"
+							else:
+								self._sample_product_cache=None
+								self._sample_address_cache=""
+						except Exception as e:logger.warning(f"Failed to get sample product: {e}")
+				product=self._sample_product_cache
+				address_text=self._sample_address_cache or ""
+			article_text=product.article if product else "TEST-001"
+			name_text=product.name if product else "Тестовый товар"
 			pil_img=StickerGenerator(preset).generate(article=article_text,name=name_text,address=address_text)
 			iw,ih=pil_img.size
 			ratio=min(max_w/iw,max_h/ih,1.0)
@@ -292,5 +341,5 @@ class StickerEditor(ctk.CTkToplevel):
 		self._presets[self._current_name]=preset
 		self._settings_service.set_setting('sticker_presets',self._presets)
 		self._settings_service.set_setting('current_preset_name',self._current_name)
-		self.destroy()
+		self._on_close()
 	def _reset(self):self._load_preset(self._current_name)
