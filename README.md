@@ -1,125 +1,86 @@
-# ScanHead Combine
+# ScanHead Combine v2.2
 
-Модульное ядро для системы инвентаризации и управления складом. Версия 2.1.
+Модульное ядро системы инвентаризации и управления складом.
+Агрегирует данные из трёх SQLite-баз (номенклатура, адреса хранения, запчасти Franke).
 
 ## 🎯 Цель
+Разделение монолитного legacy-проекта на независимые модули с чёткими интерфейсами.
 
-Разделение монолитной логики legacy-проектов на независимые модули с четкими интерфейсами. Сборка нового приложения `scanhead-combine` на основе этих модулей.
+## 🖥️ Стек
+Гибридный ttk + tk — в каждом GUI-файле ОБА импорта:
+- import tkinter as tk
+- from tkinter import ttk
 
-## 🖥️ GUI стек: ttk + tk (ГИБРИДНЫЙ)
+Попытка использовать только ttk ломает интерфейс (проверено).
 
-Проект использует **гибридный подход**: одновременно `import tkinter as tk` и `from tkinter import ttk`.
+## 📦 Структура проекта
 
-- `ttk` — для современных виджетов с темами оформления
-- `tk` — для низкоуровневого контроля (события, координаты, фокус)
-
-**Важно:** Попытка использовать только `ttk` приводит к поломке интерфейса. Оба импорта обязательны в каждом GUI-файле.
-
-## 📦 Структура
-├── libs/ # Библиотеки (независимые модули)
-│ ├── core/ # Инфраструктура: bootstrap, инициализация
-│ ├── i18n/ # Интернационализация
-│ ├── domain/ # Доменная логика
-│ ├── repository/ # Доступ к данным
-│ ├── scanner_input/ # Обработка ввода сканеров (HID)
-│ ├── printing/ # Генерация этикеток (Pillow)
-│ ├── config/ # PresetManager
-│ ├── utils/ # address_formatter, fuzzy_search
-│ └── ... # Другие модули
-│
-├── gui/ # GUI приложение (ttk+tk)
-│ ├── main_window.py # Корневое окно
-│ ├── search_bar.py # Поиск с debounce и подсказками
-│ ├── product_details.py # Детали товара (readonly)
-│ ├── print_queue.py # Очередь печати
-│ ├── sticker_preview.py # Предпросмотр этикетки
-│ ├── tabs/ # SearchAddressTab, InventoryTab (заглушка)
-│ ├── dialogs/ # SettingsDialog, FieldEditor, StickerEditor
-│ ├── framework/ # DialogBase, ListBase
-│ └── services/ # ProductDetailsService + адаптеры БД
-│
-├── services/ # DI контейнер, интерфейсы, заглушки
-├── config/ # app_config.json
-├── data/ # Иконки, изображения, README для БД
-└── main.py # Точка входа
-
-text
+scanhead-core/
+├── main.py                    # Точка входа + DI-контейнер
+├── config/app_config.json     # Конфигурация приложения
+├── data/
+│   ├── databases/             # 3 SQLite БД (read-only, только на тестовой машине)
+│   ├── icons/                 # 14 PNG-иконок
+│   └── images/                # noimage.png
+├── gui/                       # Presentation Layer
+│   ├── main_window.py         # Корневое окно
+│   ├── search_bar.py          # Поиск с debounce
+│   ├── product_details.py     # Карточка товара
+│   ├── print_queue.py         # Очередь печати
+│   ├── sticker_preview.py     # Превью этикетки
+│   ├── tabs/                  # SearchAddressTab, InventoryTab
+│   ├── dialogs/               # SettingsDialog, FieldEditor, StickerEditor, ProductInfoDialog
+│   ├── widgets/               # SuggestionList
+│   ├── framework/             # DialogBase, ListBase
+│   └── services/              # ProductDetailsService + адаптеры БД
+├── libs/                      # Domain + Infrastructure
+│   ├── domain_models/         # Product, Address, InventoryItem
+│   ├── utils/                 # address_formatter, fuzzy_search
+│   ├── printing/              # sticker_generator
+│   ├── config/                # ConfigManager, PresetManager
+│   ├── repository/            # SQLite-реализации репозиториев
+│   └── core/                  # Bootstrap, логгер
+├── services/                  # DI + интерфейсы
+│   ├── di_container.py        # DIContainer
+│   ├── interfaces/            # Абстракции (ISearchService и др.)
+│   ├── stubs/                 # Заглушки для тестов
+│   └── config_manager_adapter.py  # Адаптер ConfigManager → ISettingsService
+└── docs/                      # Схемы БД, API
 
 ## 🗄️ Базы данных (read-only)
 
-Проект агрегирует данные из трёх SQLite-источников:
+| База           | Таблица             | Записей | Роль                                    |
+|----------------|---------------------|---------|-----------------------------------------|
+| nomenclature.db| nomenclature        | 1 693   | Основной справочник (article, name_ru)  |
+| store.db       | storage_locations   | —       | Адреса хранения (JSON-поле locations)   |
+| css_export.db  | spare_parts         | 24 678  | Запчасти Franke                         |
 
-| База | Таблица | Записей | Роль |
-|------|---------|---------|------|
-| `nomenclature.db` | `nomenclature` | 1 693 | Основной справочник (canonical_article, name_ru) |
-| `store.db` | `storage_locations` | — | Адреса хранения (JSON-поле `locations`) |
-| `css_export.db` | `spare_parts` | 24 678 | Запчасти Franke (артикулы производителя) |
+Физические .db файлы — только на тестовой машине. В репозитории — схемы и README.
 
-**Важно:** Физические файлы `.db` находятся **только на тестовой машине**. В репозитории — только схемы и README.
+## ✅ Возможности GUI
+- Поиск: регистронезависимый, debounce 300 мс, кириллица + спецсимволы, лимит 50 товаров
+- Отображение: агрегация из 3 БД, readonly-карточка, динамический рендер адресов
+- Печать: генерация этикеток (Code128/EAN13/QR), превью, очередь заданий
+- Настройки: тема, язык, шрифт поиска, формат адреса, пресеты стикеров (сохраняются в config/app_config.json)
 
-## 🔧 Модули
+## 🛡️ Архитектура
+Строгая многослойность: gui/ → services/ → libs/ (сверху вниз).
+DI через DIContainer, потокобезопасность через root.after(0, ...).
 
-| Модуль | Версия | Статус |
-|--------|--------|--------|
-| `core/bootstrap` | 2.1.0 | ✅ |
-| `i18n/messages` | 2.1.0 | ✅ |
-| `domain/discrepancy` | 2.1.0 | ✅ |
-| `repository` | 2.1.0 | ✅ |
-| `scanner_input` | 2.1.0 | ✅ |
-| `utils/fuzzy_search` | 2.1.0 | ✅ |
-| `utils/address_formatter` | 2.1.0 | ✅ |
-| `printing/sticker_generator` | 2.1.0 | ✅ |
-| `config/preset_manager` | 2.1.0 | ✅ |
-| `command_handler` | 2.1.0 | ✅ |
-| `domain_models` | 2.1.0 | ✅ |
-| `data_exporters` | 2.1.0 | ✅ |
-| `ui_components` | 2.1.0 | ✅ |
-| `gui/framework` | 2.1.0 | ✅ |
-| `gui/tabs/search_address_tab` | 2.1.0 | ✅ |
-| `gui/tabs/inventory_tab` | 2.1.0 | 🚧 |
-
-## ✅ Возможности GUI (v2.1)
-
-### Поиск
-- Регистронезависимый поиск по артикулу, наименованию и штрих-кодам
-- Корректная работа с кириллицей и спецсимволами (дефис, проценты и др.)
-- Debounce 300 мс для оптимизации
-- Ограничение выдачи: 50 товаров
-
-### Отображение товаров
-- Агрегация данных из трёх БД через `ProductDetailsService`
-- Read-only поля карточки товара
-- Динамический рендеринг адресов (компактный / с подписями)
-- Корректный парсинг JSON-полей (`barcodes`, `locations`)
-
-### Печать
-- Генерация этикеток со штрих-кодами (Code128/EAN13)
-- Предпросмотр перед печатью
-- Очередь заданий
-
-## 🛡️ Архитектурные правила
-
-1. **Слои:** `gui/` → `services/` → `libs/` (строго сверху вниз)
-2. **Гибридный стек:** в каждом GUI-файле оба импорта (`import tkinter as tk` И `from tkinter import ttk`)
-3. **DI:** зависимости внедряются через `DIContainer`, не создаются в виджетах
-4. **Потоки:** обновление GUI из фона только через `root.after(0, ...)`
-5. **БД:** read-only соединения (`?mode=ro`), каждое в своём потоке
-6. **Коммиты:** префиксы `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`
-
-## 📚 Документация
-
-- [`MANIFEST.md`](MANIFEST.md) — архитектурные принципы и запреты
-- [`current_structure.MD`](current_structure.MD) — детальная структура проекта
-- [`docs/database_schema.md`](docs/database_schema.md) — схемы БД и связи
-- [`docs/services_api.md`](docs/services_api.md) — API сервисов
+Правила и запреты — см. MANIFEST.md
+Детальная карта модулей — см. current_structure.MD
 
 ## 🔜 Планы
+- ✅ Базовое GUI (ветка main-gui)
+- ✅ Сохранение настроек через ConfigManagerSettingsAdapter
+- 🚧 Парсеры накладных
+- 🚧 Поддержка камеры
+- 🚧 Полноценная вкладка "Инвентаризация"
 
-1. ✅ Базовое GUI (ветка `main-gui`) — стабильная версия на гибридном ttk+tk
-2. 🚧 Парсеры накладных
-3. 🚧 Поддержка камеры (вместо ручного ввода)
-4. 🚧 Вкладка "Инвентаризация" (полноценная реализация)
+## 📚 Документация
+- MANIFEST.md — архитектурные принципы и запреты
+- current_structure.MD — детальная структура проекта
+- docs/database_schema.md — схемы БД и связи
+- docs/services_api.md — API сервисов
 
----
-
-**Версия 2.1 | Гибридный стек ttk+tk | read-only БД | DI контейнер**
+Версия 2.2 | Гибридный стек ttk+tk | read-only БД | DI контейнер

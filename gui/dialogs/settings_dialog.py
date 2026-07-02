@@ -1,463 +1,194 @@
-"""
-Диалог настроек приложения.
-Позволяет настроить тему, язык, параметры таблицы и другие опции.
-"""
-
+# --- gui/dialogs/settings_dialog.py ---
+# ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 import logging
 from typing import Any, Callable, Optional
-
 import customtkinter as ctk
-
 from services.interfaces import ISettingsService
-
-logger = logging.getLogger(__name__)
-
-
+logger=logging.getLogger(__name__)
 class SettingsDialog(ctk.CTkToplevel):
-    """
-    Диалог настроек приложения.
-    
-    Настройки: тема, язык, конфигурация колонок таблицы.
-    """
-    
-    def __init__(
-        self,
-        master: Any,
-        settings_service: ISettingsService,
-        on_settings_changed: Optional[Callable[[str, Any], None]] = None
-    ):
-        super().__init__(master)
-        self._settings_service = settings_service
-        self._on_settings_changed = on_settings_changed
-        
-        logger.debug("[SettingsDialog] Открытие диалога настроек")
-        
-        # Настройки окна (увеличили высоту до 650px для вкладки "Адрес")
-        self.title("⚙ Настройки приложения")
-        self.geometry("800x650+50+50")
-        self.minsize(600, 550)
-        
-        self.transient(master)
-        
-        # Создаём контент с табами
-        self._create_content()
-    
-    def _create_content(self) -> None:
-        """Создание контента диалога с табами."""
-        # Отступы
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure(0, weight=1)
-        
-        # Заголовок
-        title_label = ctk.CTkLabel(
-            self,
-            text="Настройки приложения",
-            font=ctk.CTkFont(size=16, weight="bold")
-        )
-        title_label.grid(row=0, column=0, padx=20, pady=(20, 10), sticky="w")
-        
-        # CTkTabview с вкладками: "Вид", "Адрес", "Данные"
-        tabview = ctk.CTkTabview(self, corner_radius=8)
-        tabview.grid(row=1, column=0, padx=20, pady=10, sticky="nsew")
-        
-        tab_view = tabview.add("Вид")
-        tab_address = tabview.add("Адрес")
-        tab_data = tabview.add("Данные")
-        
-        # Вкладка "Вид"
-        self._create_view_tab(tab_view)
-        
-        # Вкладка "Адрес"
-        self._create_address_tab(tab_address)
-        
-        # Вкладка "Данные"
-        self._create_data_tab(tab_data)
-        
-        # Кнопки
-        buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
-        buttons_frame.grid(row=2, column=0, padx=20, pady=(10, 20), sticky="e")
-        
-        btn_cancel = ctk.CTkButton(
-            buttons_frame,
-            text="Отмена",
-            width=100,
-            command=self.destroy
-        )
-        btn_cancel.pack(side="right", padx=5)
-        
-        btn_save = ctk.CTkButton(
-            buttons_frame,
-            text="Сохранить",
-            width=100,
-            command=self._on_click_save
-        )
-        btn_save.pack(side="right", padx=5)
-    
-    def _create_view_tab(self, parent: Any) -> None:
-        """Создание вкладки 'Вид'."""
-        parent.grid_columnconfigure(1, weight=1)
-        
-        # Тема оформления
-        row = 0
-        lbl_theme = ctk.CTkLabel(
-            parent,
-            text="Тема оформления:",
-            width=150,
-            anchor="w"
-        )
-        lbl_theme.grid(row=row, column=0, padx=10, pady=10, sticky="w")
-        
-        current_theme = self._settings_service.get_setting('theme', 'Dark')
-        self._theme_combo = ctk.CTkComboBox(
-            parent,
-            values=["System", "Light", "Dark"],
-            width=200
-        )
-        self._theme_combo.grid(row=row, column=1, padx=10, pady=10, sticky="w")
-        self._theme_combo.set(current_theme)
-        
-        # Язык интерфейса
-        row += 1
-        lbl_lang = ctk.CTkLabel(
-            parent,
-            text="Язык интерфейса:",
-            width=150,
-            anchor="w"
-        )
-        lbl_lang.grid(row=row, column=0, padx=10, pady=10, sticky="w")
-        
-        current_lang = self._settings_service.get_setting('language', 'ru')
-        self._lang_combo = ctk.CTkComboBox(
-            parent,
-            values=["ru", "en"],
-            width=200
-        )
-        self._lang_combo.grid(row=row, column=1, padx=10, pady=10, sticky="w")
-        self._lang_combo.set(current_lang)
-        
-        # === СЕКЦИЯ: Шрифт поиска ===
-        row += 1
-        ctk.CTkLabel(
-            parent,
-            text="Шрифт поиска",
-            font=ctk.CTkFont(size=14, weight="bold")
-        ).grid(row=row, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
-        
-        self._font_slider = ctk.CTkSlider(
-            parent,
-            from_=12, to=24, number_of_steps=12,
-            command=lambda v: self._font_val_label.configure(text=f"{int(v)} pt")
-        )
-        self._font_slider.grid(row=row + 1, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
-        
-        self._font_val_label = ctk.CTkLabel(parent, text="18 pt")
-        self._font_val_label.grid(row=row + 2, column=1, padx=10, pady=5, sticky="e")
-        
-        # === СЕКЦИЯ: Автофокус ===
-        row += 3
-        ctk.CTkLabel(
-            parent,
-            text="Фокус",
-            font=ctk.CTkFont(size=14, weight="bold")
-        ).grid(row=row, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
-        
-        self._autofocus_var = ctk.BooleanVar(value=True)
-        self._autofocus_checkbox = ctk.CTkCheckBox(
-            parent,
-            text="Авто фокус в поле «Поиск»",
-            variable=self._autofocus_var,
-            command=self._toggle_focus_delay
-        )
-        self._autofocus_checkbox.grid(row=row + 1, column=0, columnspan=2, padx=10, pady=5, sticky="w")
-        
-        # === СЕКЦИЯ: Задержка автофокуса ===
-        row += 2
-        focus_delay_frame = ctk.CTkFrame(parent, fg_color="transparent")
-        focus_delay_frame.grid(row=row, column=0, columnspan=2, padx=10, pady=5, sticky="w")
-        
-        ctk.CTkLabel(focus_delay_frame, text="Задержка автофокуса").pack(side="left")
-        
-        self._focus_delay_slider = ctk.CTkSlider(
-            focus_delay_frame,
-            from_=0.0, to=3.0, number_of_steps=30,  # Шаг 0.1 сек
-            width=150,
-            command=lambda v: self._focus_delay_val_label.configure(text=f"{v:.1f} сек")
-        )
-        self._focus_delay_slider.pack(side="left", padx=10)
-        
-        self._focus_delay_val_label = ctk.CTkLabel(focus_delay_frame, text="1.0 сек")
-        self._focus_delay_val_label.pack(side="left")
-        
-        # Загрузка текущих значений настроек
-        self._load_search_settings()
-    
-    def _load_search_settings(self) -> None:
-        """Загрузка настроек поиска из сервиса настроек."""
-        font_size = self._settings_service.get_setting("search_font_size", 18)
-        autofocus = self._settings_service.get_setting("search_autofocus", True)
-        focus_delay = self._settings_service.get_setting("search_autofocus_delay", 1.0)
-        
-        self._font_slider.set(font_size)
-        self._autofocus_var.set(autofocus)
-        self._focus_delay_slider.set(focus_delay)
-        
-        # Обновить текстовые метки
-        self._font_val_label.configure(text=f"{int(font_size)} pt")
-        self._focus_delay_val_label.configure(text=f"{focus_delay:.1f} сек")
-        
-        # Обновить состояние слайдера задержки
-        self._toggle_focus_delay()
-    
-    def _toggle_focus_delay(self) -> None:
-        """Блокировка слайдера задержки, если автофокус выключен."""
-        state = "normal" if self._autofocus_var.get() else "disabled"
-        self._focus_delay_slider.configure(state=state)
-    
-    def _create_address_tab(self, parent: Any) -> None:
-        """Создание вкладки 'Адрес' с настройками форматирования."""
-        # Обёртка с прокруткой для всего содержимого вкладки
-        scrollable_frame = ctk.CTkScrollableFrame(parent, fg_color="transparent")
-        scrollable_frame.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
-        parent.grid_columnconfigure(0, weight=1)
-        parent.grid_rowconfigure(0, weight=1)
-        
-        content_frame = scrollable_frame
-        content_frame.grid_columnconfigure(1, weight=1)
-        
-        # === СЕКЦИЯ: Переключатель режима ===
-        row = 0
-        self._address_enabled_var = ctk.BooleanVar(value=False)
-        self._address_enabled_checkbox = ctk.CTkCheckBox(
-            content_frame,
-            text="Использовать форматированный адрес",
-            variable=self._address_enabled_var,
-            command=self._toggle_address_format_controls
-        )
-        self._address_enabled_checkbox.grid(row=row, column=0, columnspan=2, padx=10, pady=10, sticky="w")
-        
-        # Контейнер для настроек формата (изначально скрыт)
-        self._format_controls_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
-        self._format_controls_frame.grid(row=row+1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-        self._format_controls_frame.grid_columnconfigure(1, weight=1)
-        
-        # === Разделитель ===
-        r = 0
-        lbl_separator = ctk.CTkLabel(
-            self._format_controls_frame,
-            text="Разделитель:",
-            width=150,
-            anchor="w"
-        )
-        lbl_separator.grid(row=r, column=0, padx=10, pady=5, sticky="w")
-        
-        self._separator_var = ctk.StringVar(value="-")
-        self._separator_combo = ctk.CTkComboBox(
-            self._format_controls_frame,
-            values=["-", "/", "_", ".", "custom"],
-            width=100,
-            variable=self._separator_var,
-            command=self._on_separator_changed
-        )
-        self._separator_combo.grid(row=r, column=1, padx=10, pady=5, sticky="w")
-        
-        # Поле для своего разделителя
-        self._custom_separator_entry = ctk.CTkEntry(
-            self._format_controls_frame,
-            width=50,
-            placeholder_text="Свой"
-        )
-        self._custom_separator_entry.grid(row=r, column=2, padx=10, pady=5, sticky="w")
-        self._custom_separator_entry.grid_remove()  # Скрыто по умолчанию
-        
-        # === Уровни ===
-        r += 1
-        lbl_levels = ctk.CTkLabel(
-            self._format_controls_frame,
-            text="Уровни адреса:",
-            font=ctk.CTkFont(size=14, weight="bold")
-        )
-        lbl_levels.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
-        
-        # Контейнер для списка уровней (с собственной прокруткой для длинных списков)
-        self._levels_container = ctk.CTkScrollableFrame(
-            self._format_controls_frame,
-            height=250,
-            fg_color=("gray85", "gray25")
-        )
-        self._levels_container.grid(row=r+1, column=0, columnspan=3, padx=10, pady=5, sticky="nsew")
-        self._format_controls_frame.grid_rowconfigure(r+1, weight=1)
-        
-        # Кнопка добавления уровня
-        self._add_level_button = ctk.CTkButton(
-            self._format_controls_frame,
-            text="+ Добавить уровень",
-            width=150,
-            command=self._add_level
-        )
-        self._add_level_button.grid(row=r+2, column=0, columnspan=2, padx=10, pady=10, sticky="w")
-        
-        # Список виджетов уровней
-        self._level_widgets: list = []
-        
-        # === Режим отображения ===
-        r += 3
-        lbl_display = ctk.CTkLabel(
-            self._format_controls_frame,
-            text="Режим отображения:",
-            font=ctk.CTkFont(size=14, weight="bold")
-        )
-        lbl_display.grid(row=r, column=0, columnspan=2, padx=10, pady=(15, 5), sticky="w")
-        
-        self._display_mode_var = ctk.StringVar(value="compact")
-        
-        radio_compact = ctk.CTkRadioButton(
-            self._format_controls_frame,
-            text="Компактный (только значения)",
-            variable=self._display_mode_var,
-            value="compact"
-        )
-        radio_compact.grid(row=r+1, column=0, columnspan=2, padx=20, pady=5, sticky="w")
-        
-        radio_labels = ctk.CTkRadioButton(
-            self._format_controls_frame,
-            text="С подписями (Блок A, Стеллаж 01)",
-            variable=self._display_mode_var,
-            value="with_labels"
-        )
-        radio_labels.grid(row=r+2, column=0, columnspan=2, padx=20, pady=5, sticky="w")
-        
-        # Загрузка текущих настроек
-        self._load_address_settings()
-    
-    def _load_address_settings(self) -> None:
-        """Загрузка настроек адреса из сервиса настроек."""
-        config = self._settings_service.get_setting("address_format", {})
-        
-        if config:
-            self._address_enabled_var.set(config.get("enabled", False))
-            self._separator_var.set(config.get("separator", "-"))
-            self._custom_separator_entry.insert(0, config.get("custom_separator", ""))
-            self._display_mode_var.set(config.get("display_mode", "compact"))
-            
-            # Восстанавливаем уровни
-            levels = config.get("levels", ["Блок", "Стеллаж", "Секция"])
-            for level_name in levels:
-                self._add_level(level_name)
-        
-        # Обновляем состояние контролов
-        self._toggle_address_format_controls()
-        self._on_separator_changed(self._separator_var.get())
-    
-    def _toggle_address_format_controls(self) -> None:
-        """Показать/скрыть настройки формата в зависимости от чекбокса."""
-        if self._address_enabled_var.get():
-            self._format_controls_frame.grid()
-        else:
-            self._format_controls_frame.grid_remove()
-    
-    def _on_separator_changed(self, value: str) -> None:
-        """Обработчик изменения разделителя."""
-        if value == "custom":
-            self._custom_separator_entry.grid()
-        else:
-            self._custom_separator_entry.grid_remove()
-    
-    def _add_level(self, name: str = "") -> None:
-        """Добавление нового уровня в список."""
-        if len(self._level_widgets) >= 10:
-            return  # Максимум 10 уровней
-        
-        row = len(self._level_widgets)
-        frame = ctk.CTkFrame(self._levels_container, fg_color="transparent")
-        frame.pack(fill="x", pady=2)
-        
-        entry = ctk.CTkEntry(
-            frame,
-            width=200,
-            placeholder_text=f"Уровень {row + 1}"
-        )
-        entry.pack(side="left", padx=(0, 10))
-        if name:
-            entry.insert(0, name)
-        
-        btn_delete = ctk.CTkButton(
-            frame,
-            text="🗑️",
-            width=40,
-            command=lambda: self._remove_level(frame)
-        )
-        btn_delete.pack(side="left")
-        
-        self._level_widgets.append((frame, entry))
-    
-    def _remove_level(self, frame: ctk.CTkFrame) -> None:
-        """Удаление уровня из списка."""
-        for i, (f, _) in enumerate(self._level_widgets):
-            if f == frame:
-                frame.destroy()
-                self._level_widgets.pop(i)
-                break
-    
-    def _get_address_config_from_ui(self) -> dict:
-        """Получение конфигурации адреса из UI элементов."""
-        levels = [entry.get().strip() or f"Уровень {i+1}" for i, (_, entry) in enumerate(self._level_widgets)]
-        
-        separator = self._separator_var.get()
-        custom_sep = self._custom_separator_entry.get().strip()
-        
-        return {
-            "enabled": self._address_enabled_var.get(),
-            "separator": separator,
-            "custom_separator": custom_sep if separator == "custom" else "",
-            "levels": levels,
-            "display_mode": self._display_mode_var.get()
-        }
-    
-    def _create_data_tab(self, parent: Any) -> None:
-        """Создание вкладки 'Данные' (заглушка)."""
-        lbl = ctk.CTkLabel(
-            parent,
-            text="Настройки данных и БД\n(в разработке)",
-            font=ctk.CTkFont(size=14)
-        )
-        lbl.place(relx=0.5, rely=0.5, anchor="center")
-    
-    def _on_click_save(self) -> None:
-        """Обработчик клика по кнопке 'Сохранить'."""
-        logger.info("[SettingsDialog] Сохранение настроек")
-        
-        # Сохраняем тему
-        theme = self._theme_combo.get()
-        self._settings_service.set_setting('theme', theme)
-        
-        # Применяем тему немедленно
-        import customtkinter as ctk
-        ctk.set_appearance_mode(theme)
-        
-        # Сохраняем язык
-        lang = self._lang_combo.get()
-        self._settings_service.set_setting('language', lang)
-        
-        # Сохраняем настройки поиска
-        font_size = int(self._font_slider.get())
-        autofocus = self._autofocus_var.get()
-        focus_delay = float(self._focus_delay_slider.get())
-        
-        self._settings_service.set_setting("search_font_size", font_size)
-        self._settings_service.set_setting("search_autofocus", autofocus)
-        self._settings_service.set_setting("search_autofocus_delay", focus_delay)
-        
-        # Сохраняем настройки адреса
-        address_config = self._get_address_config_from_ui()
-        self._settings_service.set_setting("address_format", address_config)
-        
-        logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}, address_format={address_config}")
-        
-        # Уведомляем об изменениях через колбэк
-        if self._on_settings_changed:
-            self._on_settings_changed("search_font_size", font_size)
-            self._on_settings_changed("search_autofocus", autofocus)
-            self._on_settings_changed("search_autofocus_delay", focus_delay)
-            self._on_settings_changed("address_format", address_config)
-        
-        self.destroy()
+	def __init__(self,master:Any,settings_service:ISettingsService,on_settings_changed:Optional[Callable[[str,Any],None]]=None):
+		super().__init__(master)
+		self._settings_service=settings_service
+		self._on_settings_changed=on_settings_changed
+		logger.debug("[SettingsDialog] Открытие диалога настроек")
+		self.title("⚙ Настройки приложения")
+		self.geometry("800x650+50+50")
+		self.minsize(600,550)
+		self.transient(master)
+		self._create_content()
+	def _create_content(self)->None:
+		self.grid_rowconfigure(1,weight=1)
+		self.grid_columnconfigure(0,weight=1)
+		title_label=ctk.CTkLabel(self,text="Настройки приложения",font=ctk.CTkFont(size=16,weight="bold"))
+		title_label.grid(row=0,column=0,padx=20,pady=(20,10),sticky="w")
+		tabview=ctk.CTkTabview(self,corner_radius=8)
+		tabview.grid(row=1,column=0,padx=20,pady=10,sticky="nsew")
+		tab_view=tabview.add("Вид")
+		tab_address=tabview.add("Адрес")
+		tab_data=tabview.add("Данные")
+		self._create_view_tab(tab_view)
+		self._create_address_tab(tab_address)
+		self._create_data_tab(tab_data)
+		buttons_frame=ctk.CTkFrame(self,fg_color="transparent")
+		buttons_frame.grid(row=2,column=0,padx=20,pady=(10,20),sticky="e")
+		btn_cancel=ctk.CTkButton(buttons_frame,text="Отмена",width=100,command=self.destroy)
+		btn_cancel.pack(side="right",padx=5)
+		btn_save=ctk.CTkButton(buttons_frame,text="Сохранить",width=100,command=self._on_click_save)
+		btn_save.pack(side="right",padx=5)
+	def _create_view_tab(self,parent:Any)->None:
+		parent.grid_columnconfigure(1,weight=1)
+		row=0
+		lbl_theme=ctk.CTkLabel(parent,text="Тема оформления:",width=150,anchor="w")
+		lbl_theme.grid(row=row,column=0,padx=10,pady=10,sticky="w")
+		current_theme=self._settings_service.get_setting('theme','Dark')
+		self._theme_combo=ctk.CTkComboBox(parent,values=["System","Light","Dark"],width=200)
+		self._theme_combo.grid(row=row,column=1,padx=10,pady=10,sticky="w")
+		self._theme_combo.set(current_theme)
+		row+=1
+		lbl_lang=ctk.CTkLabel(parent,text="Язык интерфейса:",width=150,anchor="w")
+		lbl_lang.grid(row=row,column=0,padx=10,pady=10,sticky="w")
+		current_lang=self._settings_service.get_setting('language','ru')
+		self._lang_combo=ctk.CTkComboBox(parent,values=["ru","en"],width=200)
+		self._lang_combo.grid(row=row,column=1,padx=10,pady=10,sticky="w")
+		self._lang_combo.set(current_lang)
+		row+=1
+		ctk.CTkLabel(parent,text="Шрифт поиска",font=ctk.CTkFont(size=14,weight="bold")).grid(row=row,column=0,columnspan=2,padx=10,pady=(15,5),sticky="w")
+		self._font_slider=ctk.CTkSlider(parent,from_=12,to=24,number_of_steps=12,command=lambda v:self._font_val_label.configure(text=f"{int(v)} pt"))
+		self._font_slider.grid(row=row+1,column=0,columnspan=2,padx=10,pady=5,sticky="ew")
+		self._font_val_label=ctk.CTkLabel(parent,text="18 pt")
+		self._font_val_label.grid(row=row+2,column=1,padx=10,pady=5,sticky="e")
+		row+=3
+		ctk.CTkLabel(parent,text="Фокус",font=ctk.CTkFont(size=14,weight="bold")).grid(row=row,column=0,columnspan=2,padx=10,pady=(15,5),sticky="w")
+		self._autofocus_var=ctk.BooleanVar(value=True)
+		self._autofocus_checkbox=ctk.CTkCheckBox(parent,text="Авто фокус в поле «Поиск»",variable=self._autofocus_var,command=self._toggle_focus_delay)
+		self._autofocus_checkbox.grid(row=row+1,column=0,columnspan=2,padx=10,pady=5,sticky="w")
+		row+=2
+		focus_delay_frame=ctk.CTkFrame(parent,fg_color="transparent")
+		focus_delay_frame.grid(row=row,column=0,columnspan=2,padx=10,pady=5,sticky="w")
+		ctk.CTkLabel(focus_delay_frame,text="Задержка автофокуса").pack(side="left")
+		self._focus_delay_slider=ctk.CTkSlider(focus_delay_frame,from_=0.0,to=3.0,number_of_steps=30,width=150,command=lambda v:self._focus_delay_val_label.configure(text=f"{v:.1f} сек"))
+		self._focus_delay_slider.pack(side="left",padx=10)
+		self._focus_delay_val_label=ctk.CTkLabel(focus_delay_frame,text="1.0 сек")
+		self._focus_delay_val_label.pack(side="left")
+		self._load_search_settings()
+	def _load_search_settings(self)->None:
+		font_size=self._settings_service.get_setting("search_font_size",18)
+		autofocus=self._settings_service.get_setting("search_autofocus",True)
+		focus_delay=self._settings_service.get_setting("search_autofocus_delay",1.0)
+		self._font_slider.set(font_size)
+		self._autofocus_var.set(autofocus)
+		self._focus_delay_slider.set(focus_delay)
+		self._font_val_label.configure(text=f"{int(font_size)} pt")
+		self._focus_delay_val_label.configure(text=f"{focus_delay:.1f} сек")
+		self._toggle_focus_delay()
+	def _toggle_focus_delay(self)->None:
+		state="normal" if self._autofocus_var.get() else "disabled"
+		self._focus_delay_slider.configure(state=state)
+	def _create_address_tab(self,parent:Any)->None:
+		scrollable_frame=ctk.CTkScrollableFrame(parent,fg_color="transparent")
+		scrollable_frame.grid(row=0,column=0,sticky="nsew",padx=0,pady=0)
+		parent.grid_columnconfigure(0,weight=1)
+		parent.grid_rowconfigure(0,weight=1)
+		content_frame=scrollable_frame
+		content_frame.grid_columnconfigure(1,weight=1)
+		row=0
+		self._address_enabled_var=ctk.BooleanVar(value=False)
+		self._address_enabled_checkbox=ctk.CTkCheckBox(content_frame,text="Использовать форматированный адрес",variable=self._address_enabled_var,command=self._toggle_address_format_controls)
+		self._address_enabled_checkbox.grid(row=row,column=0,columnspan=2,padx=10,pady=10,sticky="w")
+		self._format_controls_frame=ctk.CTkFrame(content_frame,fg_color="transparent")
+		self._format_controls_frame.grid(row=row+1,column=0,columnspan=2,padx=10,pady=10,sticky="ew")
+		self._format_controls_frame.grid_columnconfigure(1,weight=1)
+		r=0
+		lbl_separator=ctk.CTkLabel(self._format_controls_frame,text="Разделитель:",width=150,anchor="w")
+		lbl_separator.grid(row=r,column=0,padx=10,pady=5,sticky="w")
+		self._separator_var=ctk.StringVar(value="-")
+		self._separator_combo=ctk.CTkComboBox(self._format_controls_frame,values=["-","/","_",".","custom"],width=100,variable=self._separator_var,command=self._on_separator_changed)
+		self._separator_combo.grid(row=r,column=1,padx=10,pady=5,sticky="w")
+		self._custom_separator_entry=ctk.CTkEntry(self._format_controls_frame,width=50,placeholder_text="Свой")
+		self._custom_separator_entry.grid(row=r,column=2,padx=10,pady=5,sticky="w")
+		self._custom_separator_entry.grid_remove()
+		r+=1
+		lbl_levels=ctk.CTkLabel(self._format_controls_frame,text="Уровни адреса:",font=ctk.CTkFont(size=14,weight="bold"))
+		lbl_levels.grid(row=r,column=0,columnspan=2,padx=10,pady=(15,5),sticky="w")
+		self._levels_container=ctk.CTkScrollableFrame(self._format_controls_frame,height=250,fg_color=("gray85","gray25"))
+		self._levels_container.grid(row=r+1,column=0,columnspan=3,padx=10,pady=5,sticky="nsew")
+		self._format_controls_frame.grid_rowconfigure(r+1,weight=1)
+		self._add_level_button=ctk.CTkButton(self._format_controls_frame,text="+ Добавить уровень",width=150,command=self._add_level)
+		self._add_level_button.grid(row=r+2,column=0,columnspan=2,padx=10,pady=10,sticky="w")
+		self._level_widgets=[]
+		r+=3
+		lbl_display=ctk.CTkLabel(self._format_controls_frame,text="Режим отображения:",font=ctk.CTkFont(size=14,weight="bold"))
+		lbl_display.grid(row=r,column=0,columnspan=2,padx=10,pady=(15,5),sticky="w")
+		self._display_mode_var=ctk.StringVar(value="compact")
+		radio_compact=ctk.CTkRadioButton(self._format_controls_frame,text="Компактный (только значения)",variable=self._display_mode_var,value="compact")
+		radio_compact.grid(row=r+1,column=0,columnspan=2,padx=20,pady=5,sticky="w")
+		radio_labels=ctk.CTkRadioButton(self._format_controls_frame,text="С подписями (Блок A, Стеллаж 01)",variable=self._display_mode_var,value="with_labels")
+		radio_labels.grid(row=r+2,column=0,columnspan=2,padx=20,pady=5,sticky="w")
+		self._load_address_settings()
+	def _load_address_settings(self)->None:
+		config=self._settings_service.get_setting("address_format",{})
+		if config:
+			self._address_enabled_var.set(config.get("enabled",False))
+			self._separator_var.set(config.get("separator","-"))
+			self._custom_separator_entry.insert(0,config.get("custom_separator",""))
+			self._display_mode_var.set(config.get("display_mode","compact"))
+			levels=config.get("levels",["Блок","Стеллаж","Секция"])
+			for level_name in levels:self._add_level(level_name)
+		self._toggle_address_format_controls()
+		self._on_separator_changed(self._separator_var.get())
+	def _toggle_address_format_controls(self)->None:
+		if self._address_enabled_var.get():self._format_controls_frame.grid()
+		else:self._format_controls_frame.grid_remove()
+	def _on_separator_changed(self,value:str)->None:
+		if value=="custom":self._custom_separator_entry.grid()
+		else:self._custom_separator_entry.grid_remove()
+	def _add_level(self,name:str="")->None:
+		if len(self._level_widgets)>=10:return
+		row=len(self._level_widgets)
+		frame=ctk.CTkFrame(self._levels_container,fg_color="transparent")
+		frame.pack(fill="x",pady=2)
+		entry=ctk.CTkEntry(frame,width=200,placeholder_text=f"Уровень {row+1}")
+		entry.pack(side="left",padx=(0,10))
+		if name:entry.insert(0,name)
+		btn_delete=ctk.CTkButton(frame,text="🗑️",width=40,command=lambda:self._remove_level(frame))
+		btn_delete.pack(side="left")
+		self._level_widgets.append((frame,entry))
+	def _remove_level(self,frame:ctk.CTkFrame)->None:
+		for i,(f,_) in enumerate(self._level_widgets):
+			if f==frame:
+				frame.destroy()
+				self._level_widgets.pop(i)
+				break
+	def _get_address_config_from_ui(self)->dict:
+		levels=[entry.get().strip() or f"Уровень {i+1}" for i,(_,entry) in enumerate(self._level_widgets)]
+		separator=self._separator_var.get()
+		custom_sep=self._custom_separator_entry.get().strip()
+		return{"enabled":self._address_enabled_var.get(),"separator":separator,"custom_separator":custom_sep if separator=="custom" else "","levels":levels,"display_mode":self._display_mode_var.get()}
+	def _create_data_tab(self,parent:Any)->None:
+		lbl=ctk.CTkLabel(parent,text="Настройки данных и БД\n(в разработке)",font=ctk.CTkFont(size=14))
+		lbl.place(relx=0.5,rely=0.5,anchor="center")
+	def _on_click_save(self)->None:
+		logger.info("[SettingsDialog] Сохранение настроек")
+		theme=self._theme_combo.get()
+		self._settings_service.set_setting('theme',theme)
+		import customtkinter as ctk
+		ctk.set_appearance_mode(theme)
+		lang=self._lang_combo.get()
+		self._settings_service.set_setting('language',lang)
+		font_size=int(self._font_slider.get())
+		autofocus=self._autofocus_var.get()
+		focus_delay=float(self._focus_delay_slider.get())
+		self._settings_service.set_setting("search_font_size",font_size)
+		self._settings_service.set_setting("search_autofocus",autofocus)
+		self._settings_service.set_setting("search_autofocus_delay",focus_delay)
+		address_config=self._get_address_config_from_ui()
+		self._settings_service.set_setting("address_format",address_config)
+		logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}, address_format={address_config}")
+		if self._on_settings_changed:
+			self._on_settings_changed("search_font_size",font_size)
+			self._on_settings_changed("search_autofocus",autofocus)
+			self._on_settings_changed("search_autofocus_delay",focus_delay)
+			self._on_settings_changed("address_format",address_config)
+		if hasattr(self._settings_service,'save'):
+			self._settings_service.save()
+		self.destroy()

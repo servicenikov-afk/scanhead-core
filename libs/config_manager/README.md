@@ -19,16 +19,6 @@
 DEFAULT_CONFIG → загрузка из файла (если есть) → слияние → self.config → get()/set() → save()
 ```
 
-## Установка
-
-Скопируйте папку `config_manager` в ваш проект или подключите как submodule:
-
-```bash
-git submodule add https://github.com/servicenikov-afk/module-extractor.git libs/config_manager
-```
-
-## Использование
-
 ### Базовое использование
 
 ```python

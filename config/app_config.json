@@ -1,4 +1,89 @@
 {
+  "theme": "System",
+  "language": "ru",
+  "columns_visible": [
+    "article",
+    "article2",
+    "name",
+    "address"
+  ],
+  "columns_order": [
+    "article",
+    "article2",
+    "name",
+    "address"
+  ],
+  "search_font_size": 18,
+  "search_autofocus": true,
+  "search_autofocus_delay": 1.0,
+  "address_format": {
+    "enabled": true,
+    "separator": "-",
+    "custom_separator": "",
+    "levels": [
+      "Блок",
+      "Стеллаж",
+      "Секция",
+      "Ряд",
+      "Ячейка"
+    ],
+    "display_mode": "with_labels"
+  },
+  "sticker_presets": {
+    "default": {
+      "sticker": {
+        "width_mm": 60,
+        "height_mm": 40,
+        "orientation": "portrait",
+        "background_color": "#FFFFFF",
+        "border": false,
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 6,
+        "article_size": 8,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": true,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": false
+      },
+      "border": true,
+      "width_mm": 58,
+      "height_mm": 35,
+      "article_offset_y": 15,
+      "article_align": "center",
+      "name_align": "center",
+      "name_offset_y": 35,
+      "address_align": "right",
+      "barcode_position": "bottom",
+      "code128_width_mm": 56,
+      "code128_height_mm": 5,
+      "barcode_offset_y": -25,
+      "barcode_text_offset_y": -11,
+      "barcode_show_text": true,
+      "barcode_text_scale_x": 10,
+      "barcode_text_scale_y": 50,
+      "barcode_text_offset_x": 0,
+      "barcode_text_size": 5,
+      "barcode_type": "auto",
+      "barcode_qr_size_mm": 16,
+      "address_enabled": true,
+      "address_offset_y": -165,
+      "address_italic": false,
+      "address_bold": false,
+      "name_size": 7,
+      "name_bold": false,
+      "name_italic": false,
+      "name_enabled": true,
+      "name_max_lines": 5,
+      "name_offset_x": 0,
+      "orientation": "portrait"
+    }
+  },
+  "current_preset_name": "default",
   "app_name": "ScanHead Combine",
   "version": "0.2.3",
   "log_level": "INFO",
