@@ -94,6 +94,71 @@
         "text_scale_x": 1.0,
         "text_scale_y": 5.0
       }
+    },
+    "t1": {
+      "sticker": {
+        "width_mm": 60,
+        "height_mm": 40,
+        "orientation": "portrait",
+        "border": false,
+        "background_color": "#FFFFFF",
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 6,
+        "article_size": 8,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": true,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": false,
+        "address_position": "bottom"
+      },
+      "article": {
+        "enabled": true,
+        "size": 8,
+        "align": "left",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 0
+      },
+      "name": {
+        "enabled": true,
+        "size": 6,
+        "align": "left",
+        "max_lines": 5,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 0
+      },
+      "address": {
+        "enabled": false,
+        "size": 6,
+        "align": "right",
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 0
+      },
+      "barcode": {
+        "enabled": true,
+        "type": "auto",
+        "position": "top_right",
+        "qr_size_mm": 16,
+        "code128_width_mm": 36,
+        "code128_height_mm": 6,
+        "show_text": false,
+        "text_size": 4,
+        "offset_x": 0,
+        "offset_y": 0,
+        "text_offset_x": 0,
+        "text_offset_y": 0,
+        "text_scale_x": 1.0,
+        "text_scale_y": 1.0
+      }
     }
   },
   "current_preset_name": "default",

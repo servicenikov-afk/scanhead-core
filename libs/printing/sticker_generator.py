@@ -115,7 +115,7 @@ class StickerGenerator:
                     y_cursor += int(name_cfg.get('size', 6) * self.dpi / 72) + 1
             if address and address_cfg.get('enabled', False):
                 address_font = self._get_font(address_cfg.get('size', 6), bold=address_cfg.get('bold', False), italic=address_cfg.get('italic', False))
-                address_text = f"Яч: {address}"
+                address_text = f"{address}"
                 text_width = address_font.getbbox(address_text)[2]
                 align = address_cfg.get('align', 'right')
                 if align == 'center': address_x = (width - text_width) // 2

@@ -135,7 +135,7 @@ class StickerEditor(ctk.CTkToplevel):
 		btn_frame=ctk.CTkFrame(left,fg_color="transparent")
 		btn_frame.pack(fill="x",padx=5,pady=2)
 		ctk.CTkButton(btn_frame,text="+",width=30,command=self._add).pack(side="left",padx=2)
-		ctk.CTkButton(btn_frame,text="−",width=30,fg_color="#808080",command=self._del).pack(side="left",padx=2)
+		ctk.CTkButton(btn_frame,text="🗑️",width=30,fg_color="#C0392B",hover_color="#A93226",command=self._del).pack(side="right",padx=2)
 		ctk.CTkFrame(left,height=2,fg_color=("gray50","gray50")).pack(fill="x",padx=10,pady=10)
 		ctk.CTkLabel(left,text="Группы",font=ctk.CTkFont(weight="bold")).pack(pady=(0,2))
 		self._nav_btns={}
@@ -327,16 +327,23 @@ class StickerEditor(ctk.CTkToplevel):
 			for item in group:
 				preset[item["key"]]=item.get("default",False)
 				if "key2" in item:preset[item["key2"]]=item.get("default2",0)
-		self._presets[name]=preset
+		self._presets[name]=to_nested(preset)
 		self._preset_list.configure(values=list(self._presets.keys()))
 		self._load_preset(name)
 	def _del(self):
-		if len(self._presets)<=1:return
+		if len(self._presets) <=1:return
 		del self._presets[self._current_name]
-		self._load_preset(next(iter(self._presets)))
+		self._settings_service.set_setting('sticker_presets',self._presets)
+		new_name=next(iter(self._presets))
+		self._settings_service.set_setting('current_preset_name',new_name)
+		self._load_preset(new_name)
 	def _save(self):
 		preset=self._collect_current_preset()
-		self._presets[self._current_name]=preset
+		new_name=self._preset_list.get().strip()
+		if not new_name:new_name=self._current_name
+		if new_name!=self._current_name and new_name in self._presets:del self._presets[self._current_name]
+		self._current_name=new_name
+		self._presets[self._current_name]=to_nested(preset)
 		self._settings_service.set_setting('sticker_presets',self._presets)
 		self._settings_service.set_setting('current_preset_name',self._current_name)
 		self._on_close()
