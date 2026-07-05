@@ -1,10 +1,11 @@
-# --- sticker_editor.py ---
-# ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
+#--- gui/dialogs/sticker_editor.py ---
+#⚠️Minified code — DO NOT reformat or deobfuscate until beta.
 import logging,customtkinter as ctk,tkinter as tk
 from typing import Any,Optional
 from services.interfaces import ISettingsService
 from libs.domain_models import Product
 from libs.printing.sticker_generator import StickerGenerator
+from services.presets_config_utils import to_nested,normalize_preset,to_flat
 from PIL import Image,ImageTk
 logger=logging.getLogger(__name__)
 class MiniSpinbox(ctk.CTkFrame):
@@ -34,7 +35,7 @@ class MiniSpinbox(ctk.CTkFrame):
 	def set(self,v):
 		self._entry.delete(0,"end");self._entry.insert(0,str(v))
 FIELDS={
-	"📏 Размеры":[
+	" Размеры":[
 		{"label":"Ширина (мм)","key":"width_mm","type":"spin","min":10,"max":200,"default":60},
 		{"label":"Высота (мм)","key":"height_mm","type":"spin","min":10,"max":200,"default":40},
 		{"label":"Ориентация","key":"orientation","type":"combo","values":["portrait","landscape"],"default":"portrait"},
@@ -45,7 +46,7 @@ FIELDS={
 		{"label":"Размер шрифта","key":"article_size","type":"spin","min":2,"max":72,"default":8},
 		{"label":"Выравнивание","key":"article_align","type":"combo","values":["left","center","right"],"default":"left"},
 		{"label":"Жирный","key":"article_bold","type":"check","default":True},
-		{"label":"Смещение ","key":"article_offset_x","type":"pair_spin_wrap","key2":"article_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ↕","key":"article_offset_x","type":"pair_spin_wrap","key2":"article_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"📝 Название":[
 		{"label":"Включить","key":"name_enabled","type":"check","default":True},
@@ -54,7 +55,7 @@ FIELDS={
 		{"label":"Макс. строк","key":"name_max_lines","type":"spin","min":0,"max":20,"default":5},
 		{"label":"Жирный","key":"name_bold","type":"check","default":False},
 		{"label":"Курсив","key":"name_italic","type":"check","default":False},
-		{"label":"Смещение ","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ↕","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"🏢 Адрес":[
 		{"label":"Включить","key":"address_enabled","type":"check","default":False},
@@ -62,7 +63,7 @@ FIELDS={
 		{"label":"Выравнивание","key":"address_align","type":"combo","values":["left","center","right"],"default":"right"},
 		{"label":"Жирный","key":"address_bold","type":"check","default":False},
 		{"label":"Курсив","key":"address_italic","type":"check","default":False},
-		{"label":"Смещение ","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ↕","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0}
 	],
 	"Коды":[
 		{"label":"Включить","key":"barcode_enabled","type":"check","default":True},
@@ -73,7 +74,7 @@ FIELDS={
 		{"label":"Code128 Высота (мм)","key":"code128_height_mm","type":"spin","min":2,"max":64,"default":6},
 		{"label":"Текст под кодом","key":"barcode_show_text","type":"check","default":False},
 		{"label":"Размер текста","key":"barcode_text_size","type":"spin","min":2,"max":72,"default":4},
-		{"label":"Смещение кода ","key":"barcode_offset_x","type":"pair_spin_wrap","key2":"barcode_offset_y","min":-500,"max":500,"default":0,"default2":0},
+		{"label":"Смещение кода ↕","key":"barcode_offset_x","type":"pair_spin_wrap","key2":"barcode_offset_y","min":-500,"max":500,"default":0,"default2":0},
 		{"label":"Смещение текста ","key":"barcode_text_offset_x","type":"pair_spin_wrap","key2":"barcode_text_offset_y","min":-500,"max":500,"default":0,"default2":0},
 		{"label":"Масштаб текста X (×0.1)","key":"barcode_text_scale_x","type":"spin","min":1,"max":30,"default":10},
 		{"label":"Масштаб текста Y (×0.1)","key":"barcode_text_scale_y","type":"spin","min":1,"max":30,"default":10}
@@ -94,6 +95,8 @@ class StickerEditor(ctk.CTkToplevel):
 		self._presets=self._settings_service.get_setting('sticker_presets',{})
 		self._current_name=self._settings_service.get_setting('current_preset_name','default')
 		self._current_preset=self._presets.get(self._current_name,{})
+		if self._current_preset and 'sticker' in self._current_preset:
+			self._current_preset=to_flat(self._current_preset)
 		self._widgets={}
 		self._photo_image=None
 		self._last_preview_size=(0,0)
@@ -107,13 +110,16 @@ class StickerEditor(ctk.CTkToplevel):
 		if self._preview_after_id:
 			try:self.after_cancel(self._preview_after_id)
 			except:pass
-			self._preview_after_id=None
+		self._preview_after_id=None
+		if hasattr(self.master,'_on_editor_close'):
+			try:self.master._on_editor_close()
+			except:pass
 		self.destroy()
 	def destroy(self):
 		if self._preview_after_id:
 			try:self.after_cancel(self._preview_after_id)
 			except:pass
-			self._preview_after_id=None
+		self._preview_after_id=None
 		super().destroy()
 	def _create_ui(self):
 		self.grid_columnconfigure(0,weight=1,minsize=180)
@@ -181,23 +187,13 @@ class StickerEditor(ctk.CTkToplevel):
 		try:
 			if self._preview_after_id:self.after_cancel(self._preview_after_id)
 		except Exception:pass
-		self._preview_after_id=self.after(150,self._update_preview)
-	def _to_nested(self,flat:dict)->dict:
-		return {
-			'sticker':{'width_mm':flat.get('width_mm',60),'height_mm':flat.get('height_mm',40),'orientation':flat.get('orientation','portrait'),'border':flat.get('border',False),'background_color':'#FFFFFF','dpi':300},
-			'fonts':{'name_size':flat.get('name_size',6),'article_size':flat.get('article_size',8),'address_size':flat.get('address_size',6)},
-			'layout':{'show_barcode':flat.get('barcode_enabled',True),'show_qr':flat.get('barcode_type')=='qr','article_position':'top' if flat.get('article_enabled',True) else 'hidden','show_address':flat.get('address_enabled',False),'address_position':'bottom'},
-			'article':{'enabled':flat.get('article_enabled',True),'size':flat.get('article_size',8),'align':flat.get('article_align','left'),'bold':flat.get('article_bold',True),'offset_x':flat.get('article_offset_x',0),'offset_y':flat.get('article_offset_y',0)},
-			'name':{'enabled':flat.get('name_enabled',True),'size':flat.get('name_size',6),'align':flat.get('name_align','left'),'max_lines':flat.get('name_max_lines',5),'bold':flat.get('name_bold',False),'italic':flat.get('name_italic',False),'offset_x':flat.get('name_offset_x',0),'offset_y':flat.get('name_offset_y',0)},
-			'address':{'enabled':flat.get('address_enabled',False),'size':flat.get('address_size',6),'align':flat.get('address_align','right'),'bold':flat.get('address_bold',False),'italic':flat.get('address_italic',False),'offset_x':flat.get('address_offset_x',0),'offset_y':flat.get('address_offset_y',0)},
-			'barcode':{'enabled':flat.get('barcode_enabled',True),'type':flat.get('barcode_type','auto'),'position':flat.get('barcode_position','top_right'),'qr_size_mm':flat.get('barcode_qr_size_mm',16),'code128_width_mm':flat.get('code128_width_mm',36),'code128_height_mm':flat.get('code128_height_mm',6),'show_text':flat.get('barcode_show_text',False),'text_size':flat.get('barcode_text_size',4),'offset_x':flat.get('barcode_offset_x',0),'offset_y':flat.get('barcode_offset_y',0),'text_offset_x':flat.get('barcode_text_offset_x',0),'text_offset_y':flat.get('barcode_text_offset_y',0),'text_scale_x':flat.get('barcode_text_scale_x',10)/10.0,'text_scale_y':flat.get('barcode_text_scale_y',10)/10.0}
-		}
+		self._preview_after_id=self.after(500,self._update_preview)
 	def _update_preview(self):
 		self._preview_after_id=None
 		try:
 			if not self._preview_canvas.winfo_exists():return
 			self._do_update_preview()
-		except Exception as e:logger.warning(f"Preview update failed: {e}")
+		except Exception as e:logger.error(f"Preview update failed: {e}",exc_info=True)
 	def _do_update_preview(self):
 		try:
 			if not self._preview_canvas.winfo_exists():return
@@ -206,9 +202,9 @@ class StickerEditor(ctk.CTkToplevel):
 			ch=self._preview_canvas.winfo_height()
 			if cw<=1 or ch<=1:cw,ch=400,300
 			max_w,max_h=cw-10,ch-10
-			preset=self._to_nested(self._collect_current_preset())
+			preset=normalize_preset(self._collect_current_preset())
 			product=self._product
-			address_text=""
+			address_text=" "
 			if product:
 				if hasattr(product,'storage_locations') and product.storage_locations:
 					address_text=product.storage_locations[0] if isinstance(product.storage_locations,list) else str(product.storage_locations)
@@ -217,12 +213,12 @@ class StickerEditor(ctk.CTkToplevel):
 				if self._sample_product_cache is None:
 					if self._search_service:
 						try:
-							results=self._search_service.search("")
+							results=self._search_service.search(" ")
 							product_with_address=None
 							first_valid_ascii=None
 							for i,p in enumerate(results):
 								if i>=50:break
-								article=p.article or ""
+								article=p.article or " "
 								if any(ord(c)>127 for c in article):continue
 								if first_valid_ascii is None:first_valid_ascii=p
 								if hasattr(p,'storage_locations') and p.storage_locations:
@@ -235,10 +231,10 @@ class StickerEditor(ctk.CTkToplevel):
 								self._sample_address_cache="00-00-00-00-00"
 							else:
 								self._sample_product_cache=None
-								self._sample_address_cache=""
-						except Exception as e:logger.warning(f"Failed to get sample product: {e}")
+								self._sample_address_cache=" "
+						except Exception as e:logger.error(f"Preview update failed: {e}",exc_info=True)
 				product=self._sample_product_cache
-				address_text=self._sample_address_cache or ""
+				address_text=self._sample_address_cache or " "
 			article_text=product.article if product else "TEST-001"
 			name_text=product.name if product else "Тестовый товар"
 			pil_img=StickerGenerator(preset).generate(article=article_text,name=name_text,address=address_text)
@@ -248,7 +244,7 @@ class StickerEditor(ctk.CTkToplevel):
 			self._photo_image=ImageTk.PhotoImage(pil_img)
 			self._preview_canvas.delete("all")
 			self._preview_canvas.create_image(cw//2,ch//2,image=self._photo_image,anchor="center")
-		except Exception as e:logger.warning(f"Preview update failed: {e}")
+		except Exception as e:logger.error(f"Preview update failed: {e}",exc_info=True)
 	def _collect_current_preset(self):
 		preset=dict(self._current_preset)
 		for group in FIELDS.values():
@@ -317,7 +313,9 @@ class StickerEditor(ctk.CTkToplevel):
 			for item in group:
 				self._current_preset[item["key"]]=item.get("default",False)
 				if "key2" in item:self._current_preset[item["key2"]]=item.get("default2",0)
-		self._current_preset.update(saved)
+		if saved:
+			if 'sticker' in saved:saved=to_flat(saved)
+			self._current_preset.update(saved)
 		self._preset_list.configure(values=list(self._presets.keys()))
 		self._preset_list.set(name)
 		self._show_group(list(FIELDS.keys())[0])

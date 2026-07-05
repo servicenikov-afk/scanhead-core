@@ -1,13 +1,14 @@
-# --- sticker_preview.py ---
-# ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
+#--- gui/sticker_preview.py ---
+#⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 import logging,os
 from typing import Any,Optional
 import customtkinter as ctk
 from PIL import Image
-from services.interfaces import IPrinterService, ISettingsService
+from services.interfaces import IPrinterService,ISettingsService
 from libs.domain_models import Product
 from gui.dialogs.sticker_editor import StickerEditor
 from libs.printing.sticker_generator import StickerGenerator
+from services.presets_config_utils import normalize_preset
 logger=logging.getLogger(__name__)
 class StickerPreview(ctk.CTkFrame):
 	def __init__(self,master:Any,printer_service:IPrinterService,settings_service:ISettingsService,search_service=None):
@@ -19,7 +20,6 @@ class StickerPreview(ctk.CTkFrame):
 		self._sample_address_cache=None
 		self._ctk_image:Optional[ctk.CTkImage]=None
 		self._icon_settings=self._load_icon("settings32.png",(20,20))
-		self._init_presets()
 		self._create_ui()
 	def _load_icon(self,filename:str,size:tuple)->Optional[ctk.CTkImage]:
 		try:
@@ -29,21 +29,6 @@ class StickerPreview(ctk.CTkFrame):
 				return ctk.CTkImage(light_image=img,dark_image=img,size=size)
 		except Exception as e:logger.warning(f"Icon load failed {filename}: {e}")
 		return None
-	def _init_presets(self):
-		if not self._settings_service.get_setting('sticker_presets'):
-			default={
-				'sticker':{'width_mm':60,'height_mm':40,'orientation':'portrait','background_color':'#FFFFFF','border':False,'dpi':300},
-				'fonts':{'name_size':6,'article_size':8,'address_size':6},
-				'layout':{'show_barcode':True,'show_qr':False,'article_position':'top','show_address':False}
-			}
-			self._settings_service.set_setting('sticker_presets',{'default':default})
-			self._settings_service.set_setting('current_preset_name','default')
-	def _to_nested(self,flat:dict)->dict:
-		return {
-			'sticker':{'width_mm':flat.get('width_mm',60),'height_mm':flat.get('height_mm',40),'orientation':flat.get('orientation','portrait'),'background_color':'#FFFFFF','border':flat.get('border',False),'dpi':300},
-			'fonts':{'name_size':flat.get('name_size',6),'article_size':flat.get('article_size',8),'address_size':flat.get('address_size',6)},
-			'layout':{'show_barcode':flat.get('barcode_enabled',True),'show_qr':flat.get('barcode_type')=='qr','article_position':'top' if flat.get('article_enabled',True) else 'hidden','show_address':flat.get('address_enabled',False)}
-		}
 	def _create_ui(self):
 		self.configure(fg_color="transparent")
 		self.grid_rowconfigure(0,weight=0)
@@ -64,6 +49,7 @@ class StickerPreview(ctk.CTkFrame):
 		self._preview_frame.configure(width=400,height=300)
 		self._preview_label=ctk.CTkLabel(self._preview_frame,text="Нет данных",text_color="gray")
 		self._preview_label.grid(row=0,column=0,sticky="nsew",padx=3,pady=3)
+		self._generate_preview()
 	def _get_preset_names(self):
 		presets=self._settings_service.get_setting('sticker_presets',{})
 		return list(presets.keys()) if presets else ['default']
@@ -73,7 +59,6 @@ class StickerPreview(ctk.CTkFrame):
 	def _open_editor(self):
 		self._editor=StickerEditor(self,self._settings_service,product=self._current_product,search_service=self._search_service)
 		self._editor.grab_set()
-		self._editor.bind("<Destroy>",lambda e:self._on_editor_close())
 	def _on_editor_close(self):
 		try:
 			if not self._preview_label.winfo_exists():return
@@ -89,7 +74,7 @@ class StickerPreview(ctk.CTkFrame):
 	def clear(self):self.set_product(None)
 	def _generate_preview(self):
 		product=self._current_product
-		address_text=""
+		address_text=" "
 		if product:
 			if hasattr(product,'storage_locations') and product.storage_locations:
 				address_text=product.storage_locations[0] if isinstance(product.storage_locations,list) else str(product.storage_locations)
@@ -98,12 +83,12 @@ class StickerPreview(ctk.CTkFrame):
 			if self._sample_product_cache is None:
 				if self._search_service:
 					try:
-						results=self._search_service.search("")
+						results=self._search_service.search(" ")
 						product_with_address=None
 						first_valid_ascii=None
 						for i,p in enumerate(results):
 							if i>=50:break
-							article=p.article or ""
+							article=p.article or " "
 							if any(ord(c)>127 for c in article):continue
 							if first_valid_ascii is None:first_valid_ascii=p
 							if hasattr(p,'storage_locations') and p.storage_locations:
@@ -116,10 +101,10 @@ class StickerPreview(ctk.CTkFrame):
 							self._sample_address_cache="00-00-00-00-00"
 						else:
 							self._sample_product_cache=None
-							self._sample_address_cache=""
-					except Exception as e:logger.warning(f"Failed to get sample product: {e}")
+							self._sample_address_cache=" "
+					except Exception as e:logger.error(f"Failed to get sample product: {e}",exc_info=True)
 			product=self._sample_product_cache
-			address_text=self._sample_address_cache or ""
+			address_text=self._sample_address_cache or " "
 		if not product:
 			try:self._preview_label.configure(image=None,text="Нет данных")
 			except:pass
@@ -127,9 +112,9 @@ class StickerPreview(ctk.CTkFrame):
 		try:
 			preset=self._settings_service.get_setting('sticker_presets',{}).get(
 				self._settings_service.get_setting('current_preset_name','default'),{})
-			if 'sticker' not in preset:preset=self._to_nested(preset)
+			preset=normalize_preset(preset)
 			pil_img=StickerGenerator(preset).generate(
-				article=product.article or "",name=product.name or "",address=address_text)
+				article=product.article or " ",name=product.name or " ",address=address_text)
 			self.update_idletasks()
 			fw,fh=self._preview_frame.winfo_width(),self._preview_frame.winfo_height()
 			max_w,max_h=(fw-20,fh-20) if fw>20 and fh>20 else (360,260)

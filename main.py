@@ -18,7 +18,7 @@ config = load_config()
 from libs.core import quick_bootstrap
 quick_bootstrap(
 	app_name=config.get("app_name", "ScanHead Combine"),
-	log_level=getattr(logging, config.get("log_level", "INFO")),
+	log_level=getattr(logging, config.get("log_level", "DEBUG")),
 )
 logger = logging.getLogger(__name__)
 def main() -> None:
@@ -78,6 +78,7 @@ def main() -> None:
 	root.state('zoomed')
 	def _handle_tcl_error(exc_type, exc_value, exc_tb):
 		if issubclass(exc_type, tk.TclError) and "invalid command name" in str(exc_value):
+			logger.warning(f"TclError suppressed: {exc_value}")
 			return
 		root.report_callback_exception(exc_type, exc_value, exc_tb)
 	import tkinter as tk

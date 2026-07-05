@@ -32,15 +32,15 @@
   "sticker_presets": {
     "default": {
       "sticker": {
-        "width_mm": 60,
-        "height_mm": 40,
+        "width_mm": 58,
+        "height_mm": 35,
         "orientation": "portrait",
         "background_color": "#FFFFFF",
-        "border": false,
+        "border": true,
         "dpi": 300
       },
       "fonts": {
-        "name_size": 6,
+        "name_size": 7,
         "article_size": 8,
         "address_size": 6
       },
@@ -48,45 +48,58 @@
         "show_barcode": true,
         "show_qr": false,
         "article_position": "top",
-        "show_address": false
+        "show_address": true,
+        "address_position": "bottom"
       },
-      "border": true,
-      "width_mm": 58,
-      "height_mm": 35,
-      "article_offset_y": 15,
-      "article_align": "center",
-      "name_align": "center",
-      "name_offset_y": 35,
-      "address_align": "right",
-      "barcode_position": "bottom",
-      "code128_width_mm": 56,
-      "code128_height_mm": 5,
-      "barcode_offset_y": -25,
-      "barcode_text_offset_y": -11,
-      "barcode_show_text": true,
-      "barcode_text_scale_x": 10,
-      "barcode_text_scale_y": 50,
-      "barcode_text_offset_x": 0,
-      "barcode_text_size": 5,
-      "barcode_type": "auto",
-      "barcode_qr_size_mm": 16,
-      "address_enabled": true,
-      "address_offset_y": -165,
-      "address_italic": false,
-      "address_bold": false,
-      "name_size": 7,
-      "name_bold": false,
-      "name_italic": false,
-      "name_enabled": true,
-      "name_max_lines": 5,
-      "name_offset_x": 0,
-      "orientation": "portrait"
+      "article": {
+        "enabled": true,
+        "size": 8,
+        "align": "center",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 15
+      },
+      "name": {
+        "enabled": true,
+        "size": 7,
+        "align": "center",
+        "max_lines": 5,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 20
+      },
+      "address": {
+        "enabled": true,
+        "size": 6,
+        "align": "right",
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": -165
+      },
+      "barcode": {
+        "enabled": true,
+        "type": "auto",
+        "position": "bottom",
+        "qr_size_mm": 16,
+        "code128_width_mm": 56,
+        "code128_height_mm": 5,
+        "show_text": true,
+        "text_size": 5,
+        "offset_x": 0,
+        "offset_y": -25,
+        "text_offset_x": 0,
+        "text_offset_y": -11,
+        "text_scale_x": 1.0,
+        "text_scale_y": 5.0
+      }
     }
   },
   "current_preset_name": "default",
   "app_name": "ScanHead Combine",
   "version": "0.2.3",
-  "log_level": "INFO",
+  "log_level": "DEBUG",
   "log_file": "app.log",
   "db_paths": {
     "nomenclature": "data/databases/nomenclature/nomenclature.db",

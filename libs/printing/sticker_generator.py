@@ -98,7 +98,7 @@ class StickerGenerator:
                 else: article_x = padding
                 article_x += article_cfg.get('offset_x', 0); article_y = padding + article_cfg.get('offset_y', 0)
                 draw.text((article_x, article_y), article_text, fill='black', font=article_font)
-                y_cursor = article_y + article_cfg.get('size', 8) + 2
+                y_cursor = article_y + int(article_cfg.get('size', 8) * self.dpi / 72) + 2
             if name_cfg.get('enabled', True):
                 name_font = self._get_font(name_cfg.get('size', 6), bold=name_cfg.get('bold', False), italic=name_cfg.get('italic', False))
                 max_text_width = width - (2 * padding)
@@ -112,7 +112,7 @@ class StickerGenerator:
                     else: line_x = padding
                     line_x += name_cfg.get('offset_x', 0); line_y = y_cursor + name_cfg.get('offset_y', 0)
                     draw.text((line_x, line_y), line, fill='black', font=name_font)
-                    y_cursor += name_cfg.get('size', 6) + 1
+                    y_cursor += int(name_cfg.get('size', 6) * self.dpi / 72) + 1
             if address and address_cfg.get('enabled', False):
                 address_font = self._get_font(address_cfg.get('size', 6), bold=address_cfg.get('bold', False), italic=address_cfg.get('italic', False))
                 address_text = f"Яч: {address}"
@@ -172,7 +172,7 @@ class StickerGenerator:
                         else:
                             draw.text((text_x, text_y), clean_article, fill='black', font=text_font)
                 except Exception as barcode_error:
-                    logger.warning(f"Barcode generation failed: {barcode_error}")
+                    logger.error(f"Sticker generate failed: {e}", exc_info=True)
                     draw.text((padding, height - 15), "[Barcode Error]", fill='red', font=self._get_font(6))
             if show_qr:
                 qr_size_mm = barcode_cfg.get('qr_size_mm', 16)
