@@ -1,0 +1,42 @@
+name: Update Progress Dashboard
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # ручной запуск
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # нужна полная история для git log
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Generate Dashboard
+        run: |
+          python .github/scripts/generate_dashboard.py
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Добавляем только dashboard.html (progress_report.md уже удалён)
+          git add docs/dashboard.html
+          
+          # Коммитим только если есть изменения
+          git diff --staged --quiet || git commit -m "docs: update dashboard [skip ci]"
+          git push
