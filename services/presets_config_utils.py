@@ -1,6 +1,7 @@
 #--- services/presets_config_utils.py ---
 #⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 from typing import Any
+import copy
 def to_nested(flat:dict)->dict:
 	return {
 		'sticker':{'width_mm':flat.get('width_mm',58),'height_mm':flat.get('height_mm',35),'orientation':flat.get('orientation','portrait'),'border':flat.get('border',True),'background_color':'#FFFFFF','dpi':300},
@@ -13,13 +14,19 @@ def to_nested(flat:dict)->dict:
 	}
 def normalize_preset(preset:dict)->dict:
 	if not preset:return to_nested({})
-	if 'sticker' in preset and 'fonts' in preset and 'layout' in preset:return preset
+	if 'sticker' in preset and 'fonts' in preset and 'layout' in preset:return copy.deepcopy(preset)
 	flat={k:v for k,v in preset.items() if not isinstance(v,dict)}
 	for section in ['sticker','fonts','layout','article','name','address','barcode']:
 		if section in preset and isinstance(preset[section],dict):flat.update(preset[section])
 	return to_nested(flat)
 def to_flat(nested:dict)->dict:
 	flat={}
-	for section in ['sticker','fonts','layout','article','name','address','barcode']:
+	for k,v in nested.items():
+		if not isinstance(v,dict):flat[k]=v
+	for section in ('sticker','fonts','layout'):
 		if section in nested and isinstance(nested[section],dict):flat.update(nested[section])
+	prefixed={'article':'article_','name':'name_','address':'address_','barcode':'barcode_'}
+	for section,prefix in prefixed.items():
+		if section in nested and isinstance(nested[section],dict):
+			for k,v in nested[section].items():flat[prefix+k]=v
 	return flat

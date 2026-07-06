@@ -103,18 +103,13 @@ class StickerEditor(ctk.CTkToplevel):
 		self.transient(master)
 		self._presets=copy.deepcopy(self._settings_service.get_setting('sticker_presets', {}))
 		self._current_name=self._settings_service.get_setting('current_preset_name','default')
-		self._current_preset=self._presets.get(self._current_name,{})
-		if self._current_preset and 'sticker' in self._current_preset:
-			self._current_preset=to_flat(self._current_preset)
 		self._widgets={}
 		self._photo_image=None
 		self._last_preview_size=(0,0)
 		self._preview_after_id=None
 		self.protocol("WM_DELETE_WINDOW",self._on_close)
 		self._create_ui()
-		if self._current_name not in self._presets:self._presets[self._current_name]={}
-		self._show_group(list(FIELDS.keys())[0])
-		self._update_preview()
+		self._load_preset(self._current_name)
 	def _on_close(self):
 		if self._preview_after_id:
 			try:self.after_cancel(self._preview_after_id)

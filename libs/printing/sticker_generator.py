@@ -133,8 +133,9 @@ class StickerGenerator:
                     t_width = text_bbox[2] - text_bbox[0]
                     t_height = text_bbox[3] - text_bbox[1]
                     pad_x, pad_y = 2, 1
+                    pad_y_bottom = max(2, int(t_height * 0.4))
                     draw.rectangle(
-                        [address_x - pad_x, address_y - pad_y, address_x + t_width + pad_x, address_y + t_height],
+                        [address_x - pad_x, address_y - pad_y, address_x + t_width + pad_x, address_y + t_height + pad_y_bottom],
                         fill=bg_color
                     )
                 draw.text((address_x, address_y), address_text, fill=text_color, font=address_font)
