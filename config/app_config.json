@@ -163,7 +163,7 @@
   },
   "current_preset_name": "default",
   "app_name": "ScanHead Combine",
-  "version": "0.3.0",
+  "version": "0.2.3",
   "log_level": "DEBUG",
   "log_file": "app.log",
   "db_paths": {

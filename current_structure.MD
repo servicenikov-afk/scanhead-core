@@ -170,6 +170,24 @@
 
 ---
 
+🔹 gui/dialogs/print_confirm_dialog.py — PrintConfirmDialog 🆕
+Слой: UI (Presentation / Dialogs)
+Назначение: Диалог подтверждения печати с прогресс-баром и статусом.
+Ключевые зависимости: customtkinter, tkinter
+Методы:
+  - show_progress(current, total, status) — обновление прогресса
+  - show_error(message) — показ ошибки
+  - show_success() — показ успеха и автозакрытие
+  - _safe_destroy() — безопасное закрытие
+Особенности:
+  - Потокобезопасный (все обновления UI через root.after())
+  - Модальное окно с grab_set()
+  - Кнопки "Печать" / "Отмена" с блокировкой во время работы
+  - Автозакрытие через 1.2 сек после успеха
+✅ Соответствует манифесту (DIP, UI без бизнес-логики)
+
+---
+
 ## 🔹 gui/tabs/search_address_tab.py — SearchAddressTab
 
 **Слой:** UI (Presentation)
@@ -325,6 +343,32 @@
 
 ---
 
+🔹 services/printer_service.py — RealPrinterService 🆕
+Слой: Application Services (Печать)
+Назначение: Реальный сервис печати: рендерит PDF и отправляет на принтер.
+Ключевые зависимости:
+  - services.interfaces.IPrinterService, ISettingsService
+  - libs.printing.pdf_renderer.PdfStickerRenderer
+  - gui.dialogs.print_confirm_dialog.PrintConfirmDialog
+  - tkinter, threading, os, subprocess
+Методы:
+  - print_queue(products, one_by_one) → bool
+  - generate_sticker(product, preset) → Any (заглушка)
+  - print_sticker(image, copies) → bool (заглушка)
+  - _start_print_worker(products, preset) — worker-поток
+  - _send_to_printer(pdf_path) — отправка на печать
+  - _schedule_cleanup(pdf_path, delay_seconds) — очистка временных файлов
+Особенности:
+  - Потокобезопасный рендер (threading.Thread)
+  - Обновление UI через root.after(0, callback)
+  - Поддержка SumatraPDF и Adobe Reader с флагом печати
+  - Фоллбэк на os.startfile() для открытия PDF
+  - Автоматическая очистка temp/print/*.pdf через 30 сек
+  - Обработка ошибок с messagebox и логированием
+✅ Соответствует манифесту (DIP, потокобезопасность, SRP)
+
+---
+
 ## 🔹 libs/domain_models/product.py — Product
 
 **Слой:** Domain Models
@@ -335,6 +379,21 @@
 **Методы:** matches_article_or_barcode(code)
 
 ✅ Соответствует манифесту (чистая доменная модель)
+
+---
+
+🔹 libs/printing/pdf_renderer.py — PdfStickerRenderer 🆕
+Слой: Application Services (Рендеринг)
+Назначение: Рендерит многостраничный PDF из списка товаров для печати.
+Ключевые зависимости: PIL.Image, libs.printing.sticker_generator.StickerGenerator, libs.domain_models.Product
+Методы:
+  - render(products, preset, output_path) → Path
+Особенности:
+  - Использует StickerGenerator для рендера каждого стикера
+  - Сохраняет в PDF через PIL (один стикер = одна страница)
+  - Создаёт директорию temp/print/ автоматически
+  - Логгирует прогресс рендеринга
+✅ Соответствует манифесту (SRP, чистые зависимости)
 
 ---
 
@@ -402,22 +461,26 @@
 
 ---
 
-## 📊 Сводка соответствия манифесту
+# 📊 Сводка соответствия манифесту
 
 ### ✅ Полностью соответствуют
-- gui/main_window.py
-- gui/dialogs/add_address_dialog.py
-- gui/dialogs/field_editor.py
-- gui/dialogs/settings_dialog.py
-- gui/dialogs/sticker_editor.py
-- gui/sticker_preview.py
-- gui/widgets/suggestion_list.py
-- libs/domain_models/product.py
-- libs/utils/address_formatter.py
-- services/di_container.py
-- services/interfaces/__init__.py
-- services/stubs/__init__.py
-- services/config_manager_adapter.py 🆕
+  - gui/main_window.py
+  - gui/dialogs/add_address_dialog.py
+  - gui/dialogs/field_editor.py
+  - gui/dialogs/settings_dialog.py
+  - gui/dialogs/sticker_editor.py
+  - gui/dialogs/print_confirm_dialog.py 🆕
+  - gui/sticker_preview.py
+  - gui/widgets/suggestion_list.py
+  - libs/domain_models/product.py
+  - libs/utils/address_formatter.py
+  - libs/printing/pdf_renderer.py 🆕
+  - services/di_container.py
+  - services/interfaces/__init__.py
+  - services/stubs/__init__.py
+  - services/config_manager_adapter.py
+  - services/printer_service.py 🆕
+  - services/presets_config_utils.py
 
 ### ⚠️ Требуют доработки
 - main.py — смешивание ответственностей, жёсткие пути
@@ -432,12 +495,11 @@
 
 ---
 
-## 📦 Модули-заглушки (готовятся к реализации)
-
-| Модуль | Статус | Примечание |
-|--------|--------|------------|
-| gui/tabs/inventory_tab.py | 🚧 В разработке | Заглушка с кнопками-плейсхолдерами |
-| libs/inventory_parser/ | 🚧 Готовится | Парсинг Excel-файлов инвентаризации |
-| libs/scanner_input/camera_stub.py | 🚧 Заглушка | Будущая поддержка камер |
-| libs/parsers/ | 🚧 Пустой | Резерв для парсеров накладных |
-| gui/services/adapters/json_mock_loader.py | ❌ Deprecated | Рекомендуется удаление |
+ Модули-заглушки (готовятся к реализации)
+| Модуль                           | Статус          | Примечание                          |
+|----------------------------------|-----------------|-------------------------------------|
+| gui/tabs/inventory_tab.py        | 🚧 В разработке | Заглушка с кнопками-плейсхолдерами  |
+| libs/inventory_parser/           | 🚧 Готовится    | Парсинг Excel-файлов инвентаризации |
+| libs/scanner_input/camera_stub.py| 🚧 Заглушка     | Будущая поддержка камер             |
+| libs/parsers/                    | 🚧 Пустой       | Резерв для парсеров накладных       |
+| gui/services/adapters/json_mock_loader.py | ❌ Deprecated | Рекомендуется удаление        |
