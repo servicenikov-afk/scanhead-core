@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # --- .github/scripts/generate_dashboard.py ---
-# Полная автоматизация: парсинг git log → dashboard.html
+# Генерация дашборда из git log (исключая коммиты от GitHub Actions)
 
 import re
 import subprocess
@@ -10,11 +10,11 @@ from datetime import datetime
 
 REPORT_PATH = Path("progress_report.md")
 OUTPUT_PATH = Path("docs/dashboard.html")
-SINCE_DATE = "2026-02-01"  # ← измени под свой проект
+SINCE_DATE = "2026-02-01"
 
 
 def generate_progress_report():
-    """Генерирует progress_report.md из git log."""
+    """Генерирует progress_report.md из git log, исключая ботов."""
     cmd = [
         "git", "log",
         f"--since={SINCE_DATE}",
@@ -28,13 +28,14 @@ def generate_progress_report():
         print(f"❌ Ошибка git log: {result.stderr}")
         return False
     
+    # Записываем сырой лог во временный файл
     REPORT_PATH.write_text(result.stdout, encoding='utf-8')
     print(f"✅ progress_report.md сгенерирован ({len(result.stdout)} символов)")
     return True
 
 
 def parse_progress_report(filepath: Path) -> list:
-    """Парсит progress_report.md в список коммитов."""
+    """Парсит progress_report.md, исключая коммиты от ботов."""
     if not filepath.exists():
         return []
     
@@ -85,6 +86,10 @@ def parse_progress_report(filepath: Path) -> list:
                     'files_changed': files_changed
                 })
         i += 1
+    
+    # ★★★ ИСКЛЮЧАЕМ КОММИТЫ ОТ БОТА ★★★
+    commits = [c for c in commits if c['author'] != 'github-actions[bot]']
+    print(f"📊 Найдено коммитов (после исключения bot): {len(commits)}")
     
     return commits
 
@@ -289,14 +294,11 @@ new Chart(document.getElementById('cumulativeChart'), {{
 def main():
     print("🚀 Запуск генерации дашборда...")
     
-    # Шаг 1: Генерация progress_report.md из git log
     if not generate_progress_report():
         print("❌ Не удалось сгенерировать progress_report.md")
         return 1
     
-    # Шаг 2: Парсинг progress_report.md
     commits = parse_progress_report(REPORT_PATH)
-    print(f"📊 Найдено коммитов: {len(commits)}")
     
     if commits:
         print(f"   Первый: {format_date_rus(min(c['date'] for c in commits))}")
@@ -305,10 +307,8 @@ def main():
         total_d = sum(c['deletions'] for c in commits)
         print(f"   +{total_i:,} / -{total_d:,} строк")
     
-    # Шаг 3: Генерация dashboard.html
     generate_html(commits, OUTPUT_PATH)
     
-    # Шаг 4: Удаление progress_report.md (временный файл)
     if REPORT_PATH.exists():
         REPORT_PATH.unlink()
         print(f"🗑️ Удалён временный файл: {REPORT_PATH}")
