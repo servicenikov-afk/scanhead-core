@@ -3,12 +3,14 @@
 import logging,os
 from typing import Any,Optional
 import customtkinter as ctk
+from tkinter import ttk
 from PIL import Image
 from services.interfaces import IPrinterService,ISettingsService
 from libs.domain_models import Product
 from gui.dialogs.sticker_editor import StickerEditor
 from libs.printing.sticker_generator import StickerGenerator
 from services.presets_config_utils import normalize_preset
+from libs.utils.name_formatter import format_sticker_name
 logger=logging.getLogger(__name__)
 class StickerPreview(ctk.CTkFrame):
 	def __init__(self,master:Any,printer_service:IPrinterService,settings_service:ISettingsService,search_service=None):
@@ -113,8 +115,23 @@ class StickerPreview(ctk.CTkFrame):
 			preset=self._settings_service.get_setting('sticker_presets',{}).get(
 				self._settings_service.get_setting('current_preset_name','default'),{})
 			preset=normalize_preset(preset)
+			article_text=product.article or ""
+			name_text=product.name or ""
+			non_canonical_article=article_text
+			if product and hasattr(product,'barcodes') and product.barcodes:
+				if len(product.barcodes) >= 2:
+					non_canonical_article=product.barcodes[0]
+				elif len(product.barcodes) == 1:
+					non_canonical_article=product.barcodes[0]
+			name_text=format_sticker_name(
+				name=name_text,
+				article=non_canonical_article,
+				prefix_article=preset.get('name', {}).get('prefix_article', False),
+				truncate_for_km=preset.get('name', {}).get('truncate_for_km', False),
+				max_models=preset.get('name', {}).get('max_models', 1)
+			)
 			pil_img=StickerGenerator(preset).generate(
-				article=product.article or " ",name=product.name or " ",address=address_text)
+				article=article_text,name=name_text,address=address_text)
 			self.update_idletasks()
 			fw,fh=self._preview_frame.winfo_width(),self._preview_frame.winfo_height()
 			max_w,max_h=(fw-20,fh-20) if fw>20 and fh>20 else (360,260)

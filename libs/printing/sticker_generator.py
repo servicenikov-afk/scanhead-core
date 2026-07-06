@@ -122,7 +122,22 @@ class StickerGenerator:
                 elif align == 'left': address_x = padding
                 else: address_x = width - text_width - padding
                 address_x += address_cfg.get('offset_x', 0); address_y = height - address_cfg.get('size', 6) - padding + address_cfg.get('offset_y', 0)
-                draw.text((address_x, address_y), address_text, fill='gray', font=address_font)
+                text_color = address_cfg.get('text_color', '#808080')
+                bg_color = address_cfg.get('bg_color', 'transparent')
+                if text_color and str(text_color).lower() in ('transparent', 'none', ''):
+                    text_color = self._get('sticker.background_color', '#FFFFFF')
+                    if text_color.lower() in ('#ffffff', 'white', '#fff'):
+                        text_color = '#000000'
+                if bg_color and str(bg_color).lower() not in ('transparent', 'none', ''):
+                    text_bbox = address_font.getbbox(address_text)
+                    t_width = text_bbox[2] - text_bbox[0]
+                    t_height = text_bbox[3] - text_bbox[1]
+                    pad_x, pad_y = 2, 1
+                    draw.rectangle(
+                        [address_x - pad_x, address_y - pad_y, address_x + t_width + pad_x, address_y + t_height],
+                        fill=bg_color
+                    )
+                draw.text((address_x, address_y), address_text, fill=text_color, font=address_font)
             show_barcode = barcode_cfg.get('enabled', True) and self._get('layout.show_barcode', True)
             show_qr = barcode_cfg.get('type') == 'qr' or self._get('layout.show_qr', False)
             barcode_position = barcode_cfg.get('position', 'top_right')
@@ -172,7 +187,7 @@ class StickerGenerator:
                         else:
                             draw.text((text_x, text_y), clean_article, fill='black', font=text_font)
                 except Exception as barcode_error:
-                    logger.error(f"Sticker generate failed: {e}", exc_info=True)
+                    logger.error(f"Barcode generation failed: {barcode_error}", exc_info=True)
                     draw.text((padding, height - 15), "[Barcode Error]", fill='red', font=self._get_font(6))
             if show_qr:
                 qr_size_mm = barcode_cfg.get('qr_size_mm', 16)

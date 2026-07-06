@@ -1,12 +1,16 @@
 #--- gui/dialogs/sticker_editor.py ---
 #⚠️Minified code — DO NOT reformat or deobfuscate until beta.
 import logging,customtkinter as ctk,tkinter as tk
+from tkinter import ttk
 from typing import Any,Optional
+import copy
 from services.interfaces import ISettingsService
 from libs.domain_models import Product
 from libs.printing.sticker_generator import StickerGenerator
 from services.presets_config_utils import to_nested,normalize_preset,to_flat
+from libs.utils.name_formatter import format_sticker_name
 from PIL import Image,ImageTk
+import tkinter.colorchooser as cc
 logger=logging.getLogger(__name__)
 class MiniSpinbox(ctk.CTkFrame):
 	def __init__(self,master,from_=0,to=100,width=60,command=None,**kwargs):
@@ -55,7 +59,10 @@ FIELDS={
 		{"label":"Макс. строк","key":"name_max_lines","type":"spin","min":0,"max":20,"default":5},
 		{"label":"Жирный","key":"name_bold","type":"check","default":False},
 		{"label":"Курсив","key":"name_italic","type":"check","default":False},
-		{"label":"Смещение ↕","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ↕","key":"name_offset_x","type":"pair_spin_wrap","key2":"name_offset_y","min":-500,"max":500,"default":0,"default2":0},
+		{"label":"Артикул перед названием","key":"name_prefix_article","type":"check","default":False},
+		{"label":"Обрезать 'для к/м ...'","key":"name_truncate_for_km","type":"check","default":False},
+		{"label":"если более [N] моделей","key":"name_truncate_max_models","type":"spin","min":1,"max":10,"default":1}
 	],
 	"🏢 Адрес":[
 		{"label":"Включить","key":"address_enabled","type":"check","default":False},
@@ -63,7 +70,9 @@ FIELDS={
 		{"label":"Выравнивание","key":"address_align","type":"combo","values":["left","center","right"],"default":"right"},
 		{"label":"Жирный","key":"address_bold","type":"check","default":False},
 		{"label":"Курсив","key":"address_italic","type":"check","default":False},
-		{"label":"Смещение ↕","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0}
+		{"label":"Смещение ↕","key":"address_offset_x","type":"pair_spin_wrap","key2":"address_offset_y","min":-500,"max":500,"default":0,"default2":0},
+		{"label":"Цвет текста","key":"address_text_color","type":"color_btn","default":"#808080"},
+		{"label":"Цвет фона","key":"address_bg_color","type":"color_btn","default":"transparent"}
 	],
 	"Коды":[
 		{"label":"Включить","key":"barcode_enabled","type":"check","default":True},
@@ -92,7 +101,7 @@ class StickerEditor(ctk.CTkToplevel):
 		self.geometry("1100x585")
 		self.resizable(True,True)
 		self.transient(master)
-		self._presets=self._settings_service.get_setting('sticker_presets',{})
+		self._presets=copy.deepcopy(self._settings_service.get_setting('sticker_presets', {}))
 		self._current_name=self._settings_service.get_setting('current_preset_name','default')
 		self._current_preset=self._presets.get(self._current_name,{})
 		if self._current_preset and 'sticker' in self._current_preset:
@@ -237,6 +246,19 @@ class StickerEditor(ctk.CTkToplevel):
 				address_text=self._sample_address_cache or " "
 			article_text=product.article if product else "TEST-001"
 			name_text=product.name if product else "Тестовый товар"
+			non_canonical_article=article_text
+			if product and hasattr(product,'barcodes') and product.barcodes:
+				if len(product.barcodes) >= 2:
+					non_canonical_article=product.barcodes[0]
+				elif len(product.barcodes) == 1:
+					non_canonical_article=product.barcodes[0]
+			name_text=format_sticker_name(
+				name=name_text,
+				article=non_canonical_article,
+				prefix_article=preset.get('name', {}).get('prefix_article', False),
+				truncate_for_km=preset.get('name', {}).get('truncate_for_km', False),
+				max_models=preset.get('name', {}).get('max_models', 1)
+			)
 			pil_img=StickerGenerator(preset).generate(article=article_text,name=name_text,address=address_text)
 			iw,ih=pil_img.size
 			ratio=min(max_w/iw,max_h/ih,1.0)
@@ -256,6 +278,7 @@ class StickerEditor(ctk.CTkToplevel):
 					elif isinstance(w,ctk.CTkComboBox):preset[key]=w.get()
 					elif isinstance(w,ctk.CTkCheckBox):preset[key]=bool(w.get())
 					elif isinstance(w,ctk.CTkEntry):preset[key]=w.get()
+					elif isinstance(w,ctk.CTkButton):preset[key]=self._current_preset.get(key,"transparent")
 				k2=item.get("key2")
 				if k2:
 					w2=self._widgets.get(k2)
@@ -264,6 +287,7 @@ class StickerEditor(ctk.CTkToplevel):
 						elif isinstance(w2,ctk.CTkComboBox):preset[k2]=w2.get()
 						elif isinstance(w2,ctk.CTkCheckBox):preset[k2]=bool(w2.get())
 						elif isinstance(w2,ctk.CTkEntry):preset[k2]=w2.get()
+						elif isinstance(w2,ctk.CTkButton):preset[k2]=self._current_preset.get(k2,"transparent")
 		return preset
 	def _update_preset_value(self,key:str,value:Any):
 		self._current_preset[key]=value
@@ -279,6 +303,7 @@ class StickerEditor(ctk.CTkToplevel):
 				elif isinstance(w,ctk.CTkComboBox):v=w.get()
 				elif isinstance(w,ctk.CTkCheckBox):v=bool(w.get())
 				elif isinstance(w,ctk.CTkEntry):v=w.get()
+				elif isinstance(w,ctk.CTkButton):v=self._current_preset.get(k,"transparent")
 				self._update_preset_value(k,v)
 			return cb
 		if dtype=="spin":
@@ -304,6 +329,21 @@ class StickerEditor(ctk.CTkToplevel):
 			k2,v2=item["key2"],self._current_preset.get(item["key2"],item.get("default2",0))
 			w2=MiniSpinbox(f,from_=item.get("min2",item["min"]),to=item.get("max2",item["max"]),width=60,command=make_callback(k2))
 			w2.grid(row=1,column=0,sticky="w",padx=(0,5));w2.set(v2);self._widgets[k2]=w2
+		elif dtype=="color_btn":
+			def make_color_cb(k):
+				def cb():
+					current=self._current_preset.get(k,"#808080")
+					if current=="transparent":current="#808080"
+					res=cc.askcolor(initialcolor=current,title="Выберите цвет")
+					if res and res[1]:
+						color=res[1]
+						self._current_preset[k]=color
+						btn.configure(fg_color=color)
+						self._schedule_preview_update()
+				return cb
+			btn=ctk.CTkButton(parent,text="",width=80,height=24,fg_color=val if val and val!="transparent" else "#808080",command=make_color_cb(key))
+			btn.grid(row=row,column=1,padx=5,pady=3,sticky="w")
+			self._widgets[key]=btn
 	def _on_select(self,choice:str):self._load_preset(choice)
 	def _load_preset(self,name:str):
 		self._current_name=name
@@ -312,10 +352,14 @@ class StickerEditor(ctk.CTkToplevel):
 		for group in FIELDS.values():
 			for item in group:
 				self._current_preset[item["key"]]=item.get("default",False)
-				if "key2" in item:self._current_preset[item["key2"]]=item.get("default2",0)
+				if "key2" in item:
+					self._current_preset[item["key2"]]=item.get("default2",0)
 		if saved:
-			if 'sticker' in saved:saved=to_flat(saved)
-			self._current_preset.update(saved)
+			if 'sticker' in saved:
+				saved_flat=to_flat(saved)
+				self._current_preset.update(saved_flat)
+			else:
+				self._current_preset.update(saved)
 		self._preset_list.configure(values=list(self._presets.keys()))
 		self._preset_list.set(name)
 		self._show_group(list(FIELDS.keys())[0])
