@@ -102,8 +102,8 @@
     },
     "t1": {
       "sticker": {
-        "width_mm": 60,
-        "height_mm": 40,
+        "width_mm": 50,
+        "height_mm": 50,
         "orientation": "portrait",
         "border": false,
         "background_color": "#FFFFFF",
@@ -116,15 +116,15 @@
       },
       "layout": {
         "show_barcode": true,
-        "show_qr": false,
+        "show_qr": true,
         "article_position": "top",
-        "show_address": false,
+        "show_address": true,
         "address_position": "bottom"
       },
       "article": {
         "enabled": true,
         "size": 8,
-        "align": "left",
+        "align": "right",
         "bold": true,
         "offset_x": 0,
         "offset_y": 0
@@ -132,37 +132,42 @@
       "name": {
         "enabled": true,
         "size": 6,
-        "align": "left",
+        "align": "right",
         "max_lines": 5,
         "bold": false,
         "italic": false,
         "offset_x": 0,
-        "offset_y": 0
+        "offset_y": 0,
+        "prefix_article": false,
+        "truncate_for_km": false,
+        "max_models": 1
       },
       "address": {
-        "enabled": false,
+        "enabled": true,
         "size": 6,
         "align": "right",
         "bold": false,
         "italic": false,
         "offset_x": 0,
-        "offset_y": 0
+        "offset_y": -150,
+        "text_color": "#ffffff",
+        "bg_color": "#000000"
       },
       "barcode": {
         "enabled": true,
-        "type": "auto",
-        "position": "top_right",
+        "type": "qr",
+        "position": "bottom",
         "qr_size_mm": 16,
         "code128_width_mm": 36,
         "code128_height_mm": 6,
-        "show_text": false,
+        "show_text": true,
         "text_size": 4,
         "offset_x": 0,
         "offset_y": 0,
         "text_offset_x": 0,
         "text_offset_y": 0,
-        "text_scale_x": 1.0,
-        "text_scale_y": 1.0
+        "text_scale_x": 0.1,
+        "text_scale_y": 0.1
       }
     },
     "preset_3": {

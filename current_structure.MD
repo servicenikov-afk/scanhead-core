@@ -416,9 +416,17 @@
 
 ---
 
+🔹 libs/utils/name_formatter.py — NameFormatter
+Слой: Application Services / Utils
+Назначение: Форматирование названия товара для стикера (добавление неканонического артикула, обрезка списка моделей "для к/м").
+Ключевые зависимости: re, typing
+✅ Соответствие манифесту: ✅ Полностью соответствует
+
+---
+
 # 📊 Сводка соответствия манифесту
 
-### ✅ Полностью соответствуют (20 файлов)
+### ✅ Полностью соответствуют (21 файл)
 - gui/main_window.py
 - gui/sticker_preview.py
 - gui/dialogs/add_address_dialog.py
@@ -437,6 +445,7 @@
 - libs/utils/address_formatter.py
 - libs/utils/file_naming.py
 - libs/utils/fuzzy_search.py
+- libs/utils/name_formatter.py
 
 ### ⚠️ Требуют доработки (9 файлов)
 - main.py — импорты, пути, порядок инициализации
