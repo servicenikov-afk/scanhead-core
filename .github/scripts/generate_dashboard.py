@@ -28,7 +28,6 @@ def generate_progress_report():
         print(f"❌ Ошибка git log: {result.stderr}")
         return False
     
-    # Записываем сырой лог во временный файл
     REPORT_PATH.write_text(result.stdout, encoding='utf-8')
     print(f"✅ progress_report.md сгенерирован ({len(result.stdout)} символов)")
     return True
@@ -159,6 +158,17 @@ def generate_html(commits: list, output_path: Path):
         for c in top_commits
     )
 
+    # ★★★ Генерация всех коммитов для аккордеона ★★★
+    all_commits_sorted = sorted(commits, key=lambda x: x['date'], reverse=True)
+    all_rows = ''.join(
+        f'<tr><td>{format_date_rus(c["date"])}</td>'
+        f'<td>{esc(c["message"])}</td>'
+        f'<td style="color:green;text-align:right">+{c["insertions"]}</td>'
+        f'<td style="color:red;text-align:right">-{c["deletions"]}</td>'
+        f'<td style="text-align:center">{c["files_changed"]}</td></tr>'
+        for c in all_commits_sorted
+    )
+
     max_insertions = max(insertions_per_day) if insertions_per_day else 1
     max_deletions = max(deletions_per_day) if deletions_per_day else 1
     max_commits = max(commits_per_day) if commits_per_day else 1
@@ -187,6 +197,43 @@ def generate_html(commits: list, output_path: Path):
         th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }}
         th {{ background: #f0f0f0; font-weight: 600; }}
         .footer {{ text-align: center; color: #999; font-size: 0.8em; margin-top: 30px; }}
+        
+        /* ★★★ Стили для аккордеона ★★★ */
+        .accordion {{ background: #f8f9fa; border-radius: 5px; margin-top: 10px; }}
+        .accordion-header {{
+            background: #e9ecef;
+            padding: 12px 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            transition: background 0.2s;
+        }}
+        .accordion-header:hover {{ background: #dee2e6; }}
+        .accordion-header .arrow {{ transition: transform 0.3s; }}
+        .accordion-header.open .arrow {{ transform: rotate(180deg); }}
+        .accordion-body {{
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+            background: white;
+            border-radius: 0 0 5px 5px;
+        }}
+        .accordion-body.open {{ max-height: 2000px; overflow-y: auto; }}
+        .accordion-body .table-container {{ padding: 15px; max-height: 600px; overflow-y: auto; }}
+        .accordion-body th {{ position: sticky; top: 0; z-index: 1; background: #f0f0f0; }}
+        .badge {{
+            background: #6c757d;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: 8px;
+        }}
+        
         @media (max-width: 600px) {{
             .stats {{ grid-template-columns: 1fr 1fr; }}
         }}
@@ -242,6 +289,25 @@ def generate_html(commits: list, output_path: Path):
         </table>
     </div>
 
+    <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ ★★★ -->
+    <div class="card">
+        <h3>📋 Все коммиты <span class="badge">{total_commits}</span></h3>
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">
+                <span>📜 Показать все коммиты</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="accordion-body">
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>Дата</th><th>Сообщение</th><th style="text-align:right">+</th><th style="text-align:right">-</th><th style="text-align:center">Файлы</th></tr></thead>
+                        <tbody>{all_rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">Обновлено: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')} · Автоматическая генерация</div>
 </div>
 
@@ -282,6 +348,13 @@ new Chart(document.getElementById('cumulativeChart'), {{
         scales: {{ y: {{ beginAtZero: true }} }}
     }}
 }});
+
+// ★★★ Функция для аккордеона ★★★
+function toggleAccordion(el) {{
+    el.classList.toggle('open');
+    const body = el.nextElementSibling;
+    body.classList.toggle('open');
+}}
 </script>
 </body>
 </html>'''
