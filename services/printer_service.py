@@ -11,6 +11,7 @@ from services.presets_config_utils import normalize_preset
 from libs.domain_models import Product
 from libs.printing.pdf_renderer import PdfStickerRenderer
 from gui.dialogs.print_confirm_dialog import PrintConfirmDialog
+from libs.utils.name_formatter import format_sticker_name
 logger=logging.getLogger(__name__)
 class RealPrinterService(IPrinterService):
 	def __init__(self,root:tk.Tk,settings_service:ISettingsService):
@@ -68,6 +69,21 @@ class RealPrinterService(IPrinterService):
 							address=product.storage_locations[0] if isinstance(product.storage_locations,list) else str(product.storage_locations)
 						elif hasattr(product,'address') and product.address:
 							address=product.address
+						if not address:
+							logger.warning(f"[RealPrinterService] Пустой address для {product.article}: storage_locations={getattr(product,'storage_locations',None)}, address={getattr(product,'address',None)}")
+						non_canonical_article=article
+						if hasattr(product,'barcodes') and product.barcodes:
+							if len(product.barcodes)>=2:
+								non_canonical_article=product.barcodes[0]
+							elif len(product.barcodes)==1:
+								non_canonical_article=product.barcodes[0]
+						name=format_sticker_name(
+							name=name,
+							article=non_canonical_article,
+							prefix_article=preset.get('name',{}).get('prefix_article',False),
+							truncate_for_km=preset.get('name',{}).get('truncate_for_km',False),
+							max_models=preset.get('name',{}).get('max_models',1)
+						)
 						from libs.printing.sticker_generator import StickerGenerator
 						generator=StickerGenerator(preset)
 						pil_img=generator.generate(article=article,name=name,address=address)
