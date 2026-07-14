@@ -22,6 +22,8 @@ class StickerPreview(ctk.CTkFrame):
 		self._sample_address_cache=None
 		self._ctk_image:Optional[ctk.CTkImage]=None
 		self._icon_settings=self._load_icon("settings32.png",(20,20))
+		self._last_preview_size=(0,0)
+		self._preview_after_id:Optional[str]=None
 		self._create_ui()
 	def _load_icon(self,filename:str,size:tuple)->Optional[ctk.CTkImage]:
 		try:
@@ -49,9 +51,31 @@ class StickerPreview(ctk.CTkFrame):
 		self._preview_frame.grid_columnconfigure(0,weight=1)
 		self._preview_frame.grid_propagate(False)
 		self._preview_frame.configure(width=400,height=300)
+		self._preview_frame.bind("<Configure>",self._on_preview_frame_resize)
 		self._preview_label=ctk.CTkLabel(self._preview_frame,text="Нет данных",text_color="gray")
 		self._preview_label.grid(row=0,column=0,sticky="nsew",padx=3,pady=3)
 		self._generate_preview()
+	def _on_preview_frame_resize(self,event=None)->None:
+		if not self._current_product:
+			return
+		fw=self._preview_frame.winfo_width()
+		fh=self._preview_frame.winfo_height()
+		if abs(fw-self._last_preview_size[0])>10 or abs(fh-self._last_preview_size[1])>10:
+			self._last_preview_size=(fw,fh)
+			if self._preview_after_id:
+				try:
+					self.after_cancel(self._preview_after_id)
+				except Exception:
+					pass
+			self._preview_after_id=self.after(200,self._generate_preview)
+	def destroy(self)->None:
+		if self._preview_after_id:
+			try:
+				self.after_cancel(self._preview_after_id)
+			except Exception:
+				pass
+			self._preview_after_id=None
+		super().destroy()
 	def _get_preset_names(self):
 		presets=self._settings_service.get_setting('sticker_presets',{})
 		return list(presets.keys()) if presets else ['default']
@@ -133,11 +157,18 @@ class StickerPreview(ctk.CTkFrame):
 			pil_img=StickerGenerator(preset).generate(
 				article=article_text,name=name_text,address=address_text)
 			self.update_idletasks()
-			fw,fh=self._preview_frame.winfo_width(),self._preview_frame.winfo_height()
-			max_w,max_h=(fw-20,fh-20) if fw>20 and fh>20 else (360,260)
+			fw=self._preview_frame.winfo_width()
+			fh=self._preview_frame.winfo_height()
+			if fw<=20 or fh<=20:
+				fw,fh=400,300
+			padding=10
+			max_w=max(100,fw-2*padding)
+			max_h=max(100,fh-2*padding)
 			iw,ih=pil_img.size
-			ratio=min(max_w/iw,max_h/ih,1.0)
-			new_size=(max(1,int(iw*ratio)),max(1,int(ih*ratio)))
+			ratio=min(max_w/iw,max_h/ih)
+			new_w=max(50,int(iw*ratio))
+			new_h=max(50,int(ih*ratio))
+			new_size=(new_w,new_h)
 			pil_img=pil_img.resize(new_size,Image.Resampling.LANCZOS)
 			self._ctk_image=ctk.CTkImage(light_image=pil_img,dark_image=pil_img,size=new_size)
 			self._preview_label.configure(image=self._ctk_image,text="")

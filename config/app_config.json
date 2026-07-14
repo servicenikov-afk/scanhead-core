@@ -16,6 +16,8 @@
   "search_font_size": 18,
   "search_autofocus": true,
   "search_autofocus_delay": 1.0,
+  "search_autoclear_enabled": true,
+  "search_autoclear_delay": 3.0,
   "address_format": {
     "enabled": true,
     "separator": "-",
@@ -311,7 +313,7 @@
       }
     }
   },
-  "current_preset_name": "48x30TEST",
+  "current_preset_name": "default",
   "app_name": "ScanHead Combine",
   "version": "0.2.3",
   "log_level": "DEBUG",
