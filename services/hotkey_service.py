@@ -8,7 +8,7 @@ DEFAULT_HOTKEYS={
 	'open_settings':'F10',
 	'show_product_info':'F1',
 	'add_to_queue':'Control-Return',
-	'next_preset':'Control-plus',
+	'next_preset':'Control-equal',
 	'open_preset_editor':'F12',
 	'print_queue':'Control-p',
 }
@@ -16,6 +16,7 @@ class HotkeyService(IHotkeyService):
 	def __init__(self,settings_service:ISettingsService):
 		self._settings_service=settings_service
 		self._hotkeys=self._load_hotkeys()
+		self._bindings:Dict[str,str]={}
 		logger.info(f"[HotkeyService] Инициализация с {len(self._hotkeys)} горячими клавишами")
 	def _load_hotkeys(self)->Dict[str,str]:
 		saved=self._settings_service.get_setting('hotkeys',{})
@@ -32,11 +33,32 @@ class HotkeyService(IHotkeyService):
 		return self._hotkeys.copy()
 	def bind_hotkey(self,widget:Any,action:str,callback:Callable)->None:
 		hotkey=self.get_hotkey(action)
-		if hotkey:
-			widget.bind(f'<{hotkey}>',lambda e:callback())
-			logger.debug(f"[HotkeyService] Привязана горячая клавиша: {hotkey} → {action}")
+		if not hotkey:
+			logger.warning(f"[HotkeyService] Горячая клавиша для действия '{action}' не найдена")
+			return
+		try:
+			root=widget.winfo_toplevel() if hasattr(widget,'winfo_toplevel') else widget
+			if hasattr(root,'bind_all'):
+				sequence=f'<{hotkey}>'
+				root.bind_all(sequence,lambda e,cb=callback:cb(),add='+')
+				self._bindings[action]=hotkey
+				logger.info(f"[HotkeyService] Привязана глобальная горячая клавиша: {sequence} → {action} на {widget.__class__.__name__}")
+			else:
+				logger.warning(f"[HotkeyService] Не удалось привязать {hotkey}: нет bind_all")
+		except Exception as e:
+			logger.error(f"[HotkeyService] Ошибка привязки {hotkey}: {e}")
 	def unbind_hotkey(self,widget:Any,action:str)->None:
-		hotkey=self.get_hotkey(action)
-		if hotkey:
-			widget.unbind(f'<{hotkey}>')
-			logger.debug(f"[HotkeyService] Отвязана горячая клавиша: {hotkey}")
+		hotkey=self._bindings.get(action)
+		if not hotkey:
+			hotkey=self.get_hotkey(action)
+		if not hotkey:
+			return
+		try:
+			root=widget.winfo_toplevel() if hasattr(widget,'winfo_toplevel') else widget
+			if hasattr(root,'unbind_all'):
+				root.unbind_all(f'<{hotkey}>')
+				if action in self._bindings:
+					del self._bindings[action]
+				logger.debug(f"[HotkeyService] Отвязана глобальная горячая клавиша: {hotkey}")
+		except Exception as e:
+			logger.error(f"[HotkeyService] Ошибка отвязки {hotkey}: {e}")

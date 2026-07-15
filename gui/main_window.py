@@ -23,7 +23,7 @@ class MainWindow(ctk.CTkFrame):
 		self._img_settings=self._load_icon("settings32.png",size=(20,20))
 		self._create_ui()
 		self.after(100,self._maximize_window)
-		self.after(200,self._bind_global_hotkeys)
+		self.after(300,self._bind_global_hotkeys)
 		logger.info("[MainWindow] Главное окно инициализировано")
 	def _maximize_window(self)->None:
 		try:
@@ -97,26 +97,40 @@ class MainWindow(ctk.CTkFrame):
 	def _open_help(self)->None:
 		logger.info("[MainWindow] Открыта справка (заглушка)")
 	def _bind_global_hotkeys(self)->None:
-		logger.info("[MainWindow] Привязка глобальных горячих клавиш")
-		self._hotkey_service.bind_hotkey(self,'open_settings',self._open_settings)
+		if not self._hotkey_service:
+			logger.warning("[MainWindow] HotkeyService не доступен")
+			return
+		root=self.winfo_toplevel()
+		logger.info("[MainWindow] Привязка глобальных горячих клавиш к корневому окну")
+		self._hotkey_service.bind_hotkey(root,'open_settings',self._open_settings)
 		def show_product_info():
 			if hasattr(self,'_search_tab') and hasattr(self._search_tab,'_product_details'):
 				product=self._search_tab.get_current_product()
 				if product and hasattr(self._search_tab._product_details,'_on_info_click'):
 					self._search_tab._product_details._on_info_click()
-		self._hotkey_service.bind_hotkey(self,'show_product_info',show_product_info)
+		self._hotkey_service.bind_hotkey(root,'show_product_info',show_product_info)
 		def add_to_queue():
 			if hasattr(self,'_search_tab'):
 				product=self._search_tab.get_current_product()
 				if product and hasattr(self._search_tab,'_add_product_to_queue'):
 					self._search_tab._add_product_to_queue(product)
-		self._hotkey_service.bind_hotkey(self,'add_to_queue',add_to_queue)
+		self._hotkey_service.bind_hotkey(root,'add_to_queue',add_to_queue)
 		def print_queue():
 			if hasattr(self,'_search_tab') and hasattr(self._search_tab,'_print_queue'):
 				self._search_tab._print_queue._print_all()
-		self._hotkey_service.bind_hotkey(self,'print_queue',print_queue)
+		self._hotkey_service.bind_hotkey(root,'print_queue',print_queue)
 		def open_preset_editor():
 			if hasattr(self,'_search_tab') and hasattr(self._search_tab,'_sticker_preview'):
 				if hasattr(self._search_tab._sticker_preview,'_on_open_editor'):
 					self._search_tab._sticker_preview._on_open_editor()
-		self._hotkey_service.bind_hotkey(self,'open_preset_editor',open_preset_editor)
+		self._hotkey_service.bind_hotkey(root,'open_preset_editor',open_preset_editor)
+		def next_preset():
+			if hasattr(self,'_search_tab') and hasattr(self._search_tab,'_sticker_preview'):
+				if hasattr(self._search_tab._sticker_preview,'_on_preset_change'):
+					presets=self._search_tab._sticker_preview._get_preset_names()
+					current=self._search_tab._sticker_preview._preset_combo.get()
+					if current in presets:
+						idx=presets.index(current)
+						next_idx=(idx+1)%len(presets)
+						self._search_tab._sticker_preview._on_preset_change(presets[next_idx])
+		self._hotkey_service.bind_hotkey(root,'next_preset',next_preset)

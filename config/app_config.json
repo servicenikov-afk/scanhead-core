@@ -21,7 +21,7 @@
   "hotkeys": {
     "open_settings": "F10",
     "show_product_info": "F1",
-    "add_to_queue": "Control-Return",
+    "add_to_queue": "Alt-F2",
     "next_preset": "Control-plus",
     "open_preset_editor": "F12",
     "print_queue": "Control-p"
@@ -461,7 +461,7 @@
       }
     }
   },
-  "current_preset_name": "мал.ячейка 48х30",
+  "current_preset_name": "мал.ячейка 45х30",
   "app_name": "ScanHead Combine",
   "version": "0.2.3",
   "log_level": "DEBUG",

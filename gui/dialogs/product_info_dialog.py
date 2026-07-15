@@ -51,6 +51,8 @@ class ProductInfoDialog(ctk.CTkToplevel):
 				self.unbind("<Configure>")
 			except Exception:
 				pass
+			self._models_label = None
+			self._detail_labels = []
 			super().destroy()
 		except Exception as e:
 			logger.warning(f"[ProductInfoDialog] Ошибка при уничтожении окна: {e}")

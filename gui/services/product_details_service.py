@@ -9,7 +9,8 @@ from gui.services.adapters.store_adapter import StoreAdapter
 from gui.services.adapters.css_export_adapter import CssExportAdapter
 logger=logging.getLogger(__name__)
 class ProductDetailsService:
-	def __init__(self,nomenclature_adapter:NomenclatureAdapter,store_adapter:StoreAdapter,css_adapter:CssExportAdapter):
+	def __init__(self,root:Any,nomenclature_adapter:NomenclatureAdapter,store_adapter:StoreAdapter,css_adapter:CssExportAdapter):
+		self._root=root
 		self._nomenclature=nomenclature_adapter
 		self._store=store_adapter
 		self._css=css_adapter
@@ -18,11 +19,13 @@ class ProductDetailsService:
 		def _fetch_thread():
 			try:
 				product=self._fetch_all_data(article)
-				if callback:callback(product)
+				if callback:
+					self._root.after(0,lambda:callback(product))
 				return product
 			except Exception as e:
-				logger.error(f"[ProductDetailsService] Ошибка получения данных: {e}")
-				if callback:callback(None)
+				logger.error(f"[ProductDetailsService] Ошибка получения данных: {e}",exc_info=True)
+				if callback:
+					self._root.after(0,lambda:callback(None))
 				return None
 		if callback:
 			thread=threading.Thread(target=_fetch_thread,daemon=True)

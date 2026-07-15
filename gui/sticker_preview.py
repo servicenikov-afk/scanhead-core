@@ -81,6 +81,7 @@ class StickerPreview(ctk.CTkFrame):
 		return list(presets.keys()) if presets else ['default']
 	def _on_preset_change(self,choice:str):
 		self._settings_service.set_setting('current_preset_name',choice)
+		self._preset_combo.set(choice)
 		self._generate_preview()
 	def _open_editor(self):
 		self._editor=StickerEditor(self,self._settings_service,product=self._current_product,search_service=self._search_service)

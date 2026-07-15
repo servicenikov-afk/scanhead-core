@@ -199,20 +199,14 @@ class SettingsDialog(ctk.CTkToplevel):
 		scroll_frame.grid_columnconfigure(1,weight=1)
 		ctk.CTkLabel(scroll_frame,text="⌨️ Горячие клавиши",font=ctk.CTkFont(size=16,weight="bold")).grid(row=0,column=0,columnspan=2,padx=10,pady=(0,15),sticky="w")
 		actions={'open_settings':'Настройки программы','show_product_info':'Детальная информация о товаре','add_to_queue':'Добавить в очередь печати','next_preset':'Следующий пресет','open_preset_editor':'Настройки пресетов','print_queue':'Печать очереди'}
-		from services.interfaces import IHotkeyService
-		try:
-			from services.di_container import DIContainer
-			has_hotkey_service=False
-		except ImportError:
-			has_hotkey_service=False
-		current_hotkeys={}
+		current_hotkeys=self._settings_service.get_setting('hotkeys',{})
 		self._hotkey_entries={}
 		row=1
 		for action,description in actions.items():
 			lbl=ctk.CTkLabel(scroll_frame,text=description,font=ctk.CTkFont(size=13),anchor="w")
 			lbl.grid(row=row,column=0,padx=10,pady=5,sticky="w")
 			entry=ctk.CTkEntry(scroll_frame,width=150,font=ctk.CTkFont(size=13),placeholder_text="Нажмите клавишу...")
-			current_value=self._settings_service.get_setting('hotkeys',{}).get(action,'')
+			current_value=current_hotkeys.get(action,'')
 			if current_value:
 				entry.insert(0,current_value)
 			entry.grid(row=row,column=1,padx=10,pady=5,sticky="w")
@@ -222,19 +216,23 @@ class SettingsDialog(ctk.CTkToplevel):
 		btn_reset=ctk.CTkButton(scroll_frame,text="🔄 Сбросить к умолчанию",command=self._reset_hotkeys_to_default,fg_color="#6c757d",hover_color="#5a6268",width=200)
 		btn_reset.grid(row=row,column=0,columnspan=2,padx=10,pady=(20,10),sticky="w")
 	def _capture_hotkey(self,event,entry)->str:
-		if event.keysym in ('Control_L','Control_R','Shift_L','Shift_R','Alt_L','Alt_R'):
+		logger.debug(f"[SettingsDialog] Захвачена клавиша: keysym={event.keysym}, state={event.state}, char={event.char}")
+		if event.keysym in ('Control_L','Control_R','Shift_L','Shift_R','Alt_L','Alt_R','Super_L','Super_R'):
+			return "break"
+		if event.keysym in ('Alt_L','Alt_R') and (event.state & 0x8):
 			return "break"
 		modifiers=[]
 		if event.state & 0x4:modifiers.append("Control")
 		if event.state & 0x1:modifiers.append("Shift")
 		if event.state & 0x8:modifiers.append("Alt")
 		keysym=event.keysym
-		keysym_map={'Return':'Return','Escape':'Escape','space':'Space','plus':'plus','minus':'minus'}
+		keysym_map={'Return':'Return','Escape':'Escape','space':'space','plus':'equal','minus':'minus','equal':'equal'}
 		keysym=keysym_map.get(keysym,keysym)
-		if modifiers:hotkey='+'.join(modifiers+[keysym])
+		if modifiers:hotkey='-'.join(modifiers+[keysym])
 		else:hotkey=keysym
 		entry.delete(0,"end")
 		entry.insert(0,hotkey)
+		logger.info(f"[SettingsDialog] Установлена горячая клавиша: {hotkey}")
 		return "break"
 	def _reset_hotkeys_to_default(self)->None:
 		from services.hotkey_service import DEFAULT_HOTKEYS
