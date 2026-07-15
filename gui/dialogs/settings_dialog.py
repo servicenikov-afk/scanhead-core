@@ -26,9 +26,11 @@ class SettingsDialog(ctk.CTkToplevel):
 		tab_view=tabview.add("Вид")
 		tab_address=tabview.add("Адрес")
 		tab_data=tabview.add("Данные")
+		tab_hotkeys=tabview.add("Клавиши")
 		self._create_view_tab(tab_view)
 		self._create_address_tab(tab_address)
 		self._create_data_tab(tab_data)
+		self._create_hotkeys_tab(tab_hotkeys)
 		buttons_frame=ctk.CTkFrame(self,fg_color="transparent")
 		buttons_frame.grid(row=2,column=0,padx=20,pady=(10,20),sticky="e")
 		btn_cancel=ctk.CTkButton(buttons_frame,text="Отмена",width=100,command=self.destroy)
@@ -189,6 +191,57 @@ class SettingsDialog(ctk.CTkToplevel):
 	def _create_data_tab(self,parent:Any)->None:
 		lbl=ctk.CTkLabel(parent,text="Настройки данных и БД\n(в разработке)",font=ctk.CTkFont(size=14))
 		lbl.place(relx=0.5,rely=0.5,anchor="center")
+	def _create_hotkeys_tab(self,parent:Any)->None:
+		parent.grid_columnconfigure(0,weight=1)
+		parent.grid_rowconfigure(0,weight=1)
+		scroll_frame=ctk.CTkScrollableFrame(parent,fg_color="transparent")
+		scroll_frame.grid(row=0,column=0,sticky="nsew",padx=10,pady=10)
+		scroll_frame.grid_columnconfigure(1,weight=1)
+		ctk.CTkLabel(scroll_frame,text="⌨️ Горячие клавиши",font=ctk.CTkFont(size=16,weight="bold")).grid(row=0,column=0,columnspan=2,padx=10,pady=(0,15),sticky="w")
+		actions={'open_settings':'Настройки программы','show_product_info':'Детальная информация о товаре','add_to_queue':'Добавить в очередь печати','next_preset':'Следующий пресет','open_preset_editor':'Настройки пресетов','print_queue':'Печать очереди'}
+		from services.interfaces import IHotkeyService
+		try:
+			from services.di_container import DIContainer
+			has_hotkey_service=False
+		except ImportError:
+			has_hotkey_service=False
+		current_hotkeys={}
+		self._hotkey_entries={}
+		row=1
+		for action,description in actions.items():
+			lbl=ctk.CTkLabel(scroll_frame,text=description,font=ctk.CTkFont(size=13),anchor="w")
+			lbl.grid(row=row,column=0,padx=10,pady=5,sticky="w")
+			entry=ctk.CTkEntry(scroll_frame,width=150,font=ctk.CTkFont(size=13),placeholder_text="Нажмите клавишу...")
+			current_value=self._settings_service.get_setting('hotkeys',{}).get(action,'')
+			if current_value:
+				entry.insert(0,current_value)
+			entry.grid(row=row,column=1,padx=10,pady=5,sticky="w")
+			entry.bind("<Key>",lambda e,ent=entry:self._capture_hotkey(e,ent))
+			self._hotkey_entries[action]=entry
+			row+=1
+		btn_reset=ctk.CTkButton(scroll_frame,text="🔄 Сбросить к умолчанию",command=self._reset_hotkeys_to_default,fg_color="#6c757d",hover_color="#5a6268",width=200)
+		btn_reset.grid(row=row,column=0,columnspan=2,padx=10,pady=(20,10),sticky="w")
+	def _capture_hotkey(self,event,entry)->str:
+		if event.keysym in ('Control_L','Control_R','Shift_L','Shift_R','Alt_L','Alt_R'):
+			return "break"
+		modifiers=[]
+		if event.state & 0x4:modifiers.append("Control")
+		if event.state & 0x1:modifiers.append("Shift")
+		if event.state & 0x8:modifiers.append("Alt")
+		keysym=event.keysym
+		keysym_map={'Return':'Return','Escape':'Escape','space':'Space','plus':'plus','minus':'minus'}
+		keysym=keysym_map.get(keysym,keysym)
+		if modifiers:hotkey='+'.join(modifiers+[keysym])
+		else:hotkey=keysym
+		entry.delete(0,"end")
+		entry.insert(0,hotkey)
+		return "break"
+	def _reset_hotkeys_to_default(self)->None:
+		from services.hotkey_service import DEFAULT_HOTKEYS
+		for action,entry in self._hotkey_entries.items():
+			default_value=DEFAULT_HOTKEYS.get(action,'')
+			entry.delete(0,"end")
+			entry.insert(0,default_value)
 	def _on_click_save(self)->None:
 		logger.info("[SettingsDialog] Сохранение настроек")
 		theme=self._theme_combo.get()
@@ -207,6 +260,15 @@ class SettingsDialog(ctk.CTkToplevel):
 		self._settings_service.set_setting("search_autofocus_delay",focus_delay)
 		self._settings_service.set_setting("search_autoclear_enabled",autoclear)
 		self._settings_service.set_setting("search_autoclear_delay",autoclear_delay)
+		if hasattr(self,'_hotkey_entries'):
+			hotkeys={}
+			for action,entry in self._hotkey_entries.items():
+				hotkey=entry.get().strip()
+				if hotkey:hotkeys[action]=hotkey
+			self._settings_service.set_setting('hotkeys',hotkeys)
+			logger.info(f"[SettingsDialog] Сохранены горячие клавиши: {hotkeys}")
+			if self._on_settings_changed:
+				self._on_settings_changed('hotkeys',hotkeys)
 		address_config=self._get_address_config_from_ui()
 		self._settings_service.set_setting("address_format",address_config)
 		logger.info(f"[SettingsDialog] Настройки сохранены: theme={theme}, language={lang}, search_font_size={font_size}, search_autofocus={autofocus}, search_autofocus_delay={focus_delay}, search_autoclear_enabled={autoclear}, search_autoclear_delay={autoclear_delay}, address_format={address_config}")

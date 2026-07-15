@@ -51,11 +51,13 @@ def main() -> None:
     from services.di_container import DIContainer
     from services.interfaces import (
         ISearchService, IProductRepository, IImageService,
-        ISettingsService, IPrinterService, IInventoryService
+        ISettingsService, IPrinterService, IInventoryService,
+        IHotkeyService
     )
     from services.stubs import StubImageService, StubInventoryService
     from services.config_manager_adapter import ConfigManagerSettingsAdapter
     from services.printer_service import RealPrinterService
+    from services.hotkey_service import HotkeyService
 
     logger.info("[Main] Использование реальных баз данных")
 
@@ -97,6 +99,11 @@ def main() -> None:
     container.register(IPrinterService, RealPrinterService(root, settings_service))
     
     container.register(IInventoryService, StubInventoryService())
+
+    # Регистрируем HotkeyService
+    hotkey_service = HotkeyService(settings_service)
+    container.register(IHotkeyService, hotkey_service)
+    logger.info("[Main] Зарегистрирован HotkeyService")
 
     logger.info("Сервисы зарегистрированы в DI-контейнере")
 

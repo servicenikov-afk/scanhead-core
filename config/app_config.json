@@ -18,14 +18,22 @@
   "search_autofocus_delay": 1.0,
   "search_autoclear_enabled": true,
   "search_autoclear_delay": 3.0,
+  "hotkeys": {
+    "open_settings": "F10",
+    "show_product_info": "F1",
+    "add_to_queue": "Control-Return",
+    "next_preset": "Control-plus",
+    "open_preset_editor": "F12",
+    "print_queue": "Control-p"
+  },
   "address_format": {
     "enabled": true,
     "separator": "-",
     "custom_separator": "",
     "levels": [
-      "Блок",
       "Стеллаж",
-      "Секция",
+      "Полка",
+      "Ящик",
       "Ряд",
       "Ячейка"
     ],
@@ -72,7 +80,7 @@
         "offset_y": 20,
         "prefix_article": true,
         "truncate_for_km": true,
-        "max_models": 2
+        "max_models": 1
       },
       "address": {
         "enabled": true,
@@ -90,154 +98,14 @@
         "type": "auto",
         "position": "bottom",
         "qr_size_mm": 16,
-        "code128_width_mm": 56,
-        "code128_height_mm": 5,
+        "code128_width_mm": 36,
+        "code128_height_mm": 6,
         "show_text": true,
         "text_size": 5,
         "offset_x": 0,
         "offset_y": -25,
         "text_offset_x": 0,
-        "text_offset_y": -11,
-        "text_scale_x": 1.0,
-        "text_scale_y": 5.0
-      }
-    },
-    "t1": {
-      "sticker": {
-        "width_mm": 50,
-        "height_mm": 50,
-        "orientation": "portrait",
-        "border": false,
-        "background_color": "#FFFFFF",
-        "dpi": 300
-      },
-      "fonts": {
-        "name_size": 6,
-        "article_size": 8,
-        "address_size": 6
-      },
-      "layout": {
-        "show_barcode": true,
-        "show_qr": true,
-        "article_position": "top",
-        "show_address": true,
-        "address_position": "bottom"
-      },
-      "article": {
-        "enabled": true,
-        "size": 8,
-        "align": "right",
-        "bold": true,
-        "offset_x": 0,
-        "offset_y": 0
-      },
-      "name": {
-        "enabled": true,
-        "size": 6,
-        "align": "right",
-        "max_lines": 5,
-        "bold": false,
-        "italic": false,
-        "offset_x": 0,
-        "offset_y": 0,
-        "prefix_article": false,
-        "truncate_for_km": false,
-        "max_models": 1
-      },
-      "address": {
-        "enabled": true,
-        "size": 6,
-        "align": "right",
-        "bold": false,
-        "italic": false,
-        "offset_x": 0,
-        "offset_y": -150,
-        "text_color": "#ffffff",
-        "bg_color": "#000000"
-      },
-      "barcode": {
-        "enabled": true,
-        "type": "qr",
-        "position": "bottom",
-        "qr_size_mm": 16,
-        "code128_width_mm": 36,
-        "code128_height_mm": 6,
-        "show_text": true,
-        "text_size": 4,
-        "offset_x": 0,
-        "offset_y": 0,
-        "text_offset_x": 0,
-        "text_offset_y": 0,
-        "text_scale_x": 0.1,
-        "text_scale_y": 0.1
-      }
-    },
-    "preset_3": {
-      "sticker": {
-        "width_mm": 60,
-        "height_mm": 40,
-        "orientation": "portrait",
-        "border": false,
-        "background_color": "#FFFFFF",
-        "dpi": 300
-      },
-      "fonts": {
-        "name_size": 6,
-        "article_size": 8,
-        "address_size": 6
-      },
-      "layout": {
-        "show_barcode": true,
-        "show_qr": false,
-        "article_position": "top",
-        "show_address": false,
-        "address_position": "bottom"
-      },
-      "article": {
-        "enabled": true,
-        "size": 8,
-        "align": "left",
-        "bold": true,
-        "offset_x": 0,
-        "offset_y": 0
-      },
-      "name": {
-        "enabled": true,
-        "size": 6,
-        "align": "left",
-        "max_lines": 5,
-        "bold": false,
-        "italic": false,
-        "offset_x": 0,
-        "offset_y": 0,
-        "prefix_article": false,
-        "truncate_for_km": false,
-        "max_models": 1
-      },
-      "address": {
-        "enabled": false,
-        "size": 6,
-        "align": "right",
-        "bold": false,
-        "italic": false,
-        "offset_x": 0,
-        "offset_y": 0,
-        "text_color": "#808080",
-        "bg_color": "transparent"
-      },
-      "barcode": {
-        "enabled": true,
-        "type": "auto",
-        "position": "top_right",
-        "qr_size_mm": 16,
-        "code128_width_mm": 36,
-        "code128_height_mm": 6,
-        "show_text": false,
-        "text_size": 4,
-        "offset_x": 0,
-        "offset_y": 0,
-        "text_offset_x": 0,
-        "text_offset_y": 0,
+        "text_offset_y": -10,
         "text_scale_x": 1.0,
         "text_scale_y": 1.0
       }
@@ -311,9 +179,289 @@
         "text_scale_x": 1.0,
         "text_scale_y": 1.0
       }
+    },
+    "мал.ячейка 45х30": {
+      "sticker": {
+        "width_mm": 45,
+        "height_mm": 30,
+        "orientation": "portrait",
+        "border": true,
+        "background_color": "#FFFFFF",
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 9,
+        "article_size": 18,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": true,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": true,
+        "address_position": "bottom"
+      },
+      "article": {
+        "enabled": true,
+        "size": 18,
+        "align": "center",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 4
+      },
+      "name": {
+        "enabled": true,
+        "size": 9,
+        "align": "center",
+        "max_lines": 3,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 5,
+        "prefix_article": true,
+        "truncate_for_km": true,
+        "max_models": 1
+      },
+      "address": {
+        "enabled": true,
+        "size": 6,
+        "align": "right",
+        "bold": true,
+        "italic": false,
+        "offset_x": -35,
+        "offset_y": -135,
+        "text_color": "#ffffff",
+        "bg_color": "#000000"
+      },
+      "barcode": {
+        "enabled": true,
+        "type": "auto",
+        "position": "bottom",
+        "qr_size_mm": 16,
+        "code128_width_mm": 36,
+        "code128_height_mm": 6,
+        "show_text": true,
+        "text_size": 6,
+        "offset_x": 0,
+        "offset_y": -7,
+        "text_offset_x": 0,
+        "text_offset_y": -16,
+        "text_scale_x": 1.0,
+        "text_scale_y": 1.0
+      }
+    },
+    "мал.ячейка 48х30": {
+      "sticker": {
+        "width_mm": 48,
+        "height_mm": 30,
+        "orientation": "portrait",
+        "border": true,
+        "background_color": "#FFFFFF",
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 9,
+        "article_size": 18,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": true,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": true,
+        "address_position": "bottom"
+      },
+      "article": {
+        "enabled": true,
+        "size": 18,
+        "align": "center",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 4
+      },
+      "name": {
+        "enabled": true,
+        "size": 9,
+        "align": "center",
+        "max_lines": 3,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 5,
+        "prefix_article": true,
+        "truncate_for_km": true,
+        "max_models": 1
+      },
+      "address": {
+        "enabled": true,
+        "size": 6,
+        "align": "right",
+        "bold": true,
+        "italic": false,
+        "offset_x": -35,
+        "offset_y": -135,
+        "text_color": "#ffffff",
+        "bg_color": "#000000"
+      },
+      "barcode": {
+        "enabled": true,
+        "type": "auto",
+        "position": "bottom",
+        "qr_size_mm": 16,
+        "code128_width_mm": 52,
+        "code128_height_mm": 4,
+        "show_text": true,
+        "text_size": 6,
+        "offset_x": 0,
+        "offset_y": -15,
+        "text_offset_x": 0,
+        "text_offset_y": -13,
+        "text_scale_x": 1.0,
+        "text_scale_y": 1.0
+      }
+    },
+    "preset_5": {
+      "sticker": {
+        "width_mm": 60,
+        "height_mm": 40,
+        "orientation": "portrait",
+        "border": false,
+        "background_color": "#FFFFFF",
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 6,
+        "article_size": 8,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": true,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": false,
+        "address_position": "bottom"
+      },
+      "article": {
+        "enabled": true,
+        "size": 8,
+        "align": "left",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 0
+      },
+      "name": {
+        "enabled": true,
+        "size": 6,
+        "align": "left",
+        "max_lines": 5,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 0,
+        "prefix_article": false,
+        "truncate_for_km": false,
+        "max_models": 1
+      },
+      "address": {
+        "enabled": false,
+        "size": 6,
+        "align": "right",
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 0,
+        "text_color": "#808080",
+        "bg_color": "transparent"
+      },
+      "barcode": {
+        "enabled": true,
+        "type": "auto",
+        "position": "top_right",
+        "qr_size_mm": 16,
+        "code128_width_mm": 36,
+        "code128_height_mm": 6,
+        "show_text": false,
+        "text_size": 4,
+        "offset_x": 0,
+        "offset_y": 0,
+        "text_offset_x": 0,
+        "text_offset_y": 0,
+        "text_scale_x": 1.0,
+        "text_scale_y": 1.0
+      }
+    },
+    "Марк.ящиков": {
+      "sticker": {
+        "width_mm": 48,
+        "height_mm": 30,
+        "orientation": "landscape",
+        "border": true,
+        "background_color": "#FFFFFF",
+        "dpi": 300
+      },
+      "fonts": {
+        "name_size": 6,
+        "article_size": 100,
+        "address_size": 6
+      },
+      "layout": {
+        "show_barcode": false,
+        "show_qr": false,
+        "article_position": "top",
+        "show_address": false,
+        "address_position": "bottom"
+      },
+      "article": {
+        "enabled": true,
+        "size": 100,
+        "align": "center",
+        "bold": true,
+        "offset_x": 0,
+        "offset_y": 100
+      },
+      "name": {
+        "enabled": true,
+        "size": 6,
+        "align": "center",
+        "max_lines": 5,
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": -500,
+        "prefix_article": false,
+        "truncate_for_km": false,
+        "max_models": 1
+      },
+      "address": {
+        "enabled": false,
+        "size": 6,
+        "align": "right",
+        "bold": false,
+        "italic": false,
+        "offset_x": 0,
+        "offset_y": 0,
+        "text_color": "#808080",
+        "bg_color": "transparent"
+      },
+      "barcode": {
+        "enabled": false,
+        "type": "auto",
+        "position": "top_right",
+        "qr_size_mm": 16,
+        "code128_width_mm": 36,
+        "code128_height_mm": 6,
+        "show_text": false,
+        "text_size": 4,
+        "offset_x": 0,
+        "offset_y": 0,
+        "text_offset_x": 0,
+        "text_offset_y": 0,
+        "text_scale_x": 0.0001,
+        "text_scale_y": 0.0001
+      }
     }
   },
-  "current_preset_name": "default",
+  "current_preset_name": "мал.ячейка 48х30",
   "app_name": "ScanHead Combine",
   "version": "0.2.3",
   "log_level": "DEBUG",

@@ -51,23 +51,28 @@ class NomenclatureAdapter:
 				return []
 			table_name=table_row['name']
 			logger.debug(f"[NomenclatureAdapter] Используется таблица: {table_name}")
-			sql=f"SELECT DISTINCT article,name,barcodes,unit FROM {table_name} LIMIT 1000"
-			cursor.execute(sql)
+			query_pattern=f"%{query}%"
+			sql=f"""
+				SELECT DISTINCT article, name, barcodes, unit
+				FROM {table_name}
+				WHERE LOWER(article) LIKE LOWER(?)
+				   OR LOWER(name) LIKE LOWER(?)
+				   OR LOWER(barcodes) LIKE LOWER(?)
+				LIMIT 50
+			"""
+			cursor.execute(sql,(query_pattern,query_pattern,query_pattern))
 			rows=cursor.fetchall()
-			query_lower=query.lower()
 			products=[]
 			for row in rows:
 				article=row['article'] or ''
 				name=row['name'] or ''
 				barcodes_raw=row['barcodes'] or ''
 				unit=row['unit'] or ''
-				if query_lower in article.lower() or query_lower in name.lower() or query_lower in barcodes_raw.lower():
-					if barcodes_raw:
-						try:barcodes=json.loads(barcodes_raw) if isinstance(barcodes_raw,str) else barcodes_raw
-						except (json.JSONDecodeError,TypeError):barcodes=barcodes_raw if isinstance(barcodes_raw,list) else []
-					else:barcodes=[]
-					products.append(Product(article=article,name=name,barcodes=barcodes,unit=unit,storage_locations=[]))
-					if len(products)>=50:break
+				if barcodes_raw:
+					try:barcodes=json.loads(barcodes_raw) if isinstance(barcodes_raw,str) else barcodes_raw
+					except (json.JSONDecodeError,TypeError):barcodes=barcodes_raw if isinstance(barcodes_raw,list) else []
+				else:barcodes=[]
+				products.append(Product(article=article,name=name,barcodes=barcodes,unit=unit,storage_locations=[]))
 			logger.info(f"[NomenclatureAdapter] Найдено {len(products)} товаров по запросу '{query}'")
 			return products
 		except Exception as e:

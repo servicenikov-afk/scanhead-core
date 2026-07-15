@@ -155,12 +155,51 @@ class PrintQueue(ctk.CTkFrame):
 				if 0 <= column_idx < len(values):
 					values[column_idx] = new_value
 					self._tree.item(item_id, values=values)
+					self._update_product_field(item_id, column, new_value)
 			edit_entry.destroy()
 		def cancel(event=None):
 			edit_entry.destroy()
 		edit_entry.bind("<Return>", save)
 		edit_entry.bind("<FocusOut>", save)
 		edit_entry.bind("<Escape>", cancel)
+	def _update_product_field(self, item_id: str, column: str, new_value: str) -> None:
+		items = self._tree.get_children()
+		try:
+			item_position = list(items).index(item_id)
+		except ValueError:
+			logger.warning(f"[PrintQueue] Не найден item_id {item_id} в дереве")
+			return
+		if not (0 <= item_position < len(self._products)):
+			logger.warning(f"[PrintQueue] Индекс {item_position} вне диапазона products")
+			return
+		product = self._products[item_position]
+		if column == "article":
+			old_article = product.article
+			product.article = new_value
+			if product.barcodes and old_article in product.barcodes:
+				idx = product.barcodes.index(old_article)
+				product.barcodes[idx] = new_value
+			logger.debug(f"[PrintQueue] Обновлён article: {old_article} → {new_value}")
+		elif column == "article2":
+			other_barcodes = [b for b in product.barcodes if b != product.article]
+			if other_barcodes:
+				idx = product.barcodes.index(other_barcodes[0])
+				product.barcodes[idx] = new_value
+			else:
+				product.barcodes.append(new_value)
+			logger.debug(f"[PrintQueue] Обновлён article2: {new_value}")
+		elif column == "name":
+			product.name = new_value
+			logger.debug(f"[PrintQueue] Обновлён name: {new_value}")
+		elif column == "address":
+			if new_value:
+				addresses = [a.strip() for a in new_value.split(",") if a.strip()]
+				product.storage_locations = addresses
+				product.address = addresses[0] if addresses else None
+			else:
+				product.storage_locations = []
+				product.address = None
+			logger.debug(f"[PrintQueue] Обновлён address: {new_value}")
 	def _create_copy_counter(self, item_id: str) -> None:
 		bbox = self._tree.bbox(item_id, "copies")
 		if not bbox: return

@@ -2,8 +2,9 @@
 # ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 import logging
 from typing import Dict, Type, Any, Optional
-from services.interfaces import ISearchService, IProductRepository, IImageService, IPrinterService, ISettingsService, IInventoryService
+from services.interfaces import ISearchService, IProductRepository, IImageService, IPrinterService, ISettingsService, IInventoryService, IHotkeyService
 from services.stubs import StubSearchService, StubProductRepository, StubImageService, StubPrinterService, StubSettingsService, StubInventoryService
+from services.hotkey_service import HotkeyService
 logger=logging.getLogger(__name__)
 class DIContainer:
 	def __init__(self):
@@ -27,5 +28,9 @@ class DIContainer:
 		self.register(ISettingsService,StubSettingsService())
 		self.register(IInventoryService,StubInventoryService())
 		logger.info("[DIContainer] Все заглушки сервисов зарегистрированы")
+	def register_hotkey_service(self,settings_service:ISettingsService)->None:
+		"""Зарегистрировать сервис горячих клавиш с переданным settings_service."""
+		self.register(IHotkeyService,HotkeyService(settings_service))
+		logger.info("[DIContainer] Зарегистрирован HotkeyService")
 	def register_real_services(self,config:dict)->None:
 		logger.warning("[DIContainer] register_real_services ещё не реализован")

@@ -1,7 +1,7 @@
 # --- services/interfaces/__init__.py ---
 # ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 from abc import ABC, abstractmethod
-from typing import Callable, List, Optional, Any
+from typing import Callable, List, Optional, Any, Dict
 from libs.domain_models import Product, Address
 class ISearchService(ABC):
 	@abstractmethod
@@ -43,3 +43,14 @@ class IInventoryService(ABC):
 	def start_scanning(self)->None:pass
 	@abstractmethod
 	def stop_scanning(self)->None:pass
+class IHotkeyService(ABC):
+	@abstractmethod
+	def get_hotkey(self,action:str)->str:pass
+	@abstractmethod
+	def set_hotkey(self,action:str,hotkey:str)->None:pass
+	@abstractmethod
+	def get_all_hotkeys(self)->Dict[str,str]:pass
+	@abstractmethod
+	def bind_hotkey(self,widget,action:str,callback:Callable)->None:pass
+	@abstractmethod
+	def unbind_hotkey(self,widget,action:str)->None:pass
