@@ -18,9 +18,26 @@
         .card h3 { margin-bottom: 15px; color: #555; }
         .card .chart-container { height: 250px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }
         th { background: #f0f0f0; font-weight: 600; }
         .footer { text-align: center; color: #999; font-size: 0.8em; margin-top: 30px; }
+        
+        /* ★★★ Стили для сообщений коммитов ★★★ */
+        .commit-msg {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+        .commit-msg .subject {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .commit-msg .body {
+            color: #555;
+            font-size: 0.95em;
+        }
         
         /* ★★★ Стили для аккордеона ★★★ */
         .accordion { background: #f8f9fa; border-radius: 5px; margin-top: 10px; }
@@ -68,14 +85,14 @@
     <h1>📊 ScanHead Core — Прогресс разработки</h1>
 
     <div class="stats">
-        <div class="stat-box"><div class="num">208</div><div class="label">Всего коммитов</div></div>
-        <div class="stat-box"><div class="num">+36,422</div><div class="label">Строк добавлено</div></div>
-        <div class="stat-box"><div class="num">-21,640</div><div class="label">Строк удалено</div></div>
-        <div class="stat-box"><div class="num">749</div><div class="label">Изменений файлов</div></div>
+        <div class="stat-box"><div class="num">210</div><div class="label">Всего коммитов</div></div>
+        <div class="stat-box"><div class="num">+36,479</div><div class="label">Строк добавлено</div></div>
+        <div class="stat-box"><div class="num">-21,652</div><div class="label">Строк удалено</div></div>
+        <div class="stat-box"><div class="num">750</div><div class="label">Изменений файлов</div></div>
     </div>
 
     <p style="color:#666;margin-bottom:20px;">
-        🚩 Первый коммит: <b>07.05.2026</b> &nbsp;|&nbsp; 🏁 Последний: <b>15.07.2026</b>
+        🚩 Первый коммит: <b>07.05.2026</b> &nbsp;|&nbsp; 🏁 Последний: <b>16.07.2026</b>
         &nbsp;|&nbsp; 📅 Период: с 2026-02-01
     </p>
 
@@ -113,9 +130,9 @@
         </table>
     </div>
 
-    <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ ★★★ -->
+    <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ (ПОЛНЫЕ СООБЩЕНИЯ) ★★★ -->
     <div class="card">
-        <h3>📋 Все коммиты <span class="badge">208</span></h3>
+        <h3>📋 Все коммиты <span class="badge">210</span></h3>
         <div class="accordion">
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <span>📜 Показать все коммиты</span>
@@ -124,19 +141,1388 @@
             <div class="accordion-body">
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Дата</th><th>Сообщение</th><th style="text-align:right">+</th><th style="text-align:right">-</th><th style="text-align:center">Файлы</th></tr></thead>
-                        <tbody><tr><td>15.07.2026</td><td>feat: система горячих клавиш + фикс 3 критических багов</td><td style="color:green;text-align:right">+177</td><td style="color:red;text-align:right">-172</td><td style="text-align:center">11</td></tr><tr><td>15.07.2026</td><td>fix: поиск в nomenclature_adapter теперь находит товары по артикулу из barcodes. (hotfix во время бета-теста)</td><td style="color:green;text-align:right">+582</td><td style="color:red;text-align:right">-587</td><td style="text-align:center">12</td></tr><tr><td>14.07.2026</td><td>fix: превью стикера корректно масштабируется на малых разрешениях.(бета-тест перенесён на 15.07.2026)</td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-43</td><td style="text-align:center">3</td></tr><tr><td>13.07.2026</td><td>feat(docs): актуализация todo после хотфиксов 13.07.2026. 14.07.2026 запланирован *боевой* бета-тест search_address_tab</td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-30</td><td style="text-align:center">3</td></tr><tr><td>13.07.2026</td><td>feat(dashboard): добавить аккордеон со списком всех коммитов</td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>13.07.2026</td><td>Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>13.07.2026</td><td>fix: сохранение форматированного адреса как единой строки</td><td style="color:green;text-align:right">+645</td><td style="color:red;text-align:right">-910</td><td style="text-align:center">1</td></tr><tr><td>13.07.2026</td><td>fix: решены 4 критических бага (адрес, печать, поиск, UI)</td><td style="color:green;text-align:right">+1380</td><td style="color:red;text-align:right">-1496</td><td style="text-align:center">9</td></tr><tr><td>06.07.2026</td><td>fix: исправлен сброс пресетов в редакторе стикеров и отступ фона адреса</td><td style="color:green;text-align:right">+12</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">3</td></tr><tr><td>06.07.2026</td><td>Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td>feat(sticker): добавить форматирование названия (префикс артикула, обрезка к/м) и цвета адреса</td><td style="color:green;text-align:right">+255</td><td style="color:red;text-align:right">-481</td><td style="text-align:center">10</td></tr><tr><td>06.07.2026</td><td>Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td>fix: exclude github-actions[bot] commits from dashboard stats</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>06.07.2026</td><td>Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td>docs: add DashBoard page to README.md</td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.07.2026</td><td>ci: add automated progress dashboard generator</td><td style="color:green;text-align:right">+363</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>06.07.2026</td><td>docs: update documentation to v0.3.0 (06.07.2026)</td><td style="color:green;text-align:right">+1531</td><td style="color:red;text-align:right">-1593</td><td style="text-align:center">15</td></tr><tr><td>06.07.2026</td><td>docs: обновление current_structure.MD</td><td style="color:green;text-align:right">+86</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">3</td></tr><tr><td>05.07.2026</td><td>feat(printing): реализовать реальную печать очереди стикеров (v1.0.0-beta.1)</td><td style="color:green;text-align:right">+449</td><td style="color:red;text-align:right">-218</td><td style="text-align:center">11</td></tr><tr><td>05.07.2026</td><td>fix(sticker-editor): исправления редактора пресетов и UIn- fix: сохранение пресетов в nested-формате через to_nested() (_save, _add)n- fix: персистентность удаления пресета (сохранение в конфиг + обновление списка)n- feat: кнопка удаления пресета — красный фон (#C0392B) + иконка 🗑️nФайлы: gui/dialogs/sticker_editor.py, gui/sticker_preview.py</td><td style="color:green;text-align:right">+78</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">3</td></tr><tr><td>05.07.2026</td><td>chore: вынос generate_dashboard.py за пределы репозитория (инструмент разработки)</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-287</td><td style="text-align:center">1</td></tr><tr><td>05.07.2026</td><td>refactor(presets): стандартизация формата пресетов стикеров и вынос утилит конвертации</td><td style="color:green;text-align:right">+426</td><td style="color:red;text-align:right">-102</td><td style="text-align:center">9</td></tr><tr><td>02.07.2026</td><td>feat(settings): сохранение настроек через ConfigManagerSettingsAdapter</td><td style="color:green;text-align:right">+1336</td><td style="color:red;text-align:right">-2112</td><td style="text-align:center">13</td></tr><tr><td>02.07.2026</td><td>fix: sticker preview improvements and error handling</td><td style="color:green;text-align:right">+206</td><td style="color:red;text-align:right">-140</td><td style="text-align:center">5</td></tr><tr><td>28.06.2026</td><td>fix: чекбоксы в превью стикера + правило табуляции в манифесте</td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-27</td><td style="text-align:center">2</td></tr><tr><td>28.06.2026</td><td>Docs: добавление правил минификации кода в манифест</td><td style="color:green;text-align:right">+80</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">1</td></tr><tr><td>28.06.2026</td><td>Fix: sticker editor bugs, barcode settings, code minification</td><td style="color:green;text-align:right">+428</td><td style="color:red;text-align:right">-576</td><td style="text-align:center">2</td></tr><tr><td>27.06.2026</td><td>26.06.2026</td><td style="color:green;text-align:right">+50</td><td style="color:red;text-align:right">-172</td><td style="text-align:center">2</td></tr><tr><td>24.06.2026</td><td>docs: актуализация схемы БД и рефакторинг NomenclatureAdapter</td><td style="color:green;text-align:right">+31</td><td style="color:red;text-align:right">-268</td><td style="text-align:center">3</td></tr><tr><td>24.06.2026</td><td>fix(stickers): единый вложенный формат конфига пресетов</td><td style="color:green;text-align:right">+99</td><td style="color:red;text-align:right">-187</td><td style="text-align:center">5</td></tr><tr><td>23.06.2026</td><td>Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>23.06.2026</td><td>feat: добавлен requirements.txt</td><td style="color:green;text-align:right">+83</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>14.06.2026</td><td>fix: some fix in sticker_editor.py</td><td style="color:green;text-align:right">+101</td><td style="color:red;text-align:right">-47</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td>feat: Добавлен редактор пресетов стикеров с живым превью</td><td style="color:green;text-align:right">+393</td><td style="color:red;text-align:right">-294</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td>fix: move Python code to separate file to avoid YAML parsing errors</td><td style="color:green;text-align:right">+153</td><td style="color:red;text-align:right">-155</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td>fix: remove all YAML-breaking special chars from prompt</td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-33</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td>fix: get commit info via git instead of YAML env vars</td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-54</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td>Add push review workflow with Issue notifications</td><td style="color:green;text-align:right">+207</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td>Fix: handle non-PR workflow triggers gracefully</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td>a bit change simple-ai-review.yml</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td>feat(print_queue): переработка очереди печати и исправление диалога товара</td><td style="color:green;text-align:right">+227</td><td style="color:red;text-align:right">-325</td><td style="text-align:center">2</td></tr><tr><td>09.06.2026</td><td>fix(main_window): разворачивание окна на весь экран и корректные пропорции 75/25</td><td style="color:green;text-align:right">+33</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>07.06.2026</td><td>fix(print_queue): добавление № п/п, корректный article2 и все адреса</td><td style="color:green;text-align:right">+76</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">2</td></tr><tr><td>07.06.2026</td><td>fix: исправлено перерисовка строк адресов в product_info_dialog</td><td style="color:green;text-align:right">+104</td><td style="color:red;text-align:right">-92</td><td style="text-align:center">3</td></tr><tr><td>07.06.2026</td><td>fix: исправлено удаление строк адресов в product_info_dialog</td><td style="color:green;text-align:right">+54</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>07.06.2026</td><td>Merge pull request #2 from servicenikov-afk/main-gui</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.06.2026</td><td>Add actual current_structure.MD document</td><td style="color:green;text-align:right">+483</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Add workflow to generate module documentation from full file content</td><td style="color:green;text-align:right">+131</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Fix MANIFEST.md and store README</td><td style="color:green;text-align:right">+258</td><td style="color:red;text-align:right">-106</td><td style="text-align:center">6</td></tr><tr><td>06.06.2026</td><td>Remove broken AI Review config and workflow</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-64</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td>docs: update README with hybrid ttk+tk stack and v2.1 status</td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-111</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>docs: update MANIFEST.md with hybrid ttk+tk stack and actual structure</td><td style="color:green;text-align:right">+138</td><td style="color:red;text-align:right">-117</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>fix: restore standard python .gitignore patterns</td><td style="color:green;text-align:right">+17</td><td style="color:red;text-align:right">-62</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Add retry logic and fallback models for AI review</td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Fix: use qwen/qwen3-coder:free for AI review</td><td style="color:green;text-align:right">+23</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Fix: use working free model (Gemini Flash) on OpenRouter</td><td style="color:green;text-align:right">+19</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Add simple Python-based AI Review that works</td><td style="color:green;text-align:right">+90</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Debug: fetch main and show changed files</td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Simplify AI Review config to fix parsing error</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-53</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td>Add custom prompt and ignore old projects for AI Review v2</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Add custom prompt and ignore old projects for AI Review</td><td style="color:green;text-align:right">+49</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td>Fix: use OPENROUTER provider (not OPENAI) for Nikita-Filonov/ai-review</td><td style="color:green;text-align:right">+38</td><td style="color:red;text-align:right">-34</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td>Add AI Review with Nikita-Filonov/ai-review</td><td style="color:green;text-align:right">+56</td><td style="color:red;text-align:right">-21</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td>Fix AI Review: correct params for jonit-dev action</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-12</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Fix AI Review: use flosoy/ai-pr-reviewer</td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Fix AI Review action: replace with reviewpad/action</td><td style="color:green;text-align:right">+16</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td>Add AI Review workflow for PRs</td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td>fix: race condition при отрисовке адресов в ProductDetails</td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td>fix: Убраны update_idletasks() и предупреждения для несовместимых адресов</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-27</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td>fix: Убрана надпись &quot;(нестандартный)&quot; для несовместимых адресов</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td>fix: Двойная прокрутка во вкладке 'Адрес' настроек</td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td>fix: Увеличил высоту окна настроек и контейнера уровней для удобной прокрутки</td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td>fix: Интеграция AddressFormatter в ProductInfoDialog</td><td style="color:green;text-align:right">+129</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">3</td></tr><tr><td>28.05.2026</td><td>feat: гибкая система адресации (Settings Tab)</td><td style="color:green;text-align:right">+879</td><td style="color:red;text-align:right">-52</td><td style="text-align:center">6</td></tr><tr><td>25.05.2026</td><td>fix: Уменьшены отступы между полями адресов (10px справа), убрано растягивание колонок</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>refactor: оптимизирован расчет ширины полей адресов (короткие ~60px, длинные ограничены 55% контейнера)</td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: исправлено отображение текста в адресах (CTkEntry нельзя заполнять в disabled state)</td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>debug: добавлена расширенная диагностика видимости виджетов адресов</td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>debug: добавить диагностику видимости виджетов адресов</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>debug: добавлено подробное логирование [DEBUG_TEMP] для отладки отображения адресов</td><td style="color:green;text-align:right">+32</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">3</td></tr><tr><td>25.05.2026</td><td>fix: исправлено обогащение товаров адресами в _on_search_result</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: добавлена инициализация DIContainer в main.py</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>chore: удаление кэшированных файлов __pycache__ из репозитория</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>25.05.2026</td><td>refactor: полное удаление моков, использование только реальных БД</td><td style="color:green;text-align:right">+131</td><td style="color:red;text-align:right">-128</td><td style="text-align:center">10</td></tr><tr><td>25.05.2026</td><td>fix: отображение адресов в главном окне</td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">2</td></tr><tr><td>25.05.2026</td><td>fix: предотвращение ошибок при закрытии окна (флаг _is_destroying)</td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: защита от ошибок при уничтожении виджетов во время изменения размера</td><td style="color:green;text-align:right">+10</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>feat: отображение адресов отдельными полями (3 в ряд) в ProductDetails</td><td style="color:green;text-align:right">+63</td><td style="color:red;text-align:right">-62</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>feat: многострочное поле адреса в ProductDetails (CTkTextbox с переносом)</td><td style="color:green;text-align:right">+59</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: добавлен импорт Optional в search_address_tab.py</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: загрузка адресов в основном окне через ProductDetailsService</td><td style="color:green;text-align:right">+15</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: исправление диалога удаления адреса и отображение адресов в основном окне</td><td style="color:green;text-align:right">+51</td><td style="color:red;text-align:right">-10</td><td style="text-align:center">2</td></tr><tr><td>25.05.2026</td><td>feat: уменьшение окна детальной информации и полноценное управление адресами</td><td style="color:green;text-align:right">+276</td><td style="color:red;text-align:right">-65</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td>fix: упрощённый перенос строк в табe Номенклатура (45 символов)</td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-18</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: исправление геометрии окон и динамический перенос текста</td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">2</td></tr><tr><td>20.05.2026</td><td>fix: размеры окон и позиционирование</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td>fix: размер окна 1200x800+50+50, перенос текста в поле Модель (wraplength=400)</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: исправление переноса текста в окне детальной информации</td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: защита от зависания при изменении размера окна</td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: динамический перенос текста в окне детальной информации</td><td style="color:green;text-align:right">+41</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: убраны ограничения на отображение данных и улучшен перенос текста</td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: исправление читаемости текста на вкладке &quot;Дополнительно&quot;</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>fix: исправление потокобезопасности SQLite и цветов полей</td><td style="color:green;text-align:right">+28</td><td style="color:red;text-align:right">-32</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td>fix: регистрация ProductDetailsService в DI-контейнере и передача в ProductInfoDialog</td><td style="color:green;text-align:right">+28</td><td style="color:red;text-align:right">-10</td><td style="text-align:center">4</td></tr><tr><td>20.05.2026</td><td>fix: исправление SQL-запросов и UI окна детальной информации</td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">2</td></tr><tr><td>20.05.2026</td><td>fix: исправление полей БД nomenclature.db согласно реальной схеме</td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-72</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td>fix: исправление SQL-запросов и маппинга полей в nomenclature_adapter.py</td><td style="color:green;text-align:right">+44</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td>docs: Добавлена полная документация по базам данных</td><td style="color:green;text-align:right">+668</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>19.05.2026</td><td>feat: ProductDetailsService для агрегации данных из 3 БД</td><td style="color:green;text-align:right">+362</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td>docs: актуализация документации для v2.1</td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td>fix: регистронезависимый поиск через фильтрацию в Python (кириллица + спецсимволы)</td><td style="color:green;text-align:right">+31</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: регистронезависимый поиск через LOWER() для корректной работы с кириллицей</td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: регистронезависимый поиск через COLLATE NOCASE</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: регистронезависимый поиск в БД через LOWER()</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: регистронезависимый поиск по артикулу, наименованию и штрихкоду</td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td>fix: логика отображения Артикул2 - скрывать дубли основного артикула</td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: корректное отображение пустых полей и распаковка JSON штрихкодов</td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td>docs: add Architecture Manifest; refactor: DI container integration in tabs, remove GUI schemas</td><td style="color:green;text-align:right">+159</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td>refactor: Переход на DI-контейнер, удаление лишних комментариев</td><td style="color:green;text-align:right">+48</td><td style="color:red;text-align:right">-109</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td>refactor: переход на DI-контейнер, устранение дублирования интерфейсов и заглушек</td><td style="color:green;text-align:right">+80</td><td style="color:red;text-align:right">-697</td><td style="text-align:center">19</td></tr><tr><td>19.05.2026</td><td>refactor: упростить код, обновить README для ScanHead Combine v2.0</td><td style="color:green;text-align:right">+83</td><td style="color:red;text-align:right">-259</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td>fix: корректный .gitignore, удаление .dev-tools и instructions.txt из репозитория</td><td style="color:green;text-align:right">+58</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">4</td></tr><tr><td>19.05.2026</td><td>fix: очистка поля поиска после выбора подсказки + защита от зацикливания</td><td style="color:green;text-align:right">+4</td><td style="color:red;text-align:right">-63</td><td style="text-align:center">8</td></tr><tr><td>19.05.2026</td><td>fix: корректная обработка выбора подсказки без зацикливания поиска</td><td style="color:green;text-align:right">+34</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td>fix: детерминированная логика показа/скрытия списка подсказок</td><td style="color:green;text-align:right">+84</td><td style="color:red;text-align:right">-107</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td>Мелкие правки геометрии search_bar.py</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>feat: динамическая высота полей и кнопок в зависимости от размера шрифта</td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-40</td><td style="text-align:center">5</td></tr><tr><td>18.05.2026</td><td>feat: Добавить настройки шрифта, автофокуса и задержки для SearchBar</td><td style="color:green;text-align:right">+175</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">5</td></tr><tr><td>18.05.2026</td><td>feat: вернуть кастомный список подсказок на CTk с исправленной архитектурой</td><td style="color:green;text-align:right">+118</td><td style="color:red;text-align:right">-63</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td>fix: визуальный баг с морганием dropdown при быстром вводе</td><td style="color:green;text-align:right">+52</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: отложенное уничтожение CTkButton для предотвращения TclError</td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: немедленное уничтожение кнопок в SuggestionList для предотвращения гонок</td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: отложенное уничтожение кнопок в SuggestionList для предотвращения гонки событий</td><td style="color:green;text-align:right">+19</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: отмена внутренних after-событий CTkButton перед уничтожением</td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: гонка событий tkinter в выпадающем списке подсказок</td><td style="color:green;text-align:right">+79</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td>fix: использовать StoreAdapter вместо заглушки для product_repo</td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td>fix: открыть окно деталей, защита от TclError в подсказках</td><td style="color:green;text-align:right">+35</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td>fix: упрощён SQL-запрос поиска (article, name, barcodes)</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix: потокобезопасность SQLite и динамическое имя таблицы в nomenclature_adapter</td><td style="color:green;text-align:right">+34</td><td style="color:red;text-align:right">-17</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix: исправить пути к БД в конфиге (data/databases/*)</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix: добавлена проверка наличия БД с логированием и fallback на альтернативный путь</td><td style="color:green;text-align:right">+44</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td>Add *.db to .gitignore</td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix: исправить пути к БД в адаптерах</td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td>fix: добавить метод search_async в NomenclatureAdapter</td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix: подключить NomenclatureAdapter для реального поиска в БД</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>fix(adapters): обновить пути к БД согласно README</td><td style="color:green;text-align:right">+235</td><td style="color:red;text-align:right">-140</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td>fix: обновить пути к БД и отключить моки</td><td style="color:green;text-align:right">+63</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td>feat: добавить адаптеры БД и окно детальной информации</td><td style="color:green;text-align:right">+596</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td>fix(sticker_preview): добавить методы set_product() и clear()</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>feat(ui): уплотнить интерфейс и добавить табы в настройки</td><td style="color:green;text-align:right">+107</td><td style="color:red;text-align:right">-50</td><td style="text-align:center">2</td></tr><tr><td>17.05.2026</td><td>chore: Add README for store DB</td><td style="color:green;text-align:right">+71</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>chore: Add README for nomenclature DB</td><td style="color:green;text-align:right">+190</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>chore: Add README for css_export DB and ignore *.db files</td><td style="color:green;text-align:right">+200</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>style: уплотнить интерфейс, уменьшить кнопки и отступы</td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-17</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td>fix: геометрия MainWindow и логика поиска</td><td style="color:green;text-align:right">+91</td><td style="color:red;text-align:right">-75</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td>feat: доработка GUI по ТЗ v3.0</td><td style="color:green;text-align:right">+90</td><td style="color:red;text-align:right">-44</td><td style="text-align:center">6</td></tr><tr><td>17.05.2026</td><td>docs: обновить главный README</td><td style="color:green;text-align:right">+12</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>style(print_queue): уменьшить отступы до 3px</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>style(product_details): уменьшить отступы до 3px</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>docs(gui): добавить README для GUI-фреймворка</td><td style="color:green;text-align:right">+250</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>refactor(main_window): упростить комментарии в _create_top_panel</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>docs: update main README with current project structure and status</td><td style="color:green;text-align:right">+49</td><td style="color:red;text-align:right">-56</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td>refactor: remove legacy projects folder, update .gitignore</td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-6836</td><td style="text-align:center">72</td></tr><tr><td>17.05.2026</td><td>Add .gitignore</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td>fix: Use pack() for left_frame in top_panel to avoid grid/pack conflict</td><td style="color:green;text-align:right">+4</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td>fix: Use CTkTabview correctly (add returns frame, pack content)</td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-30</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td>fix: Add missing _load_no_image and UI methods to StickerPreview</td><td style="color:green;text-align:right">+87</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td>fix: Remove header/status-bar, move tabs right with icons, add help/settings btns, reduce padding</td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-247</td><td style="text-align:center">5</td></tr><tr><td>16.05.2026</td><td>fix: SearchBar click behavior, new layout (details top, queue+preview bottom), removed headers, added Import button</td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-57</td><td style="text-align:center">3</td></tr><tr><td>16.05.2026</td><td>Add custom import icons for UI elements (import-from-file64.png, import-from-file32.png). Deleted export icons</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td>Add custom export icons for UI elements (export64.png, export32.png)</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td>Add custom icons for UI elements (add, find, settings, storage, etc.)</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">12</td></tr><tr><td>16.05.2026</td><td>feat: Move SearchBar to SearchAddressTab, enlarge tab labels, add 'Add to Queue' button</td><td style="color:green;text-align:right">+71</td><td style="color:red;text-align:right">-33</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td>chore: Add git-askpass-helper to .dev-tools</td><td style="color:green;text-align:right">+69</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td>feat: Integrate noimage.png placeholder into StickerPreview</td><td style="color:green;text-align:right">+42</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>15.05.2026</td><td>Add noimage.png placeholder for sticker preview</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>15.05.2026</td><td>feat: Add autocomplete dropdown to SearchBar (shows after 3+ chars)</td><td style="color:green;text-align:right">+156</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">2</td></tr><tr><td>15.05.2026</td><td>fix: Add set_setting to StubSettingsService, fix Product.id references, add dropdown placeholders</td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>15.05.2026</td><td>fix: Add missing methods to stub services (get_setting, generate_sticker, print_queue) + fix search by barcode</td><td style="color:green;text-align:right">+26</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>15.05.2026</td><td>fix: Add MainWindow to root geometry via pack()</td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>debug: Add verbose logging to config loading in main.py</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: Always pass search results to SearchAddressTab (remove active tab check)</td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: Align Product model usage (address vs addresses, remove article2)</td><td style="color:green;text-align:right">+16</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">3</td></tr><tr><td>12.05.2026</td><td>fix: Align Product model fields in JsonMockLoader and mocks data</td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>feat: Add mock data system with JSON loader</td><td style="color:green;text-align:right">+282</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">8</td></tr><tr><td>12.05.2026</td><td>fix: Add get_column_config and save_column_config to StubSettingsService</td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: SearchAddressTab и InventoryTab принимают services dict вместо DIContainer</td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-21</td><td style="text-align:center">2</td></tr><tr><td>12.05.2026</td><td>fix: Use self._services instead of self.services in MainWindow</td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: Pass services dict to tabs instead of missing _container</td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: MainWindow принимает services dict вместо DIContainer</td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: удалить несуществующий параметр id из Product в заглушках</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>fix: исправлены импорты domain_models (убран несуществующий подмодуль models)</td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">5</td></tr><tr><td>12.05.2026</td><td>fix: исправлен импорт quick_bootstrap в main.py</td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td>feat(gui): Add DI services, interfaces, stubs and test runner</td><td style="color:green;text-align:right">+433</td><td style="color:red;text-align:right">-184</td><td style="text-align:center">15</td></tr><tr><td>12.05.2026</td><td>fix: Исправление импортов и моделей для соответствия libs/</td><td style="color:green;text-align:right">+10</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">3</td></tr><tr><td>12.05.2026</td><td>feat(gui): Этап 1 - Базовый каркас GUI с DI</td><td style="color:green;text-align:right">+2098</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">20</td></tr><tr><td>08.05.2026</td><td>docs: добавить README.md для всех новых модулей и обновить корневой README</td><td style="color:green;text-align:right">+449</td><td style="color:red;text-align:right">-66</td><td style="text-align:center">10</td></tr><tr><td>08.05.2026</td><td>feat: добавить модули bootstrap и i18n</td><td style="color:green;text-align:right">+575</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">4</td></tr><tr><td>08.05.2026</td><td>feat: извлечение бизнес-логики в libs</td><td style="color:green;text-align:right">+922</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">10</td></tr><tr><td>08.05.2026</td><td>feat: добавить модуль scanner_input для работы со сканерами штрих-кодов</td><td style="color:green;text-align:right">+418</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>08.05.2026</td><td>refactor: вынести словари команд в отдельные файлы данных</td><td style="color:green;text-align:right">+143</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">4</td></tr><tr><td>08.05.2026</td><td>feat: добавить слой репозиториев для доступа к данным</td><td style="color:green;text-align:right">+892</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">5</td></tr><tr><td>08.05.2026</td><td>feat: Complete module extraction for ScanHead Core</td><td style="color:green;text-align:right">+1211</td><td style="color:red;text-align:right">-34</td><td style="text-align:center">19</td></tr><tr><td>08.05.2026</td><td>feat: добавлены модули barcode_validator и barcode_generator</td><td style="color:green;text-align:right">+218</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">7</td></tr><tr><td>07.05.2026</td><td>update branch</td><td style="color:green;text-align:right">+2117</td><td style="color:red;text-align:right">-16</td><td style="text-align:center">18</td></tr><tr><td>07.05.2026</td><td>feat: Add core library modules (config_manager, path_utils, article_normalizer, barcode_checker, db_manager, data_validator, data_enricher)</td><td style="color:green;text-align:right">+822</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">7</td></tr><tr><td>07.05.2026</td><td>chore: удалён неиспользуемый bug_tracker из проекта Б</td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-188</td><td style="text-align:center">9</td></tr><tr><td>07.05.2026</td><td>feat: инициализация структуры + проекты А и Б</td><td style="color:green;text-align:right">+6996</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">78</td></tr></tbody>
+                        <thead><tr><th style="min-width:100px;">Дата</th><th>Сообщение</th><th style="text-align:right;min-width:60px;">+</th><th style="text-align:right;min-width:60px;">-</th><th style="text-align:center;min-width:50px;">Файлы</th></tr></thead>
+                        <tbody><tr><td>16.07.2026</td><td><div class="commit-msg">Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>16.07.2026</td><td><div class="commit-msg">✨ feat(dashboard): отображение полных сообщений коммитов в аккордеоне
+📝 Что сделано:
+• Изменен формат git log для включения тела коммита (%b)
+• Парсинг теперь собирает полное многострочное сообщение
+• В топ-10 показывается только первая строка (краткий заголовок)
+• В аккордеоне отображается полное сообщение с сохранением форматирования
+🎨 Визуальные улучшения:
+• Добавлены стили для моноширинного шрифта
+• Цветовое выделение заголовка и тела сообщения
+• Улучшена читаемость многострочных сообщений
+📊 Результат:
+Теперь в дашборде можно видеть полный контекст каждого коммита,
+включая подробные описания изменений, ссылки на задачи и
+дополнительную информацию из описания коммита.
+.github/scripts/generate_dashboard.py | 69 +++++++++++++++++++++++++++++------</div></td><td style="color:green;text-align:right">+57</td><td style="color:red;text-align:right">-12</td><td style="text-align:center">1</td></tr><tr><td>15.07.2026</td><td><div class="commit-msg">feat: система горячих клавиш + фикс 3 критических багов
+feat: добавлена система горячих клавиш (частично работает)
+- feat: создан HotkeyService с интерфейсом IHotkeyService
+- feat: добавлен таб 'Клавиши' в настройки
+- feat: привязка глобальных хоткеев через bind_all()
+- feat: дефолтные хоткеи: F1, F10, F12, Ctrl+Enter, Ctrl+P, Ctrl++
+- fix: переключение пресета теперь обновляет ComboBox
+- fix: игнорирование одиночных модификаторов при захвате клавиш
+- fix: потокобезопасный callback через root.after() в ProductDetailsService
+- fix: защита от ошибок при уничтожении ProductInfoDialog
+- fix: main.py — добавлен root в ProductDetailsService, исправлен порядок инициализации
+fix: отредактированные значения в очереди теперь попадают в печать
+- fix: добавлен метод _update_product_field() в PrintQueue
+- fix: обновление Product при inline-редактировании
+docs: обновлён TODO.md — добавлены решённые баги #7 и новая фича
+Известные проблемы:
+- Виртуально зажатый Alt в settings_dialog (особенность Tkinter на Windows)
+config/app_config.json                  |   4 +-
+gui/dialogs/product_info_dialog.py      |   2 +
+gui/dialogs/settings_dialog.py          |  20 ++-
+gui/main_window.py                      |  28 +++--
+gui/services/product_details_service.py |  11 +-
+gui/sticker_preview.py                  |   1 +
+main.py                                 | 207 ++++++++++++--------------------
+services/config_manager_adapter.py      |   2 +-
+services/di_container.py                |   5 -
+services/hotkey_service.py              |  38 ++++--
+todo.md                                 |  31 ++++-</div></td><td style="color:green;text-align:right">+177</td><td style="color:red;text-align:right">-172</td><td style="text-align:center">11</td></tr><tr><td>15.07.2026</td><td><div class="commit-msg">fix: поиск в nomenclature_adapter теперь находит товары по артикулу из barcodes. (hotfix во время бета-теста)
+- fix: убрана фильтрация в Python (LIMIT 1000 + цикл)
+- fix: добавлен индексированный SQL-запрос с WHERE LOWER(...) LIKE LOWER(?)
+- fix: поиск теперь корректно находит товары по любому полю (article, name, barcodes)
+- perf: лимит снижен с 1000 до 50 записей
+- docs: обновлён TODO.md — добавлен решённый баг #6
+config/app_config.json                        | 246 +++++++++---
+gui/dialogs/settings_dialog.py                |  62 +++
+gui/main_window.py                            | 196 ++++++----
+gui/print_queue.py                            |  39 ++
+gui/services/adapters/nomenclature_adapter.py |  25 +-
+main.py                                       |   9 +-
+services/config_manager_adapter.py            |   2 +-
+services/di_container.py                      |   7 +-
+services/hotkey_service.py                    |  42 ++
+services/interfaces/__init__.py               |  15 +-
+temp/print/stickers_20260713_115940.pdf       | Bin 0 -&gt; 70924 bytes
+todo.md                                       | 526 +++++---------------------</div></td><td style="color:green;text-align:right">+582</td><td style="color:red;text-align:right">-587</td><td style="text-align:center">12</td></tr><tr><td>14.07.2026</td><td><div class="commit-msg">fix: превью стикера корректно масштабируется на малых разрешениях.(бета-тест перенесён на 15.07.2026)
+- fix: убрано ограничение ratio=1.0, теперь превью может увеличиваться
+- fix: добавлена защита от нулевого размера фрейма (fw&lt;=20 || fh&lt;=20)
+- feat: добавлен binding &lt;Configure&gt; для отслеживания resize фрейма
+- feat: добавлен debounce 200ms для обновления превью при resize
+- fix: добавлен grid_propagate(False) для предотвращения растягивания фрейма
+- fix: добавлен destroy() для очистки отложенных вызовов after()
+config/app_config.json |  4 ++-
+gui/sticker_preview.py | 39 ++++++++++++++++++---
+todo.md                | 92 +++++++++++++++++++++++++++++---------------------</div></td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-43</td><td style="text-align:center">3</td></tr><tr><td>13.07.2026</td><td><div class="commit-msg">feat(docs): актуализация todo после хотфиксов 13.07.2026. 14.07.2026 запланирован *боевой* бета-тест search_address_tab
+config/app_config.json | 33 +++++++++++++++++++--------------
+current_structure.MD   | 11 ++++++++++-
+todo.md                | 26 +++++++++++---------------</div></td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-30</td><td style="text-align:center">3</td></tr><tr><td>13.07.2026</td><td><div class="commit-msg">feat(dashboard): добавить аккордеон со списком всех коммитов
+- Добавлен аккордеон под блоком топ-10 коммитов
+- Все коммиты отсортированы от новых к старым
+- Добавлен бейдж с общим количеством коммитов
+- Добавлена колонка с количеством измененных файлов
+- Реализована плавная анимация раскрытия/закрытия
+- Добавлена прокрутка внутри аккордеона
+.github/scripts/generate_dashboard.py | 75 ++++++++++++++++++++++++++++++++++-</div></td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>13.07.2026</td><td><div class="commit-msg">Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>13.07.2026</td><td><div class="commit-msg">fix: сохранение форматированного адреса как единой строки
+- fix: при сохранении адреса вида 10-20-B-01-02 он больше не разбивается на 5 отдельных адресов
+- fix: _save_all_locations() и _save_address_row() теперь корректно собирают значения из fields_container
+- fix: значения объединяются через AddressFormatter или дефис в единый адрес
+gui/dialogs/product_info_dialog.py | 1555 +++++++++++++++---------------------</div></td><td style="color:green;text-align:right">+645</td><td style="color:red;text-align:right">-910</td><td style="text-align:center">1</td></tr><tr><td>13.07.2026</td><td><div class="commit-msg">fix: решены 4 критических бага (адрес, печать, поиск, UI)
+- fix: адрес теперь передаётся в стикер при печати (sticker_generator.py, printer_service.py)
+- fix: кнопка печати работает корректно после удаления позиций (print_queue.py)
+- feat: добавлена автоочистка поля поиска с настраиваемой задержкой (search_bar.py, settings_dialog.py)
+- fix: кнопки не падают под разделитель на малых разрешениях (product_details.py)
+- feat: форматирование имени в печати поддерживает prefix_article, truncate_for_km, max_models
+- docs: обновлён TODO.md со статусами решённых багов
+gui/dialogs/settings_dialog.py     |  30 +-
+gui/print_queue.py                 | 601 +++++++++++++++++-----------------
+gui/product_details.py             | 639 ++++++++++++++++++-------------------
+gui/search_bar.py                  | 481 ++++++++++++++--------------
+gui/tabs/search_address_tab.py     | 236 +++++++-------
+libs/printing/sticker_generator.py | 420 ++++++++++++------------
+services/config_manager_adapter.py |   2 +-
+services/printer_service.py        |  16 +
+todo.md                            | 451 ++++++++++----------------</div></td><td style="color:green;text-align:right">+1380</td><td style="color:red;text-align:right">-1496</td><td style="text-align:center">9</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">fix: исправлен сброс пресетов в редакторе стикеров и отступ фона адреса
+gui/dialogs/sticker_editor.py      |  7 +------
+libs/printing/sticker_generator.py |  3 ++-
+services/presets_config_utils.py   | 11 +++++++++--</div></td><td style="color:green;text-align:right">+12</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">3</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">feat(sticker): добавить форматирование названия (префикс артикула, обрезка к/м) и цвета адреса
+.github/scripts/push_review.py           | 152 -----------------------------
+.github/workflows/push-review.yml        |  30 ------
+.github/workflows/simple-ai-review.yml   | 150 -----------------------------
+.github/workflows/update-module-docs.yml | 131 -------------------------
+config/app_config.json                   | 159 +++++++++++++++++++++++++++++--
+gui/dialogs/sticker_editor.py            |  56 +++++++++--
+gui/sticker_preview.py                   |  19 +++-
+libs/printing/sticker_generator.py       |  19 +++-
+libs/utils/name_formatter.py             |  16 ++++
+services/presets_config_utils.py         |   4 +-</div></td><td style="color:green;text-align:right">+255</td><td style="color:red;text-align:right">-481</td><td style="text-align:center">10</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">fix: exclude github-actions[bot] commits from dashboard stats
+.github/scripts/generate_dashboard.py | 18 +++++++++---------</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">Merge branch 'main' of https://github.com/servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">docs: add DashBoard page to README.md
+README.md | 7 +++++++</div></td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">ci: add automated progress dashboard generator
+- Generate progress_report.md from git log
+- Parse and build dashboard.html
+- Auto-deploy via GitHub Pages
+.github/scripts/generate_dashboard.py  | 321 +++++++++++++++++++++++++++++++++
+.github/workflows/update-dashboard.yml |  42 +++++</div></td><td style="color:green;text-align:right">+363</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">docs: update documentation to v0.3.0 (06.07.2026)
+- Bump version: 2.2 → 0.3.0
+- Update branch: gui-framework-dev → main
+- Add TODO.md reference to all docs
+- Document store.db as writeable exception
+- Remove json_mock_loader.py (dead code, YAGNI)
+- Minify adapters, services, and utils with proper markers
+- Update module statuses in current_structure.MD
+MANIFEST.md                                   | 142 +++---
+README.md                                     | 141 +++---
+current_structure.MD                          | 491 ++++++++++-----------
+gui/services/adapters/css_export_adapter.py   | 164 +++----
+gui/services/adapters/json_mock_loader.py     |  95 ----
+gui/services/adapters/nomenclature_adapter.py | 243 +++++-----
+gui/services/adapters/store_adapter.py        | 246 ++++-------
+gui/services/product_details_service.py       | 259 ++++-------
+gui/widgets/suggestion_list.py                | 229 ++++------
+libs/utils/__init__.py                        |  10 +-
+libs/utils/file_naming.py                     | 145 ++----
+libs/utils/fuzzy_search.py                    | 223 +++-------
+services/di_container.py                      | 127 ++----
+temp/print/stickers_20260705_204353.pdf       | Bin 307780 -&gt; 0 bytes
+todo.md                                       | 609 ++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+1531</td><td style="color:red;text-align:right">-1593</td><td style="text-align:center">15</td></tr><tr><td>06.07.2026</td><td><div class="commit-msg">docs: обновление current_structure.MD
+config/app_config.json                  |   2 +-
+current_structure.MD                    | 108 +++++++++++++++++++++++++-------
+temp/print/stickers_20260705_204353.pdf | Bin 0 -&gt; 307780 bytes</div></td><td style="color:green;text-align:right">+86</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">3</td></tr><tr><td>05.07.2026</td><td><div class="commit-msg">feat(printing): реализовать реальную печать очереди стикеров (v1.0.0-beta.1)
+- Добавить PdfStickerRenderer для рендера многостраничного PDF через PIL
+- Реализовать RealPrinterService (замена StubPrinterService)
+- Добавить PrintConfirmDialog с прогресс-баром и подтверждением
+- Печать через PDF reader с флагом /t (SumatraPDF, Adobe Reader)
+- Автоматическая очистка временных PDF через 30 сек
+- Потокобезопасный рендер с обновлением UI через root.after
+- Обработка ошибок с messagebox и логированием
+BREAKING CHANGE: StubPrinterService больше не регистрируется в DI-контейнере
+.gitignore                           |   2 +-
+config/app_config.json               |   2 +-
+gui/dialogs/print_confirm_dialog.py  | 147 +++++++++++++++++++++++++
+libs/domain_models/__init__.py       |   9 +-
+libs/domain_models/address.py        |  20 +---
+libs/domain_models/count_item.py     |  25 +----
+libs/domain_models/inventory_item.py |  55 +---------
+libs/domain_models/product.py        |  34 +-----
+libs/printing/pdf_renderer.py        |  40 +++++++
+main.py                              | 202 ++++++++++++++++++++---------------
+services/printer_service.py          | 131 +++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+449</td><td style="color:red;text-align:right">-218</td><td style="text-align:center">11</td></tr><tr><td>05.07.2026</td><td><div class="commit-msg">fix(sticker-editor): исправления редактора пресетов и UIn- fix: сохранение пресетов в nested-формате через to_nested() (_save, _add)n- fix: персистентность удаления пресета (сохранение в конфиг + обновление списка)n- feat: кнопка удаления пресета — красный фон (#C0392B) + иконка 🗑️nФайлы: gui/dialogs/sticker_editor.py, gui/sticker_preview.py
+config/app_config.json             | 65 ++++++++++++++++++++++++++++++++++++++
+gui/dialogs/sticker_editor.py      | 17 +++++++---
+libs/printing/sticker_generator.py |  2 +-</div></td><td style="color:green;text-align:right">+78</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">3</td></tr><tr><td>05.07.2026</td><td><div class="commit-msg">chore: вынос generate_dashboard.py за пределы репозитория (инструмент разработки)
+generate_dashboard.py | 287 --------------------------------------------------</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-287</td><td style="text-align:center">1</td></tr><tr><td>05.07.2026</td><td><div class="commit-msg">refactor(presets): стандартизация формата пресетов стикеров и вынос утилит конвертации
+- Создан services/presets_config_utils.py для единой конвертации flat/nested (DRY)
+- Стандартизировано хранение пресетов в nested-формате в app_config.json
+- Исправлено расхождение превью между sticker_preview и sticker_editor
+- Обновлен дефолтный конфиг в config_manager_adapter.py
+- Удален дублирующийся код (_to_nested, _init_presets) из UI-компонентов
+- Актуализирована current_structure.MD
+config/app_config.json             |  87 ++++++-----
+current_structure.MD               |  15 ++
+generate_dashboard.py              | 287 +++++++++++++++++++++++++++++++++++++
+gui/dialogs/sticker_editor.py      |  58 ++++----
+gui/sticker_preview.py             |  41 ++----
+libs/printing/sticker_generator.py |   6 +-
+main.py                            |   3 +-
+services/config_manager_adapter.py |   6 +-
+services/presets_config_utils.py   |  25 ++++</div></td><td style="color:green;text-align:right">+426</td><td style="color:red;text-align:right">-102</td><td style="text-align:center">9</td></tr><tr><td>02.07.2026</td><td><div class="commit-msg">feat(settings): сохранение настроек через ConfigManagerSettingsAdapter
+- Новый адаптер services/config_manager_adapter.py оборачивает легаси ConfigManager в интерфейс ISettingsService
+- main.py: StubSettingsService заменён на ConfigManagerSettingsAdapter
+- settings_dialog.py: явный save() после применения настроек
+- Исправлен импорт ConfigManager: libs.config.config_manager → libs.config_manager
+- Минификация затронутых файлов
+Пресеты стикеров и настройки приложения теперь сохраняются в config/app_config.json между запусками.
+---
+docs: пересборка документации без дублирования
+- README.md: обзор проекта, стек, структура, БД, возможности, планы
+- MANIFEST.md: архитектурные правила, запреты, минификация, процесс разработки
+- current_structure.MD: детальная карта модулей с анализом соответствия манифесту
+- Добавлен ConfigManagerSettingsAdapter в current_structure.MD
+- Каждый факт описан в одном файле согласно его роли, без повторов
+MANIFEST.md                        | 326 ++++++-------
+README.md                          | 183 +++-----
+config/app_config.json             |  87 +++-
+current_structure.MD               | 911 +++++++++++++++++--------------------
+gui/dialogs/settings_dialog.py     | 647 ++++++++------------------
+libs/config/preset_manager.py      | 262 +++--------
+libs/config_manager/README.md      |  10 -
+libs/config_manager/__init__.py    |  12 -
+libs/config_manager/core.py        | 399 ++++++----------
+main.py                            | 167 +++----
+services/config_manager_adapter.py |  29 ++
+services/interfaces/__init__.py    | 193 ++------
+services/stubs/__init__.py         | 222 +++------</div></td><td style="color:green;text-align:right">+1336</td><td style="color:red;text-align:right">-2112</td><td style="text-align:center">13</td></tr><tr><td>02.07.2026</td><td><div class="commit-msg">fix: sticker preview improvements and error handling
+- Fix barcode text rendering: disable auto text in Code128 (write_text: False)
+- Fix address display: pass address parameter to StickerGenerator
+- Replace hardcoded test data with real products from database
+- Add ASCII-only filter for test products (Code128 compatibility)
+- Add fallback to '00-00-00-00-00' if no product with address found
+- Cache sample product to avoid repeated DB queries
+- Fix TclError on editor close: cancel pending callbacks in _on_close/destroy
+- Add global TclError handler in main.py to suppress 'invalid command name' spam
+- Pass search_service through DI to StickerPreview and StickerEditor
+gui/dialogs/sticker_editor.py      |  63 ++++++++-
+gui/sticker_preview.py             | 267 +++++++++++++++++++------------------
+gui/tabs/search_address_tab.py     |   3 +-
+libs/printing/sticker_generator.py |   2 +-
+main.py                            |  11 +-</div></td><td style="color:green;text-align:right">+206</td><td style="color:red;text-align:right">-140</td><td style="text-align:center">5</td></tr><tr><td>28.06.2026</td><td><div class="commit-msg">fix: чекбоксы в превью стикера + правило табуляции в манифесте
+- sticker_editor: исправлено отображение элементов при переключении чекбоксов (bool вместо строки, корректный debounce)
+- manifest: добавлено правило 'Отступы от левого края только tab'ами! (не по стандарту PEP 8)'
+MANIFEST.md                   | 16 ++++++++--------
+gui/dialogs/sticker_editor.py | 35 ++++++++++++++++-------------------</div></td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-27</td><td style="text-align:center">2</td></tr><tr><td>28.06.2026</td><td><div class="commit-msg">Docs: добавление правил минификации кода в манифест
+MANIFEST.md | 122 +++++++++++++++++++++++++++++++++++++++---------------------</div></td><td style="color:green;text-align:right">+80</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">1</td></tr><tr><td>28.06.2026</td><td><div class="commit-msg">Fix: sticker editor bugs, barcode settings, code minification
+- Исправлены баги в _load_preset и _add для корректной обработки key2 в парных виджетах (pair_spin_wrap)
+- Заменён CTkScrollableFrame на CTkFrame для устранения TclError при пересоздании детей
+- Добавлены все настройки кодов: размер QR, ширина/высота Code128, текст под кодом, смещения кода и текста, масштаб текста
+- Удалены избыточные настройки: none, QR если Code128 невозможен, Пропускать если невозможно, Цвет у артикула/названия, Количество
+- Уплотнение sticker_generator.py и sticker_editor.py: убраны комментарии, docstring, лишние переносы строк
+- Убрана двойная рамка в превью, адрес подтягивается из product.storage_locations
+gui/dialogs/sticker_editor.py      | 643 +++++++++++++++++--------------------
+libs/printing/sticker_generator.py | 361 ++++++++-------------</div></td><td style="color:green;text-align:right">+428</td><td style="color:red;text-align:right">-576</td><td style="text-align:center">2</td></tr><tr><td>27.06.2026</td><td><div class="commit-msg">26.06.2026
+gui/dialogs/sticker_editor.py |  52 +++++++++----
+gui/product_details.py        | 170 +++---------------------------------------</div></td><td style="color:green;text-align:right">+50</td><td style="color:red;text-align:right">-172</td><td style="text-align:center">2</td></tr><tr><td>24.06.2026</td><td><div class="commit-msg">docs: актуализация схемы БД и рефакторинг NomenclatureAdapter
+- Обновлена database_schema.md: поля приведены в соответствие с реальной
+схемой БД (article, name, barcodes, unit вместо устаревших имен)
+- Очищен code_db_mismatches.md от устаревшей информации, оставлена
+только проблема с потокобезопасностью search_async()
+- Уплотнен код NomenclatureAdapter
+docs/code_db_mismatches.md                    | 139 ++------------------------
+docs/database_schema.md                       | 106 ++++----------------
+gui/services/adapters/nomenclature_adapter.py |  54 +---------</div></td><td style="color:green;text-align:right">+31</td><td style="color:red;text-align:right">-268</td><td style="text-align:center">3</td></tr><tr><td>24.06.2026</td><td><div class="commit-msg">fix(stickers): единый вложенный формат конфига пресетов
+- sticker_editor._update_preview: применяем _to_nested() перед передачей в StickerGenerator
+- sticker_preview._generate_preview: защита от старого плоского формата (автоматическая миграция через _to_nested)
+- Фиксация размеров preview_frame через grid_propagate(False) + configure()
+- Корректный resize с сохранением пропорций (ratio &lt;= 1.0)
+- Убрана настройка 'Цвет фона' из FIELDS, background_color захардкожен в _to_nested
+- Исправлена опечатка MiniSpinbox._command (было self.command)
+- Исправлен .config() на .configure() для CTk-виджетов
+- Частичное уплотнение кода
+gui/dialogs/sticker_editor.py  | 48 +++++++++++++++++-----
+gui/main_window.py             | 20 ---------
+gui/sticker_preview.py         | 93 +++++++++++++++++++++++++++---------------
+gui/tabs/search_address_tab.py | 72 +-------------------------------
+main.py                        | 53 +-----------------------</div></td><td style="color:green;text-align:right">+99</td><td style="color:red;text-align:right">-187</td><td style="text-align:center">5</td></tr><tr><td>23.06.2026</td><td><div class="commit-msg">Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>23.06.2026</td><td><div class="commit-msg">feat: добавлен requirements.txt
+requirements.txt | 83 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+83</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>14.06.2026</td><td><div class="commit-msg">fix: some fix in sticker_editor.py
+gui/dialogs/sticker_editor.py | 65 ++++++++++-----------------------
+requirements.txt              | 83 +++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+101</td><td style="color:red;text-align:right">-47</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">feat: Добавлен редактор пресетов стикеров с живым превью
+- Реализован StickerEditor: трёхколоночный интерфейс (пресеты/настройки/превью)
+- Добавлены 6 групп настроек: размеры, артикул, название, количество, адрес, коды
+- Реализован MiniSpinbox для удобного изменения числовых параметров
+- Добавлено живое превью с debounce 300ms для производительности
+- Реализовано управление пресетами: создание, удаление, сохранение, загрузка
+- Обновлён StickerPreview: интеграция с редактором, передача Product
+- Добавлена автоматическая подстановка тестовых данных при отсутствии Product
+- Исправлены ошибки масштабирования и перерисовки превью
+- Оптимизирована структура кода: data-driven рендеринг полей
+gui/dialogs/sticker_editor.py | 508 ++++++++++++++++++++++++++----------------
+gui/sticker_preview.py        | 179 +++++++--------</div></td><td style="color:green;text-align:right">+393</td><td style="color:red;text-align:right">-294</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">fix: move Python code to separate file to avoid YAML parsing errors
+.github/scripts/push_review.py    | 152 +++++++++++++++++++++++++++++++++++++
+.github/workflows/push-review.yml | 156 +-------------------------------------</div></td><td style="color:green;text-align:right">+153</td><td style="color:red;text-align:right">-155</td><td style="text-align:center">2</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">fix: remove all YAML-breaking special chars from prompt
+.github/workflows/push-review.yml | 57 +++++++++++++++++----------------------</div></td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-33</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">fix: get commit info via git instead of YAML env vars
+.github/workflows/push-review.yml | 94 +++++++++++++++++----------------------</div></td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-54</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">Add push review workflow with Issue notifications
+.github/workflows/push-review.yml | 207 ++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+207</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">Fix: handle non-PR workflow triggers gracefully
+.github/workflows/simple-ai-review.yml | 11 +++++------</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">a bit change simple-ai-review.yml
+.github/workflows/simple-ai-review.yml | 12 +++++++++---</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>10.06.2026</td><td><div class="commit-msg">feat(print_queue): переработка очереди печати и исправление диалога товара
+- Исправлен баг в ProductInfoDialog: get_details → get_product_details, _populate_from_dto → _update_ui_with_full_data
+- Добавлено заполнение базовых полей диалога при инициализации (_populate_basic_info)
+- Добавлена колонка '№' в таблицу очереди печати
+- Убрано автодобавление товаров в очередь при поиске (только по кнопке ⤵️)
+- Исправлено получение article2 (второй штрихкод без дубликата основного артикула)
+- Отображение всех адресов через запятую вместо только первого
+- Убрана кнопка 'По одному', кнопка 'Все' переименована в 'Печать'
+- Добавлен счётчик копий для каждой позиции ([&lt;] 1 [&gt;])
+- Добавлена кнопка удаления позиции (красный крестик X) с пересборкой очереди
+- Колонка '№' сделана нередактируемой
+- Исправлено inline-редактирование ячеек (баг с отображением только адреса)
+- Динамическая ширина колонок относительно размера таблицы
+- Окно приложения разворачивается на весь экран при запуске
+- Пропорции 75%/25% для очереди печати и превью (uniform='bottom')
+- Уплотнение кода в main_window.py и print_queue.py
+gui/main_window.py | 114 +++-----------
+gui/print_queue.py | 438 +++++++++++++++++++++++++----------------------------</div></td><td style="color:green;text-align:right">+227</td><td style="color:red;text-align:right">-325</td><td style="text-align:center">2</td></tr><tr><td>09.06.2026</td><td><div class="commit-msg">fix(main_window): разворачивание окна на весь экран и корректные пропорции 75/25
+- Добавлено автоматическое разворачивание окна при запуске (state='zoomed')
+- Исправлены пропорции колонок в SearchAddressTab (uniform='bottom')
+- Очередь печати теперь занимает строго 75% ширины, превью — 25%
+- Добавлена установка минимальных размеров окна (1024x768)
+- Отложенный вызов разворачивания через after(100) для корректной работы с несколькими мониторами
+gui/main_window.py             | 28 ++++++++++++++++++++++++++++
+gui/tabs/search_address_tab.py |  7 +++++--</div></td><td style="color:green;text-align:right">+33</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>07.06.2026</td><td><div class="commit-msg">fix(print_queue): добавление № п/п, корректный article2 и все адреса
+- Добавлена колонка &quot;№&quot; в таблицу очереди
+- Исправлено получение article2 (второй штрихкод без дубликата артикула)
+- Отображение всех адресов через запятую вместо первого
+- Динамическая ширина колонок относительно таблицы
+- Убрано автодобавление в очередь при поиске (только по кнопке ⤵️)
+gui/print_queue.py             | 109 +++++++++++++++++++++++++++--------------
+gui/tabs/search_address_tab.py |   9 ++--</div></td><td style="color:green;text-align:right">+76</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">2</td></tr><tr><td>07.06.2026</td><td><div class="commit-msg">fix: исправлено перерисовка строк адресов в product_info_dialog
+gui/dialogs/product_info_dialog.py |  49 ++++++++-----
+gui/product_details.py             | 145 +++++++++++++++++++------------------
+gui/search_bar.py                  |   2 +-</div></td><td style="color:green;text-align:right">+104</td><td style="color:red;text-align:right">-92</td><td style="text-align:center">3</td></tr><tr><td>07.06.2026</td><td><div class="commit-msg">fix: исправлено удаление строк адресов в product_info_dialog
+gui/dialogs/product_info_dialog.py | 60 ++++++++++++++++++++++++++++++++++----</div></td><td style="color:green;text-align:right">+54</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>07.06.2026</td><td><div class="commit-msg">Merge pull request #2 from servicenikov-afk/main-gui
+В процессе *Доделка GUI и подготовка к мержу (141 коммит) + откат поломки gui</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add actual current_structure.MD document
+current_structure.MD | 483 +++++++++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+483</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add workflow to generate module documentation from full file content
+.github/workflows/update-module-docs.yml | 131 +++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+131</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix MANIFEST.md and store README
+.gitignore                                      |  46 ++++++--
+MANIFEST.md                                     | 149 +++++++++++++-----------
+data/databases/css_export/spare_parts.sql       |  25 ++++
+data/databases/nomenclature/nomenclature.db.sql |  20 ++++
+data/databases/store/README.md                  | 102 +++++++++++-----
+data/databases/store/storage_locations.sql      |  22 ++++</div></td><td style="color:green;text-align:right">+258</td><td style="color:red;text-align:right">-106</td><td style="text-align:center">6</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Remove broken AI Review config and workflow
+.ai-review.yaml                 | 23 -----------------------
+.github/workflows/ai-review.yml | 41 -----------------------------------------</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-64</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">docs: update README with hybrid ttk+tk stack and v2.1 status
+README.md | 203 ++++++++++++++++++++++++++++----------------------------------</div></td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-111</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">docs: update MANIFEST.md with hybrid ttk+tk stack and actual structure
+MANIFEST.md | 255 ++++++++++++++++++++++++++++++++----------------------------</div></td><td style="color:green;text-align:right">+138</td><td style="color:red;text-align:right">-117</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">fix: restore standard python .gitignore patterns
+.gitignore | 79 ++++++++++++++------------------------------------------------</div></td><td style="color:green;text-align:right">+17</td><td style="color:red;text-align:right">-62</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add retry logic and fallback models for AI review
+.github/workflows/simple-ai-review.yml | 66 +++++++++++++++++++++++++++-------</div></td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix: use qwen/qwen3-coder:free for AI review
+.github/workflows/simple-ai-review.yml | 36 ++++++++++++++++++++++------------</div></td><td style="color:green;text-align:right">+23</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix: use working free model (Gemini Flash) on OpenRouter
+.github/workflows/simple-ai-review.yml | 33 +++++++++++++++++++--------------</div></td><td style="color:green;text-align:right">+19</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add simple Python-based AI Review that works
+.github/workflows/simple-ai-review.yml | 90 ++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+90</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Debug: fetch main and show changed files
+.github/workflows/ai-review.yml | 13 +++++++++++--</div></td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Simplify AI Review config to fix parsing error
+.ai-review.yaml                 | 45 -----------------------------------------
+.github/workflows/ai-review.yml |  9 +--------</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-53</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add custom prompt and ignore old projects for AI Review v2
+.github/workflows/ai-review.yml | 1 +</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add custom prompt and ignore old projects for AI Review
+.ai-review.yaml                 | 52 +++++++++++++++++++++++++++++++++--------
+.github/workflows/ai-review.yml | 10 +++++---</div></td><td style="color:green;text-align:right">+49</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix: use OPENROUTER provider (not OPENAI) for Nikita-Filonov/ai-review
+.ai-review.yaml                 | 66 +++++++++++++++++++++--------------------
+.github/workflows/ai-review.yml |  6 ++--</div></td><td style="color:green;text-align:right">+38</td><td style="color:red;text-align:right">-34</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add AI Review with Nikita-Filonov/ai-review
+.ai-review.yaml                 | 34 ++++++++++++++++++++++++++++++++
+.github/workflows/ai-review.yml | 43 +++++++++++++++++++++--------------------</div></td><td style="color:green;text-align:right">+56</td><td style="color:red;text-align:right">-21</td><td style="text-align:center">2</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix AI Review: correct params for jonit-dev action
+.github/workflows/ai-review.yml | 21 +++++++++------------</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-12</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix AI Review: use flosoy/ai-pr-reviewer
+.github/workflows/ai-review.yml | 28 ++++++++++++++--------------</div></td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Fix AI Review action: replace with reviewpad/action
+.github/workflows/ai-review.yml | 20 ++++++++++++++++----</div></td><td style="color:green;text-align:right">+16</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>06.06.2026</td><td><div class="commit-msg">Add AI Review workflow for PRs
+.github/workflows/ai-review.yml | 22 ++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td><div class="commit-msg">fix: race condition при отрисовке адресов в ProductDetails
+- Добавлена безопасная очистка виджетов с отменой отложенных событий _draw_engine
+- Отрисовка адресов перенесена в after_idle для предотвращения race condition
+- Добавлен метод _render_addresses_safe с проверкой актуальности товара
+- Улучшена обработка ошибок при уничтожении виджетов в clear()
+Fixes TclError: invalid command name при быстрой смене товаров
+gui/product_details.py | 34 +++++++++++++++++++++++++++++-----</div></td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td><div class="commit-msg">fix: Убраны update_idletasks() и предупреждения для несовместимых адресов
+- Удалены вызовы update_idletasks() из _render_addresses_with_labels() и _render_addresses_compact()
+→ Это устраняет гонку потоков и ошибки TclError при разрушении Canvas-виджетов
+- Замена pack() на grid() в _render_addresses_with_labels() для консистентности
+- Убрано отображение иконки ⚠️ и жёлтого фона для несовместимых адресов
+→ Теперь несовместимые адреса отображаются как простые поля без пометок
+- Убрана надпись '(нестандартный)' из документации метода
+gui/product_details.py | 35 ++++++++---------------------------</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-27</td><td style="text-align:center">1</td></tr><tr><td>30.05.2026</td><td><div class="commit-msg">fix: Убрана надпись &quot;(нестандартный)&quot; для несовместимых адресов
+gui/product_details.py | 9 ---------</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td><div class="commit-msg">fix: Двойная прокрутка во вкладке 'Адрес' настроек
+- Добавлен внешний CTkScrollableFrame для всего содержимого вкладки
+- Увеличена высота контейнера уровней до 250px
+- Добавлен контрастный фон для области прокрутки уровней
+- Теперь все элементы доступны даже при малом размере окна
+gui/dialogs/settings_dialog.py | 21 ++++++++++++++-------</div></td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td><div class="commit-msg">fix: Увеличил высоту окна настроек и контейнера уровней для удобной прокрутки
+- Размер окна: 800x650 (было 800x500)
+- Минимальная высота: 550px (было 450px)
+- Высота контейнера уровней: 200px (было 150px)
+- Добавлено растягивание контейнера уровней через grid_rowconfigure(weight=1)
+gui/dialogs/settings_dialog.py | 11 ++++++-----</div></td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>28.05.2026</td><td><div class="commit-msg">fix: Интеграция AddressFormatter в ProductInfoDialog
+- Передача address_formatter из ProductDetails в ProductInfoDialog
+- Поддержка форматированного ввода адресов (Label+Entry сетка) в диалоге
+- Сбор значений из форматированных полей при сохранении (_save_address_row, _save_all_locations)
+- Добавлена настройка address_format по умолчанию в StubSettingsService (enabled=True, display_mode='with_labels')
+Исправляет проблемы:
+1. Адреса теперь отображаются с подписями в главном окне (ProductDetails)
+2. Диалог редактирования адресов поддерживает форматированный ввод
+3. Настройки формата сохраняются и применяются корректно
+gui/dialogs/product_info_dialog.py | 132 +++++++++++++++++++++++++++++++++----
+gui/product_details.py             |   3 +-
+services/stubs/__init__.py         |   7 ++</div></td><td style="color:green;text-align:right">+129</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">3</td></tr><tr><td>28.05.2026</td><td><div class="commit-msg">feat: гибкая система адресации (Settings Tab)
+- Добавлен класс AddressFormatter для парсинга/форматирования адресов
+- Реализована вкладка 'Адрес' в настройках с конструктором формата
+- Поддержка режимов: компактный и с подписями (Label + Entry)
+- Диалог добавления адреса с сеткой полей и режимом свободного ввода
+- Обработка несовместимых адресов (отображение с пометкой)
+- Хранение адресов в БД как JSON-массив строк
+- Настройки формата сохраняются в app_config.json
+gui/dialogs/add_address_dialog.py | 276 ++++++++++++++++++++++++++++++++++++++
+gui/dialogs/settings_dialog.py    | 200 ++++++++++++++++++++++++++-
+gui/product_details.py            | 174 +++++++++++++++++-------
+gui/tabs/search_address_tab.py    |   9 +-
+libs/utils/__init__.py            |   8 ++
+libs/utils/address_formatter.py   | 264 ++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+879</td><td style="color:red;text-align:right">-52</td><td style="text-align:center">6</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: Уменьшены отступы между полями адресов (10px справа), убрано растягивание колонок
+gui/product_details.py | 6 +++---</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">refactor: оптимизирован расчет ширины полей адресов (короткие ~60px, длинные ограничены 55% контейнера)
+gui/product_details.py | 22 ++++++++++++++++++----</div></td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: исправлено отображение текста в адресах (CTkEntry нельзя заполнять в disabled state)
+gui/product_details.py | 3 ++-</div></td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">debug: добавлена расширенная диагностика видимости виджетов адресов
+gui/product_details.py | 15 ++++++++++++++-</div></td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">debug: добавить диагностику видимости виджетов адресов
+gui/product_details.py | 9 +++++++++</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">debug: добавлено подробное логирование [DEBUG_TEMP] для отладки отображения адресов
+gui/product_details.py                  | 13 +++++++++++++
+gui/services/product_details_service.py |  9 ++++++---
+gui/tabs/search_address_tab.py          | 15 +++++++++++++--</div></td><td style="color:green;text-align:right">+32</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">3</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: исправлено обогащение товаров адресами в _on_search_result
+- Инициализируем enriched_products копией products вместо пустого списка
+- Добавлено логирование процесса обогащения
+- Исправлено форматирование вызова get_product_details
+gui/tabs/search_address_tab.py | 14 ++++++++------</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: добавлена инициализация DIContainer в main.py
+main.py | 3 +++</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">chore: удаление кэшированных файлов __pycache__ из репозитория
+gui/__pycache__/__init__.cpython-312.pyc                | Bin 123 -&gt; 0 bytes
+gui/__pycache__/product_details.cpython-312.pyc         | Bin 12195 -&gt; 0 bytes
+gui/__pycache__/search_bar.cpython-312.pyc              | Bin 16847 -&gt; 0 bytes
+.../__pycache__/product_info_dialog.cpython-312.pyc     | Bin 14555 -&gt; 0 bytes
+gui/widgets/__pycache__/suggestion_list.cpython-312.pyc | Bin 9938 -&gt; 0 bytes</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">refactor: полное удаление моков, использование только реальных БД
+.gitignore                                         |  57 ++++++-----
+MANIFEST.md                                        |  16 +--
+config/app_config.json                             |   4 +-
+gui/README.md                                      |  43 +++++---
+gui/__pycache__/__init__.cpython-312.pyc           | Bin 137 -&gt; 123 bytes
+gui/services/adapters/json_mock_loader.py          |  21 +++-
+gui/services/adapters/nomenclature_adapter.py      |   3 +-
+.../__pycache__/search_address_tab.cpython-312.pyc | Bin 8779 -&gt; 0 bytes
+libs/repository/README.md                          |   6 +-
+main.py                                            | 109 ++++++---------------</div></td><td style="color:green;text-align:right">+131</td><td style="color:red;text-align:right">-128</td><td style="text-align:center">10</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: отображение адресов в главном окне
+- Исправлено обогащение товаров адресами: теперь загружаются данные
+для всех товаров搜索结果, а не только для первого
+- Добавлено поле storage_locations в тестовые товары заглушки поиска
+- Используется механизм подсчёта завершённых загрузок для обновления UI
+только после получения всех данных
+gui/tabs/search_address_tab.py | 26 ++++++++++++++++++++------
+services/stubs/__init__.py     |  6 ++++--</div></td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">2</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: предотвращение ошибок при закрытии окна (флаг _is_destroying)
+gui/dialogs/product_info_dialog.py | 26 ++++++++++++++++++++++++--</div></td><td style="color:green;text-align:right">+24</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: защита от ошибок при уничтожении виджетов во время изменения размера
+gui/dialogs/product_info_dialog.py | 12 ++++++++++--</div></td><td style="color:green;text-align:right">+10</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">feat: отображение адресов отдельными полями (3 в ряд) в ProductDetails
+gui/product_details.py | 125 +++++++++++++++++++++++++------------------------</div></td><td style="color:green;text-align:right">+63</td><td style="color:red;text-align:right">-62</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">feat: многострочное поле адреса в ProductDetails (CTkTextbox с переносом)
+gui/product_details.py | 66 ++++++++++++++++++++++++++++++++++++++++++++------</div></td><td style="color:green;text-align:right">+59</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: добавлен импорт Optional в search_address_tab.py
+gui/tabs/search_address_tab.py | 2 +-</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: загрузка адресов в основном окне через ProductDetailsService
+gui/tabs/search_address_tab.py | 16 +++++++++++++++-</div></td><td style="color:green;text-align:right">+15</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: исправление диалога удаления адреса и отображение адресов в основном окне
+1. product_info_dialog.py:
+- Исправлена ошибка CTkInputDialog (заменён на кастомный CTkToplevel)
+- Добавлен метод _do_delete_address_row для выполнения удаления
+- Диалог подтверждения теперь работает корректно
+2. product_details.py:
+- Убрана кнопка редактирования (карандаш) напротив поля 'Адрес'
+- Поле 'Адрес' теперь отображает все адреса из storage_locations (каждый с новой строки)
+- Используется мультлайновый текст для отображения нескольких адресов
+gui/dialogs/product_info_dialog.py | 53 ++++++++++++++++++++++++++++++++------
+gui/product_details.py             |  8 ++++--</div></td><td style="color:green;text-align:right">+51</td><td style="color:red;text-align:right">-10</td><td style="text-align:center">2</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">feat: уменьшение окна детальной информации и полноценное управление адресами
+- Уменьшен размер окна с 1200x680 до 900x550
+- Вкладка 'Адрес хранения' полностью переработана:
+* Отображение всех адресов из БД (каждый в отдельной строке)
+* Редактируемые поля для каждого адреса
+* Кнопка 'Удалить' (🗑️) для каждой строки
+* Кнопка 'Сохранить' (💾) для индивидуального сохранения
+* Кнопка 'Добавить адрес' (➕) для добавления новых строк
+* Кнопка 'Сохранить все' для пакетного сохранения
+* Диалоги подтверждения для операций сохранения
+* Отслеживание несохранённых изменений
+- Используется метод set_locations для установки полного списка адресов
+gui/dialogs/product_info_dialog.py | 341 ++++++++++++++++++++++++++++++-------</div></td><td style="color:green;text-align:right">+276</td><td style="color:red;text-align:right">-65</td><td style="text-align:center">1</td></tr><tr><td>25.05.2026</td><td><div class="commit-msg">fix: упрощённый перенос строк в табe Номенклатура (45 символов)
+- Убраны циклические вычисления wraplength при изменении размера окна
+- Добавлен метод _wrap_text_at_word() для переноса на границе слова
+- Перенос применяется к полям Наименование и Модель
+- Сохранена динамическая логика во вкладке Дополнительно
+gui/dialogs/product_info_dialog.py | 40 +++++++++++++++++++++-----------------</div></td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-18</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление геометрии окон и динамический перенос текста
+- main.py: заменено fullscreen на state('zoomed') для корректной работы с геометрией
+- product_info_dialog.py:
+* Увеличен wraplength для полей 'Наименование' и 'Модель' (400 → 550)
+* Добавлен метод _update_nomenclature_wraplength() для динамического изменения переноса текста при изменении размера окна
+* Привязка события &lt;Configure&gt; к вкладке номенклатуры для автоматического обновления wraplength
+gui/dialogs/product_info_dialog.py | 20 +++++++++++++++++---
+main.py                            |  9 +++++----</div></td><td style="color:green;text-align:right">+22</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">2</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: размеры окон и позиционирование
+- ProductInfoDialog: 1200x680+50+50 (было 1200x800)
+- MainWindow: fullscreen режим
+- SettingsDialog: 800x500+50+50 (было 800x600, на 100px меньше по высоте)
+- Динамический wraplength для переноса текста при изменении размера окна
+gui/dialogs/product_info_dialog.py |  2 +-
+gui/dialogs/settings_dialog.py     |  4 ++--
+main.py                            | 10 ++++++----</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: размер окна 1200x800+50+50, перенос текста в поле Модель (wraplength=400)
+gui/dialogs/product_info_dialog.py | 6 +++---</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление переноса текста в окне детальной информации
+- Добавлено начальное значение wraplength для лейблов моделей и деталей
+- Увеличен порог срабатывания изменения размера с 10px до 15px
+- Упрощён обработчик _on_window_resize для снижения нагрузки на CPU
+- Убраны лишние вычисления при изменении размера окна
+Текст теперь корректно переносится при изменении ширины окна
+gui/dialogs/product_info_dialog.py | 29 ++++++++++++++++++-----------</div></td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: защита от зависания при изменении размера окна
+- Добавлен флаг _resize_lock для предотвращения рекурсивных вызовов
+- Добавлена проверка минимального изменения ширины (10px)
+- Добавлено отслеживание последней ширины окна (_last_width)
+- Блокировка снимается через after(50ms) для безопасности
+Исправлена проблема с бесконечным циклом и 100% загрузкой CPU при ресайзе окна
+gui/dialogs/product_info_dialog.py | 40 +++++++++++++++++++++++++++-----------</div></td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: динамический перенос текста в окне детальной информации
+- Добавлены обработчики событий _on_window_resize и _on_models_frame_resize
+- wraplength для всех текстовых полей теперь вычисляется динамически при изменении размера окна
+- Текст автоматически переносится при сужении окна, оставаясь читаемым
+- Исправлена проблема с выходом длинного текста за пределы видимой области
+gui/dialogs/product_info_dialog.py | 47 +++++++++++++++++++++++++++++++++-----</div></td><td style="color:green;text-align:right">+41</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: убраны ограничения на отображение данных и улучшен перенос текста
+- Увеличен wraplength для всех текстовых полей (400→550, 600→650)
+- Снято ограничение на показ моделей (было 10, теперь все)
+- Снято ограничение на показ записей производителя (было 20, теперь все)
+- Удалены сообщения '... и ещё N записей'
+Теперь в окне детальной информации отображаются полные данные без сокращений.
+gui/dialogs/product_info_dialog.py | 22 +++++++---------------</div></td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление читаемости текста на вкладке &quot;Дополнительно&quot;
+- Изменён фон блоков с тёмного (#2a2a2a) на светлый (#f0f0f0, #ffffff)
+- Добавлен явный цвет текста #000000 для всех CTkLabel в блоках
+- Добавлены границы для визуального разделения блоков
+- Исправлена проблема с нечитаемым чёрным текстом на тёмном фоне
+gui/dialogs/product_info_dialog.py | 13 ++++++++-----</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление потокобезопасности SQLite и цветов полей
+- StoreAdapter, CssExportAdapter: создание нового соединения в каждом вызове для потокобезопасности
+- Удалено хранение _connection в адаптерах (теперь соединения создаются на лету)
+- ProductDetails: явное задание белого фона (#FFFFFF) и черного текста (#000000) для CTkEntry
+- Исправлена ошибка 'SQLite objects created in a thread can only be used in that same thread'
+- Исправлен черный текст на темном фоне в полях ввода
+Решены проблемы:
+1. Потокобезопасность SQLite - каждое соединение создается в том же потоке, где используется
+2. Читаемость UI - поля теперь всегда имеют контрастный белый фон с черным текстом
+gui/product_details.py                      |  6 +++++-
+gui/services/adapters/css_export_adapter.py | 28 ++++++++++++----------------
+gui/services/adapters/store_adapter.py      | 26 +++++++++++---------------</div></td><td style="color:green;text-align:right">+28</td><td style="color:red;text-align:right">-32</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: регистрация ProductDetailsService в DI-контейнере и передача в ProductInfoDialog
+- Добавлен импорт CssExportAdapter и ProductDetailsService в main.py
+- Создан экземпляр ProductDetailsService с тремя адаптерами (nomenclature, store, css_export)
+- Зарегистрирован сервис в DI-контейнере под ключом 'product_details_service'
+- Расширен DIContainer для поддержки строковых ключей (не только Type)
+- ProductDetails теперь принимает и передаёт details_service в ProductInfoDialog
+- SearchAddressTab получает details_service из контейнера и передаёт в ProductDetails
+Теперь окно детальной информации загружает полные данные из всех трёх БД:
+- nomenclature.db: unit, name_ru, alternative_articles
+- store.db: locations
+- css_export.db: product_model, name, usage_path, category1-3
+Исправлена проблема с заглушкой во вкладке 'Дополнительно'.
+gui/product_details.py         |  7 +++++--
+gui/tabs/search_address_tab.py |  3 ++-
+main.py                        | 17 +++++++++++++++--
+services/di_container.py       | 11 ++++++-----</div></td><td style="color:green;text-align:right">+28</td><td style="color:red;text-align:right">-10</td><td style="text-align:center">4</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление SQL-запросов и UI окна детальной информации
+nomenclature_adapter.py:
+- Исправлены имена полей: canonical_article → article, name_ru → name, alternative_articles → barcodes
+- Динамическое определение имени таблицы вместо хардкода
+- Потокобезопасные соединения в каждом методе
+product_details_service.py:
+- Синхронизированы имена полей с реальной схемой БД (article, name, barcodes)
+product_info_dialog.py:
+- Вкладка 'Номенклатура': удалено поле 'Описание', переименовано 'Категория' → 'Модель'
+- Поле 'Модель': отображает product_model из css_export.db с обрезкой текста в скобках через запятую
+- Вкладка 'Дополнительно': формат 'Оригинальное название' (css_export.name) и 'Расположение' ([Модель] &gt; [Путь])
+- Поддержка нескольких записей для одного артикула
+Документация database_schema.md проверена и соответствует реальной схеме БД
+gui/dialogs/product_info_dialog.py      | 77 +++++++++++++++++++--------------
+gui/services/product_details_service.py | 18 ++++----</div></td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-42</td><td style="text-align:center">2</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление полей БД nomenclature.db согласно реальной схеме
+- Изменены поля в SQL-запросах: canonical_article → article, name_ru → name, alternative_articles → barcodes
+- Обновлены README файлы с корректной схемой БД (таблица spare_parts вместо nomenclature)
+- Добавлено поле last_updated в описание схемы
+- Исправлены примеры SQL-запросов во всей документации
+Исправлена ошибка 'no such column: canonical_article' при поиске товаров
+data/databases/nomenclature/README.md         | 77 ++++++++++++++-------------
+docs/database_schema.md                       | 31 +++++------
+gui/services/adapters/nomenclature_adapter.py | 38 ++++++-------</div></td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-72</td><td style="text-align:center">3</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">fix: исправление SQL-запросов и маппинга полей в nomenclature_adapter.py
+- Заменены неверные имена полей: article → canonical_article, name → name_ru, barcodes → alternative_articles
+- Добавлено поле unit в SELECT-запросы методов search() и get_by_article()
+- Реализована динамическая проверка имени таблицы вместо хардкода
+- Обеспечена потокобезопасность через создание нового соединения в каждом методе
+- Добавлен блок finally для гарантированного закрытия соединения
+- Корректный парсинг JSON из поля alternative_articles
+Исправлены несоответствия из docs/code_db_mismatches.md
+gui/services/adapters/nomenclature_adapter.py | 68 +++++++++++++++++----------</div></td><td style="color:green;text-align:right">+44</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">1</td></tr><tr><td>20.05.2026</td><td><div class="commit-msg">docs: Добавлена полная документация по базам данных
+- Создана директория docs/ с документами:
+* README.md - навигация по документации
+* database_schema.md - подробная схема всех трёх БД
+* code_db_mismatches.md - выявленные несоответствия кода и БД
+* services_api.md - API сервисов и адаптеров
+- Обновлён корневой README.md:
+* Добавлен раздел 'Базы данных' с описанием nomenclature.db, store.db, css_export.db
+* Указано количество записей и ключевые поля
+* Добавлена схема связей между базами
+* Предупреждение что БД физически только на тестовой машине
+- Версия билда: 2.3
+README.md                  |  53 ++++++++++
+docs/README.md             |  48 +++++++++
+docs/code_db_mismatches.md | 135 ++++++++++++++++++++++++
+docs/database_schema.md    | 179 ++++++++++++++++++++++++++++++++
+docs/services_api.md       | 253 +++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+668</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">feat: ProductDetailsService для агрегации данных из 3 БД
+- Создан сервис ProductDetailsService для объединения данных из:
+* nomenclature.db (основная номенклатура, русские названия)
+* store.db (адреса хранения на складе)
+* css_export.db (запчасти Franke, модели оборудования)
+- Расширена модель Product новыми полями:
+* unit, description, category
+* manufacturer_info, storage_locations, models
+- Обновлён ProductInfoDialog:
+* Добавлена вкладка с информацией от производителя
+* Отображение списка моделей оборудования
+* Показ всех адресов хранения
+* Асинхронная загрузка данных
+- Добавлено поле 'Ед. изм.' в окно детальной информации
+gui/dialogs/product_info_dialog.py      | 187 +++++++++++++++++++++++++++++---
+gui/services/product_details_service.py | 176 ++++++++++++++++++++++++++++++
+libs/domain_models/product.py           |  14 ++-</div></td><td style="color:green;text-align:right">+362</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">docs: актуализация документации для v2.1
+- Обновлён статус GUI: 🚧 → ✅ (базовая версия завершена)
+- Добавлена секция 'Возможности GUI (v2.1)' в основной README
+- Документированы изменения:
+* Регистронезависимый поиск с поддержкой кириллицы и спецсимволов
+* Умное отображение поля 'Артикул 2' (без дубликатов)
+* Корректный парсинг JSON со штрихкодами
+* Пустые поля вместо текстовых заглушек
+- Обновлены правила разработки (запрет SQL LOWER() для кириллицы)
+- Добавлен changelog в gui/README.md
+README.md     | 26 ++++++++++++++++++++++++--
+gui/README.md | 21 ++++++++++++++++-----</div></td><td style="color:green;text-align:right">+40</td><td style="color:red;text-align:right">-7</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: регистронезависимый поиск через фильтрацию в Python (кириллица + спецсимволы)
+gui/services/adapters/nomenclature_adapter.py | 55 +++++++++++++++------------</div></td><td style="color:green;text-align:right">+31</td><td style="color:red;text-align:right">-24</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: регистронезависимый поиск через LOWER() для корректной работы с кириллицей
+gui/services/adapters/nomenclature_adapter.py | 15 +++++++++------</div></td><td style="color:green;text-align:right">+9</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: регистронезависимый поиск через COLLATE NOCASE
+gui/services/adapters/nomenclature_adapter.py | 10 +++++-----</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: регистронезависимый поиск в БД через LOWER()
+gui/services/adapters/nomenclature_adapter.py | 10 +++++-----</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: регистронезависимый поиск по артикулу, наименованию и штрихкоду
+gui/services/adapters/nomenclature_adapter.py | 8 ++++----
+main.py                                       | 5 +++--</div></td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: логика отображения Артикул2 - скрывать дубли основного артикула
+- Артикул2 теперь показывает только альтернативные артикулы, отличные от основного
+- Если все штрихкоды совпадают с основным артикулом, поле остаётся пустым
+- Поле 'Адрес' теперь отображается пустым вместо 'Не указан'
+- Изменения применены в product_details.py для основного окна и диалога информации
+gui/product_details.py | 16 +++++++++++-----</div></td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: корректное отображение пустых полей и распаковка JSON штрихкодов
+- Исправлено отображение двойных кавычек в поле 'Артикул 2' при пустом значении
+- Исправлено отображение поля 'Адрес' как пустого вместо 'Не указан'
+- Исправлена распаковка JSON-строки штрихкодов в детальном просмотре номенклатуры
+- Убрано некорректное отображение символов вместо значений штрихкодов
+gui/product_details.py                        |  3 ++-
+gui/services/adapters/nomenclature_adapter.py | 34 +++++++++++++++++++++------</div></td><td style="color:green;text-align:right">+29</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">docs: add Architecture Manifest; refactor: DI container integration in tabs, remove GUI schemas
+MANIFEST.md                                        | 159 +++++++++++++++++++++
+gui/__pycache__/__init__.cpython-312.pyc           | Bin 123 -&gt; 137 bytes
+.../__pycache__/search_address_tab.cpython-312.pyc | Bin 10429 -&gt; 8779 bytes</div></td><td style="color:green;text-align:right">+159</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">refactor: Переход на DI-контейнер, удаление лишних комментариев
+- gui/tabs/search_address_tab.py: замена services Dict на DIContainer, импорты интерфейсов
+- gui/tabs/inventory_tab.py: замена services Dict на DIContainer
+- main.py: уплотнение кода, удаление лишних комментариев и отладочных логов
+- Удалены ASCII-схемы интерфейсов из docstring
+gui/tabs/inventory_tab.py      | 16 +++-----
+gui/tabs/search_address_tab.py | 86 +++++++++++++-----------------------------
+main.py                        | 55 ++++++++-------------------</div></td><td style="color:green;text-align:right">+48</td><td style="color:red;text-align:right">-109</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">refactor: переход на DI-контейнер, устранение дублирования интерфейсов и заглушек
+Основные изменения:
+1. ✅ Удалены дублирующие интерфейсы из gui/services/interfaces/ (теперь только services/interfaces/)
+2. ✅ Удалены дублирующие заглушки из gui/services/stubs/ (теперь только services/stubs/)
+3. ✅ main.py переписан на использование DIContainer вместо словаря сервисов
+4. ✅ MainWindow обновлён для работы с DIContainer через интерфейсы ISearchService, ISettingsService
+5. ✅ SearchServiceWithMocks перемещён в main.py как локальный класс-адаптер
+6. ✅ Исправлен вызов get_setting() вместо get() для SettingsService
+7. ✅ Устранён хардкод абсолютных путей в адаптерах
+Архитектурные принципы:
+- DIP: UI зависит от абстракций (интерфейсов), а не конкретных реализаций
+- Закон Деметры: виджеты получают сервисы через DI, не лезут внутрь других виджетов
+- SRP: каждый класс имеет одну ответственность
+- DRY: устранено дублирование кода интерфейсов и заглушек
+gui/main_window.py                              |  18 +--
+gui/services/adapters/json_mock_loader.py       |   3 +-
+gui/services/adapters/nomenclature_adapter.py   |  26 +---
+gui/services/adapters/temp_adapter.py           | 151 ------------------------
+gui/services/interfaces/__init__.py             |  14 ---
+gui/services/interfaces/image_service.py        |  23 ----
+gui/services/interfaces/mock_data_service.py    |  25 ----
+gui/services/interfaces/printer_service.py      |  23 ----
+gui/services/interfaces/product_repo.py         |  23 ----
+gui/services/interfaces/search_service.py       |  23 ----
+gui/services/interfaces/settings_service.py     |  28 -----
+gui/services/stubs/__init__.py                  |  14 ---
+gui/services/stubs/image_service_stub.py        |  43 -------
+gui/services/stubs/printer_service_stub.py      |  42 -------
+gui/services/stubs/product_repo_stub.py         |  35 ------
+gui/services/stubs/search_service_stub.py       |  65 ----------
+gui/services/stubs/search_service_with_mocks.py |  70 -----------
+gui/services/stubs/settings_service_stub.py     |  58 ---------
+main.py                                         |  93 +++++++++++----</div></td><td style="color:green;text-align:right">+80</td><td style="color:red;text-align:right">-697</td><td style="text-align:center">19</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">refactor: упростить код, обновить README для ScanHead Combine v2.0
+- Удалены многословные комментарии и ASCII-схемы из search_bar.py и suggestion_list.py
+- Уплотнён код (убраны избыточные пробелы и пустые строки)
+- Обновлён корневой README.md: переименован в ScanHead Combine, версии модулей 2.0.0
+- .gitignore уже содержит .dev-tools/ и instructions.txt
+README.md                      | 150 ++++++++++++++---------------------------
+gui/search_bar.py              | 127 ++++++----------------------------
+gui/widgets/suggestion_list.py |  65 ++++--------------</div></td><td style="color:green;text-align:right">+83</td><td style="color:red;text-align:right">-259</td><td style="text-align:center">3</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: корректный .gitignore, удаление .dev-tools и instructions.txt из репозитория
+.dev-tools/check-env.sh       |  1 -
+.dev-tools/git-askpass-helper |  2 --
+.gitignore                    | 59 ++++++++++++++++++++++++++++++++++++++++++-
+instructions.txt              |  4 ---</div></td><td style="color:green;text-align:right">+58</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">4</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: очистка поля поиска после выбора подсказки + защита от зацикливания
+.gitignore                                         |  58 +--------------------
+gui/__pycache__/__init__.cpython-312.pyc           | Bin 0 -&gt; 123 bytes
+gui/__pycache__/product_details.cpython-312.pyc    | Bin 0 -&gt; 12195 bytes
+gui/__pycache__/search_bar.cpython-312.pyc         | Bin 0 -&gt; 16847 bytes
+.../product_info_dialog.cpython-312.pyc            | Bin 0 -&gt; 14555 bytes
+gui/search_bar.py                                  |   9 ++--
+.../__pycache__/search_address_tab.cpython-312.pyc | Bin 0 -&gt; 10429 bytes
+.../__pycache__/suggestion_list.cpython-312.pyc    | Bin 0 -&gt; 9938 bytes</div></td><td style="color:green;text-align:right">+4</td><td style="color:red;text-align:right">-63</td><td style="text-align:center">8</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: корректная обработка выбора подсказки без зацикливания поиска
+- Сброс _last_query в '' перед очисткой поля для предотвращения запуска нового поиска
+- Отмена отложенного таймера при выборе подсказки
+- Защита от поиска по пустой строке в _on_key_release (ранняя проверка)
+- Правильный порядок действий: сброс query → очистка → вставка артикула → поиск
+gui/search_bar.py | 48 ++++++++++++++++++++++++++++++++++--------------</div></td><td style="color:green;text-align:right">+34</td><td style="color:red;text-align:right">-14</td><td style="text-align:center">1</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">fix: детерминированная логика показа/скрытия списка подсказок
+- Убран toggle-паттерн из show_suggestions() (причина бага с исчезновением)
+- Добавлен флаг _is_visible для отслеживания состояния окна
+- show_suggestions() теперь ВСЕГДА показывает, никогда не скрывает
+- hide() теперь ВСЕГДА скрывает немедленно, без отложенных действий
+- Отмена любых отложенных вызовов перед новым действием
+- Пересоздание кнопок через _rebuild_buttons() вместо _cleanup_buttons() + создание
+- Динамический расчёт высоты списка (макс. 6 пунктов)
+- Ширина списка = ширина entry + 30px (передаётся в конструктор SuggestionList)
+- Видимый скроллбар с контрастными цветами (#555555/#777777)
+- Уменьшены отступы между кнопками (pady=1 вместо pady=2)
+- Синхронизация расчёта высоты в update_font_size() и _update_position()
+gui/search_bar.py              |   9 +-
+gui/widgets/suggestion_list.py | 182 ++++++++++++++++++-----------------------</div></td><td style="color:green;text-align:right">+84</td><td style="color:red;text-align:right">-107</td><td style="text-align:center">2</td></tr><tr><td>19.05.2026</td><td><div class="commit-msg">Мелкие правки геометрии search_bar.py
+gui/search_bar.py | 6 +++---</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">feat: динамическая высота полей и кнопок в зависимости от размера шрифта
+- SearchBar: высота entry = font_size + 20px
+- SuggestionList: высота кнопок = font_size + 14px, пересчёт высоты контента
+- ProductDetails: CTkEntry вместо ttk, высота = font_size + 16px, кнопки = font_size + 14px
+- ProductInfoDialog: все поля и кнопки используют font_size из конфига
+- Интеграция: передача font_size из settings_service в ProductDetails и ProductInfoDialog
+Приоритет: рациональное использование пространства без лишних отступов.
+gui/dialogs/product_info_dialog.py | 50 +++++++++++++++++++++++---------------
+gui/product_details.py             | 32 +++++++++++++-----------
+gui/search_bar.py                  |  5 +++-
+gui/tabs/search_address_tab.py     |  9 +++++--
+gui/widgets/suggestion_list.py     | 18 +++++++++++---</div></td><td style="color:green;text-align:right">+74</td><td style="color:red;text-align:right">-40</td><td style="text-align:center">5</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">feat: Добавить настройки шрифта, автофокуса и задержки для SearchBar
+- SettingsDialog: добавлены элементы управления для search_font_size (12-24pt), search_autofocus (bool), search_autofocus_delay (0-3 сек)
+- SearchBar: конструктор принимает config dict с настройками, применён крупный шрифт через CTkFont, автофокус с настраиваемой задержкой
+- SearchBar.apply_settings(): метод для обновления настроек без пересоздания виджета
+- SuggestionList.update_font_size(): метод для обновления шрифта в подсказках
+- SearchAddressTab.on_setting_changed(): обработчик изменений настроек поиска
+- MainWindow: передача callback в SettingsDialog для обработки изменений
+- Интеграция: настройки загружаются из settings_service при создании SearchBar
+gui/dialogs/settings_dialog.py | 106 +++++++++++++++++++++++++++++++++++++++--
+gui/main_window.py             |  15 +++++-
+gui/search_bar.py              |  32 +++++++++++--
+gui/tabs/search_address_tab.py |  20 +++++++-
+gui/widgets/suggestion_list.py |  13 +++++</div></td><td style="color:green;text-align:right">+175</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">5</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">feat: вернуть кастомный список подсказок на CTk с исправленной архитектурой
+- Шрифт: ВСЕГДА крупный (size=18+), передаётся через ctk.CTkFont, без системных fallback'ов
+- Фокус: автофокус на поле при активации вкладки, фокус возвращается после выбора подсказки через self.after(50, ...)
+- Стабильность (фикс TclError): обновление списка только через self.after(1, ...), проверка winfo_exists() перед geometry/destroy
+- При перестроении списка: сначала скрыть старые (pack_forget), потом создать новые
+- Интеграция с настройками: font_size и auto_focus вынесены в конструктор, заготовлена структура под config dict
+- НЕ используется ttk.Combobox - только CTkEntry + CTkToplevel + CTkScrollableFrame + CTkLabel/CTkButton
+SearchBar:
+- Добавлены параметры font_size (default 18), auto_focus (default True), config (dict)
+- _show_suggestions вызывает _do_show_suggestions через after(1) для стабильности
+- _on_suggestion_select возвращает фокус в поле через after(50)
+- Проверка winfo_exists() перед любыми операциями с виджетами
+SuggestionList:
+- Добавлен параметр font_size в конструктор
+- show_suggestions вызывает _do_show_suggestions через after(1)
+- Кнопки создаются с крупным шрифтом (height=40, font=CTkFont(size=font_size))
+- Проверка winfo_exists() перед geometry/deiconify вызовами
+- Удалён дублирующий метод _show_suggestions_internal
+gui/search_bar.py              | 87 +++++++++++++++++++++++++++++++-------
+gui/widgets/suggestion_list.py | 94 ++++++++++++++++++++----------------------</div></td><td style="color:green;text-align:right">+118</td><td style="color:red;text-align:right">-63</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: визуальный баг с морганием dropdown при быстром вводе
+- Добавлен механизм отложенного показа подсказок через _pending_suggestions
+- show_suggestions() теперь откладывает показ новых данных до завершения очистки старых кнопок
+- Выделен внутренний метод _show_suggestions_internal() для непосредственного отображения
+- Исправлено преждевременное скрытие dropdown при 0 результатах поиска
+- Устранено 'моргание' при последовательном вводе символов
+gui/widgets/suggestion_list.py | 54 ++++++++++++++++++++++++++++++++++++++++--</div></td><td style="color:green;text-align:right">+52</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: отложенное уничтожение CTkButton для предотвращения TclError
+- Скрытие кнопок через pack_forget() перед уничтожением (мгновенно)
+- Отложенное destroy() на 100мс для завершения внутренних _draw событий CTk
+- Удалена неиспользуемая логика отслеживания _button_after_ids
+- Предотвращает _tkinter.TclError при быстром вводе в поиске
+gui/widgets/suggestion_list.py | 27 ++++++++++++++++++---------</div></td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: немедленное уничтожение кнопок в SuggestionList для предотвращения гонок
+- Убрано отложенное уничтожение кнопок (after(100))
+- Кнопки уничтожаются немедленно после отмены всех событий
+- Добавлено отслеживание ID отложенного уничтожения (_destroy_after_id)
+- Предотвращено мерцание списка при быстром вводе
+gui/widgets/suggestion_list.py | 19 ++++++-------------</div></td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-13</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: отложенное уничтожение кнопок в SuggestionList для предотвращения гонки событий
+- Добавлен метод _delayed_destroy() для отложенного на 100мс уничтожения кнопок
+- Сначала скрываем кнопки через pack_forget(), затем отложенно уничтожаем
+- Это даёт очереди событий tkinter обработать pending _draw колбэки до destroy()
+- Предотвращает TclError при быстром перестроении списка подсказок
+gui/widgets/suggestion_list.py | 34 +++++++++++++++++++---------------</div></td><td style="color:green;text-align:right">+19</td><td style="color:red;text-align:right">-15</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: отмена внутренних after-событий CTkButton перед уничтожением
+- В SuggestionList._cleanup_buttons() добавлена отмена атрибутов
+_after_id и _draw_after_id у кнопок перед вызовом destroy()
+- Это предотвращает TclError при попытке перерисовки уже удалённых
+виджетов в очереди событий tkinter
+- Fixes race condition при быстром перестроении списка подсказок
+gui/widgets/suggestion_list.py | 14 +++++++++++++-</div></td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: гонка событий tkinter в выпадающем списке подсказок
+- Отмена отложенных событий (after) перед уничтожением кнопок
+- Привязка ширины dropdown к ширине поля поиска через &lt;Configure&gt;
+- Безопасная очистка виджетов с проверкой winfo_exists()
+- Отмена событий при destroy() и clear()
+Решает проблему _tkinter.TclError: invalid command name при быстром
+изменении размера окна или уничтожении виджетов
+gui/search_bar.py              | 51 ++++++++++++++++++++++++++++++++++++++++++
+gui/widgets/suggestion_list.py | 33 ++++++++++++++++++++++-----</div></td><td style="color:green;text-align:right">+79</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: использовать StoreAdapter вместо заглушки для product_repo
+main.py | 8 ++++++--</div></td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: открыть окно деталей, защита от TclError в подсказках
+- product_details.py: реализовано открытие ProductInfoDialog при клике на ℹ️
+- suggestion_list.py: добавлена проверка winfo_exists() в hide() и destroy() для предотвращения TclError
+- article2 теперь корректно отображается как пустая строка если нет второго штрих-кода
+gui/product_details.py         | 23 ++++++++++++++++++++++-
+gui/widgets/suggestion_list.py | 14 +++++++++++++-</div></td><td style="color:green;text-align:right">+35</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>18.05.2026</td><td><div class="commit-msg">fix: упрощён SQL-запрос поиска (article, name, barcodes)
+- Убраны несуществующие поля: canonical_article, name_ru, alternative_articles
+- Теперь используется простая схема: article, name, barcodes
+- Исправлен get_by_article()
+gui/services/adapters/nomenclature_adapter.py | 19 ++++++++-----------</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: потокобезопасность SQLite и динамическое имя таблицы в nomenclature_adapter
+- создание соединения перенесено внутрь search() для потокобезопасности
+- динамическое определение имени первой таблицы в БД
+- закрытие соединения в finally
+- обработка barcodes как пустой строки если None
+gui/services/adapters/nomenclature_adapter.py | 51 ++++++++++++++++++---------</div></td><td style="color:green;text-align:right">+34</td><td style="color:red;text-align:right">-17</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: исправить пути к БД в конфиге (data/databases/*)
+config/app_config.json | 6 +++---</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: добавлена проверка наличия БД с логированием и fallback на альтернативный путь
+- nomenclature_adapter.py: проверка existence, логирование cwd/project_root, fallback
+- store_adapter.py: проверка existence, логирование cwd/project_root, fallback
+- css_export_adapter.py: проверка existence, логирование cwd/project_root, fallback
+Теперь при отсутствии БД по основному пути будет попытка использовать относительный путь от cwd
+gui/services/adapters/css_export_adapter.py   | 17 ++++++++++++++++-
+gui/services/adapters/nomenclature_adapter.py | 14 ++++++++++++++
+gui/services/adapters/store_adapter.py        | 14 ++++++++++++++</div></td><td style="color:green;text-align:right">+44</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">Add *.db to .gitignore
+.gitignore | 4 +++-</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: исправить пути к БД в адаптерах
+- nomenclature_adapter.py: добавлено логирование пути при инициализации
+- store_adapter.py: отключено авто-создание схемы, добавлено логирование
+- temp_adapter.py: добавлено логирование пути
+Все адаптеры теперь корректно формируют путь относительно корня проекта
+через промежуточную переменную project_root для читаемости.
+gui/services/adapters/nomenclature_adapter.py | 4 +++-
+gui/services/adapters/store_adapter.py        | 7 +++++--
+gui/services/adapters/temp_adapter.py         | 4 +++-</div></td><td style="color:green;text-align:right">+11</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: добавить метод search_async в NomenclatureAdapter
+- Добавлен метод search_async для асинхронного поиска товаров
+- Поиск выполняется в отдельном потоке (threading.Thread)
+- Результат передаётся через callback
+- Исправлена ошибка AttributeError при использовании с реальными БД
+gui/services/adapters/nomenclature_adapter.py | 14 +++++++++++++-</div></td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: подключить NomenclatureAdapter для реального поиска в БД
+main.py | 8 +++++---</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix(adapters): обновить пути к БД согласно README
+- nomenclature_adapter.py: путь data/databases/nomenclature/nomenclature.db
+- store_adapter.py: путь data/databases/store/store.db, поддержка JSON-массивов locations
+- temp_adapter.py: путь temp/temp.db
+- css_export_adapter.py: новый адаптер для data/databases/css_export/css_export.db
+Все адаптеры используют относительные пути от корня проекта.
+При отсутствии БД выбрасывается FileNotFoundError (без моков).
+gui/services/adapters/css_export_adapter.py   | 106 +++++++++++++++++++++++
+gui/services/adapters/nomenclature_adapter.py |  96 +++++++--------------
+gui/services/adapters/store_adapter.py        | 116 ++++++++++++++++++--------
+gui/services/adapters/temp_adapter.py         |  57 +++++--------</div></td><td style="color:green;text-align:right">+235</td><td style="color:red;text-align:right">-140</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: обновить пути к БД и отключить моки
+- config/app_config.json: use_mock_data=false, добавлены db_paths
+- nomenclature_adapter.py: поиск БД в корне проекта, fallback на моки
+- store_adapter.py: поиск БД в корне проекта, авто-создание если нет
+- temp_adapter.py: поиск БД в корне проекта, авто-создание директории
+config/app_config.json                        | 10 ++++++++--
+gui/services/adapters/nomenclature_adapter.py | 20 +++++++++++++++++---
+gui/services/adapters/store_adapter.py        | 20 ++++++++++++++++++--
+gui/services/adapters/temp_adapter.py         | 22 ++++++++++++++++++++--</div></td><td style="color:green;text-align:right">+63</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">feat: добавить адаптеры БД и окно детальной информации
+- nomenclature_adapter.py: поиск товаров в nomenclature.db (read-only)
+- store_adapter.py: управление адресами хранения (read-write)
+- temp_adapter.py: временная очередь печати (авто-создание папки)
+- product_info_dialog.py: окно с табами (номенклатура, адрес, доп. инфо)
+- Все адаптеры имеют fallback на моки если БД не найдена
+- ProductInfoDialog поддерживает редактирование адреса хранения
+gui/dialogs/product_info_dialog.py            | 220 ++++++++++++++++++++++++++
+gui/services/adapters/nomenclature_adapter.py | 145 +++++++++++++++++
+gui/services/adapters/store_adapter.py        |  85 ++++++++++
+gui/services/adapters/temp_adapter.py         | 146 +++++++++++++++++</div></td><td style="color:green;text-align:right">+596</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">4</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix(sticker_preview): добавить методы set_product() и clear()
+- Добавлен метод set_product() как алиас для update_product()
+- Добавлен метод clear() для очистки превью
+- Исправлена ошибка AttributeError при вызове из search_address_tab
+gui/sticker_preview.py | 8 ++++++++</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">feat(ui): уплотнить интерфейс и добавить табы в настройки
+- product_details.py: кнопки ℹ️ и ⤵️ вместо 'В список', размер 28x28
+- product_details.py: кнопка ✏️ только у поля Адрес, отступы 2px
+- settings_dialog.py: размер окна 800x600, добавлены табы 'Вид/Адрес/Данные'
+- Уменьшены все отступы до минимума (2-3px)
+gui/dialogs/settings_dialog.py | 96 ++++++++++++++++++++++++++++--------------
+gui/product_details.py         | 61 ++++++++++++++++++---------</div></td><td style="color:green;text-align:right">+107</td><td style="color:red;text-align:right">-50</td><td style="text-align:center">2</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">chore: Add README for store DB
+data/databases/store/README.md | 71 ++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+71</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">chore: Add README for nomenclature DB
+data/databases/nomenclature/README.md | 190 ++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+190</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">chore: Add README for css_export DB and ignore *.db files
+data/databases/css_export/README.md | 200 ++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+200</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">style: уплотнить интерфейс, уменьшить кнопки и отступы
+- main_window.py: иконки 20×20, кнопки 28×28 (было 36×36)
+- search_address_tab.py: поиск прижат кверху pady=(2,5), прозрачный фон
+- product_details.py: отступы 2px, кнопка 'В список' height=28, кнопки '✏️' height=28
+gui/main_window.py             | 18 +++++++++---------
+gui/product_details.py         | 13 +++++++------
+gui/tabs/search_address_tab.py |  4 ++--</div></td><td style="color:green;text-align:right">+18</td><td style="color:red;text-align:right">-17</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">fix: геометрия MainWindow и логика поиска
+- main_window.py: перестроить UI на pack() с единой верхней панелью
+* top_bar.pack(side='top') с кнопками слева и табами справа
+* Контент в _content.pack(fill='both', expand=True)
+* Добавлен _on_tab_change() для переключения вкладок
+* height табов уменьшен до 36px, corner_radius=8
+- search_bar.py: скрытие списка при &lt;3 символов
+* _on_search_complete(): скрывать suggestions если len(query)&lt;3
+* _on_suggestion_select(): очищать поле после выбора
+- sticker_preview.py: убрать текст заглушки
+* _show_placeholder(): показывать только noimage.png без текста
+Отступы: 2-3px, нет лишних рамок
+gui/main_window.py     | 159 ++++++++++++++++++++++++++-----------------------
+gui/search_bar.py      |   5 +-
+gui/sticker_preview.py |   2 +-</div></td><td style="color:green;text-align:right">+91</td><td style="color:red;text-align:right">-75</td><td style="text-align:center">3</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">feat: доработка GUI по ТЗ v3.0
+main_window.py:
+- Единая прозрачная верхняя панель (top_bar)
+- Кнопки '?' и '⚙' слева (иконки 32×32)
+- Табы CTkTabview прижаты вправо
+- Отступы уменьшены до 2px
+search_bar.py:
+- Очистка списка при отсутствии результатов
+- Закрытие списка и очистка поля при клике на подсказку
+product_details.py:
+- Добавлена кнопка '➕ В список'
+- Callback on_add_to_queue для добавления в очередь
+print_queue.py:
+- Метод add_item(product) для добавления товара
+tabs/search_address_tab.py:
+- Интеграция кнопки 'В список' с очередью печати
+sticker_preview.py:
+- Убран текст заглушки, только noimage.png
+gui/main_window.py             | 20 +++++++++++---------
+gui/print_queue.py             | 27 +++++++++++++++++++++++++++
+gui/product_details.py         | 34 +++++++++++++++++++++++++++++++---
+gui/search_bar.py              | 19 ++++++++++++-------
+gui/sticker_preview.py         | 23 +++--------------------
+gui/tabs/search_address_tab.py | 11 ++++++-----</div></td><td style="color:green;text-align:right">+90</td><td style="color:red;text-align:right">-44</td><td style="text-align:center">6</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">docs: обновить главный README
+- Детализировать структуру gui/ с описанием компонентов
+- Добавить модуль gui/framework 0.2.0 в таблицу статусов
+- Указать актуальный стек: customtkinter + ttk + PIL
+README.md | 13 ++++++++++++-</div></td><td style="color:green;text-align:right">+12</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">style(print_queue): уменьшить отступы до 3px
+- Изменить padx/pady: 5,(5,0) → 3,3 (единый стиль)
+- Удалить комментарий о заголовке
+- Соответствие макету SearchAddressTab
+gui/print_queue.py | 3 +--</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">style(product_details): уменьшить отступы до 3px
+- Удалить заголовок-комментарий
+- Изменить padx/pady: 10,5 → 3,3 (единый стиль с вкладкой)
+- Соответствие макету SearchAddressTab
+gui/product_details.py | 4 +---</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">docs(gui): добавить README для GUI-фреймворка
+- Описание архитектуры и принципов (DI, модульность)
+- Структура файлов и компонентов
+- Инструкция по запуску и тестированию
+- Геометрия основной вкладки (схема)
+- Моки и заглушки сервисов
+- Правила разработки и расширения
+gui/README.md | 250 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+250</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">refactor(main_window): упростить комментарии в _create_top_panel
+- Удалить избыточные комментарии-дубликаты кода
+- Сохранить краткие пояснения к секциям
+- Форматирование: добавить пустую строку перед logger.debug
+gui/main_window.py | 11 +++++------</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-6</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">docs: update main README with current project structure and status
+README.md | 105 +++++++++++++++++++++++++++++---------------------------------</div></td><td style="color:green;text-align:right">+49</td><td style="color:red;text-align:right">-56</td><td style="text-align:center">1</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">refactor: remove legacy projects folder, update .gitignore
+.dev-tools/check-env.sh                            |    1 +
+.gitignore                                         |   36 +-
+instructions.txt                                   |    4 +
+projects/project_a/gui/__init__.py                 |    0
+projects/project_a/gui/barcode_config.py           |    0
+projects/project_a/gui/help.txt                    |   51 -
+projects/project_a/gui/main_window.py              | 1407 --------------------
+projects/project_a/gui/preview_tab.py              |    0
+projects/project_a/gui/scrollable_frame.py         |  115 --
+projects/project_a/gui/settings_dialog.py          |    0
+projects/project_a/icon.ico                        |  Bin 432254 -&gt; 0 bytes
+projects/project_a/instruction.txt                 |  125 --
+projects/project_a/main.py                         |   95 --
+projects/project_a/modules/__init__.py             |    0
+projects/project_a/modules/address_manager.py      |  147 --
+projects/project_a/modules/barcode_checker.py      |  129 --
+projects/project_a/modules/config_manager.py       |  155 ---
+projects/project_a/modules/database_manager.py     |   47 -
+projects/project_a/modules/invoice_parser.py       |  376 ------
+projects/project_a/modules/nomenclature.py         |  289 ----
+projects/project_a/modules/sticker_generator.py    |  247 ----
+projects/project_a/requirements.txt                |   14 -
+projects/project_a/run.bat                         |    3 -
+projects/project_a/run_cli.bat                     |    6 -
+projects/project_a/run_gui.bat                     |    6 -
+projects/project_a/setup.bat                       |  113 --
+projects/project_b/2.0.0                           |    1 -
+projects/project_b/3.1.0                           |    1 -
+projects/project_b/README.txt                      |   50 -
+projects/project_b/commands.py                     |   61 -
+projects/project_b/config/__init__.py              |    1 -
+projects/project_b/config/settings.py              |  160 ---
+projects/project_b/core/__init__.py                |    1 -
+projects/project_b/core/address_manager.py         |   88 --
+projects/project_b/core/inventory_parser.py        |  120 --
+projects/project_b/core/nomenclature.py            |   89 --
+projects/project_b/exporters/__init__.py           |    1 -
+projects/project_b/exporters/csv_exporter.py       |   28 -
+projects/project_b/exporters/excel_exporter.py     |   28 -
+projects/project_b/gui/__init__.py                 |    1 -
+projects/project_b/gui/main_window.py              |  122 --
+projects/project_b/gui/settings_dialog.py          |  101 --
+projects/project_b/gui/tabs/__init__.py            |    1 -
+.../gui/tabs/__pycache__/__init__.cpython-313.pyc  |  Bin 153 -&gt; 0 bytes
+.../gui/tabs/__pycache__/count_tab.cpython-313.pyc |  Bin 28166 -&gt; 0 bytes
+.../tabs/__pycache__/inventory_tab.cpython-313.pyc |  Bin 70051 -&gt; 0 bytes
+.../tabs/__pycache__/search_tab.cpython-313.pyc    |  Bin 28102 -&gt; 0 bytes
+projects/project_b/gui/tabs/count_tab.py           |  301 -----
+projects/project_b/gui/tabs/inventory_tab.py       |  824 ------------
+projects/project_b/gui/tabs/search_tab.py          |  425 ------
+projects/project_b/gui/widgets/__init__.py         |    1 -
+.../widgets/__pycache__/__init__.cpython-313.pyc   |  Bin 156 -&gt; 0 bytes
+.../__pycache__/article_entry.cpython-313.pyc      |  Bin 12638 -&gt; 0 bytes
+projects/project_b/gui/widgets/article_entry.py    |  141 --
+projects/project_b/icons/app.ico                   |  Bin 34234 -&gt; 0 bytes
+projects/project_b/icons/app.png                   |  Bin 40715 -&gt; 0 bytes
+projects/project_b/icons/app.png.ico               |  Bin 40715 -&gt; 0 bytes
+projects/project_b/main.py                         |   45 -
+projects/project_b/models/__init__.py              |    1 -
+projects/project_b/models/count_item.py            |   14 -
+projects/project_b/models/inventory_item.py        |   53 -
+projects/project_b/models/product.py               |   22 -
+projects/project_b/modules/__init__.py             |    0
+projects/project_b/modules/address_manager.py      |  147 --
+projects/project_b/modules/barcode_checker.py      |  129 --
+projects/project_b/modules/config_manager.py       |  155 ---
+projects/project_b/modules/sticker_generator.py    |  276 ----
+projects/project_b/requirements.txt                |   10 -
+projects/project_b/run.bat                         |    3 -
+projects/project_b/utils/__init__.py               |    1 -
+projects/project_b/utils/article_normalizer.py     |   70 -
+projects/project_b/utils/path_utils.py             |   11 -</div></td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-6836</td><td style="text-align:center">72</td></tr><tr><td>17.05.2026</td><td><div class="commit-msg">Add .gitignore
+.gitignore | 6 +++++-</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">fix: Use pack() for left_frame in top_panel to avoid grid/pack conflict
+gui/main_window.py | 8 ++++----</div></td><td style="color:green;text-align:right">+4</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">fix: Use CTkTabview correctly (add returns frame, pack content)
+gui/main_window.py | 43 +++++++++++++------------------------------</div></td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-30</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">fix: Add missing _load_no_image and UI methods to StickerPreview
+gui/sticker_preview.py | 87 ++++++++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+87</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">fix: Remove header/status-bar, move tabs right with icons, add help/settings btns, reduce padding
+gui/main_window.py             | 175 ++++++++++++++++++++---------------------
+gui/print_queue.py             |   2 +-
+gui/product_details.py         |  10 +--
+gui/sticker_preview.py         | 148 ----------------------------------
+gui/tabs/search_address_tab.py |   4 +-</div></td><td style="color:green;text-align:right">+92</td><td style="color:red;text-align:right">-247</td><td style="text-align:center">5</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">fix: SearchBar click behavior, new layout (details top, queue+preview bottom), removed headers, added Import button
+gui/print_queue.py             | 23 +++++++-----
+gui/search_bar.py              |  8 +++--
+gui/tabs/search_address_tab.py | 79 +++++++++++++++++-------------------------</div></td><td style="color:green;text-align:right">+53</td><td style="color:red;text-align:right">-57</td><td style="text-align:center">3</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">Add custom import icons for UI elements (import-from-file64.png, import-from-file32.png). Deleted export icons
+data/icons/{export32.png =&gt; import-from-file32.png} | Bin
+data/icons/{export64.png =&gt; import-from-file64.png} | Bin</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">Add custom export icons for UI elements (export64.png, export32.png)
+data/icons/export32.png | Bin 0 -&gt; 2107 bytes
+data/icons/export64.png | Bin 0 -&gt; 4217 bytes</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">Add custom icons for UI elements (add, find, settings, storage, etc.)
+data/icons/add-to-print-list32.png | Bin 0 -&gt; 1004 bytes
+data/icons/add-to-print-list64.png | Bin 0 -&gt; 1427 bytes
+data/icons/find32.png              | Bin 0 -&gt; 1600 bytes
+data/icons/find64.png              | Bin 0 -&gt; 3078 bytes
+data/icons/help32.png              | Bin 0 -&gt; 2688 bytes
+data/icons/help64.png              | Bin 0 -&gt; 6486 bytes
+data/icons/invent32.png            | Bin 0 -&gt; 1036 bytes
+data/icons/invent64.png            | Bin 0 -&gt; 1569 bytes
+data/icons/settings32.png          | Bin 0 -&gt; 2861 bytes
+data/icons/settings64.png          | Bin 0 -&gt; 7906 bytes
+data/icons/storage32.png           | Bin 0 -&gt; 1521 bytes
+data/icons/storage64.png           | Bin 0 -&gt; 2161 bytes</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">12</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">feat: Move SearchBar to SearchAddressTab, enlarge tab labels, add 'Add to Queue' button
+gui/main_window.py             | 31 ++++++++----------
+gui/tabs/search_address_tab.py | 73 +++++++++++++++++++++++++++++++++---------</div></td><td style="color:green;text-align:right">+71</td><td style="color:red;text-align:right">-33</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">chore: Add git-askpass-helper to .dev-tools
+.dev-tools/git-askpass-helper |  2 ++
+.gitignore                    | 69 +++++++++++++++++++++++++++++++++++++++++--</div></td><td style="color:green;text-align:right">+69</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>16.05.2026</td><td><div class="commit-msg">feat: Integrate noimage.png placeholder into StickerPreview
+gui/sticker_preview.py | 47 ++++++++++++++++++++++++++++++++++++++++++-----</div></td><td style="color:green;text-align:right">+42</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">1</td></tr><tr><td>15.05.2026</td><td><div class="commit-msg">Add noimage.png placeholder for sticker preview
+data/images/noimage.png | Bin 0 -&gt; 15965 bytes</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>15.05.2026</td><td><div class="commit-msg">feat: Add autocomplete dropdown to SearchBar (shows after 3+ chars)
+gui/search_bar.py              | 67 ++++++++++++++++++++++++++++--
+gui/widgets/suggestion_list.py | 93 ++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+156</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">2</td></tr><tr><td>15.05.2026</td><td><div class="commit-msg">fix: Add set_setting to StubSettingsService, fix Product.id references, add dropdown placeholders
+gui/product_details.py                      | 7 ++++---
+gui/services/stubs/settings_service_stub.py | 5 +++++
+gui/sticker_preview.py                      | 6 +++++-</div></td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>15.05.2026</td><td><div class="commit-msg">fix: Add missing methods to stub services (get_setting, generate_sticker, print_queue) + fix search by barcode
+gui/services/stubs/printer_service_stub.py      | 17 ++++++++++++++++-
+gui/services/stubs/search_service_with_mocks.py |  8 +++++---
+gui/services/stubs/settings_service_stub.py     |  5 +++++</div></td><td style="color:green;text-align:right">+26</td><td style="color:red;text-align:right">-4</td><td style="text-align:center">3</td></tr><tr><td>15.05.2026</td><td><div class="commit-msg">fix: Add MainWindow to root geometry via pack()
+main.py | 1 +</div></td><td style="color:green;text-align:right">+1</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">debug: Add verbose logging to config loading in main.py
+main.py | 9 ++++++++-</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Always pass search results to SearchAddressTab (remove active tab check)
+gui/main_window.py | 9 ++++++---</div></td><td style="color:green;text-align:right">+6</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Align Product model usage (address vs addresses, remove article2)
+gui/print_queue.py                        | 16 +++++++++++++---
+gui/product_details.py                    |  5 ++---
+gui/services/adapters/json_mock_loader.py |  3 +--</div></td><td style="color:green;text-align:right">+16</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">3</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Align Product model fields in JsonMockLoader and mocks data
+data/mocks/products.json | 16 ++++++++--------</div></td><td style="color:green;text-align:right">+8</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">feat: Add mock data system with JSON loader
+- Created data/mocks/ directory with products.json and addresses.json
+- Added IMockDataService interface for mock data loading
+- Implemented JsonMockLoader adapter for JSON file parsing
+- Created SearchServiceWithMocks for async search using mock data
+- Added app_config.json for runtime configuration (use_mock_data toggle)
+- Updated main.py to load config and switch between mocks/stubs
+- Fixed SearchBar key binding (was empty string, now &lt;KeyRelease&gt;)
+Architecture benefits:
+- No hardcoded test data in GUI code
+- Easy toggle between mocks and real services via config
+- Realistic test data close to production format
+- Scalable: add new entities by editing JSON files
+config/app_config.json                          |  8 +++
+data/mocks/__init__.py                          |  1 +
+data/mocks/addresses.json                       | 18 ++++++
+data/mocks/products.json                        | 26 ++++++++
+gui/services/adapters/json_mock_loader.py       | 82 +++++++++++++++++++++++++
+gui/services/interfaces/mock_data_service.py    | 25 ++++++++
+gui/services/stubs/search_service_with_mocks.py | 68 ++++++++++++++++++++
+main.py                                         | 65 ++++++++++++++++----</div></td><td style="color:green;text-align:right">+282</td><td style="color:red;text-align:right">-11</td><td style="text-align:center">8</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Add get_column_config and save_column_config to StubSettingsService
+gui/services/stubs/settings_service_stub.py | 13 +++++++++++++</div></td><td style="color:green;text-align:right">+13</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: SearchAddressTab и InventoryTab принимают services dict вместо DIContainer
+gui/tabs/inventory_tab.py      | 15 +++++----------
+gui/tabs/search_address_tab.py | 20 +++++++++-----------</div></td><td style="color:green;text-align:right">+14</td><td style="color:red;text-align:right">-21</td><td style="text-align:center">2</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Use self._services instead of self.services in MainWindow
+gui/main_window.py | 4 ++--</div></td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Pass services dict to tabs instead of missing _container
+gui/main_window.py | 4 ++--</div></td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: MainWindow принимает services dict вместо DIContainer
+gui/main_window.py | 15 +++++++--------</div></td><td style="color:green;text-align:right">+7</td><td style="color:red;text-align:right">-8</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: удалить несуществующий параметр id из Product в заглушках
+gui/services/stubs/search_service_stub.py | 3 ---</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-3</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: исправлены импорты domain_models (убран несуществующий подмодуль models)
+gui/print_queue.py             | 2 +-
+gui/product_details.py         | 2 +-
+gui/search_bar.py              | 2 +-
+gui/sticker_preview.py         | 2 +-
+gui/tabs/search_address_tab.py | 2 +-</div></td><td style="color:green;text-align:right">+5</td><td style="color:red;text-align:right">-5</td><td style="text-align:center">5</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: исправлен импорт quick_bootstrap в main.py
+main.py | 4 ++--</div></td><td style="color:green;text-align:right">+2</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">1</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">feat(gui): Add DI services, interfaces, stubs and test runner
+- Created services/interfaces/ with ISearchService, IProductRepository, IImageService, IPrinterService, ISettingsService
+- Created services/stubs/ with mock implementations returning test data (3 products)
+- Updated main.py: Bootstrap integration, DI container, async search with 300ms debounce
+- Added test data: ART-001/002/003 with addresses and barcodes
+- Configured logging via libs.core.Bootstrap
+- Ready for UI testing: python main.py
+.gitignore                                  | 140 ----------------------------
+gui/services/__init__.py                    |   1 +
+gui/services/interfaces/__init__.py         |  14 +++
+gui/services/interfaces/image_service.py    |  23 +++++
+gui/services/interfaces/printer_service.py  |  23 +++++
+gui/services/interfaces/product_repo.py     |  23 +++++
+gui/services/interfaces/search_service.py   |  23 +++++
+gui/services/interfaces/settings_service.py |  28 ++++++
+gui/services/stubs/__init__.py              |  14 +++
+gui/services/stubs/image_service_stub.py    |  43 +++++++++
+gui/services/stubs/printer_service_stub.py  |  27 ++++++
+gui/services/stubs/product_repo_stub.py     |  35 +++++++
+gui/services/stubs/search_service_stub.py   |  68 ++++++++++++++
+gui/services/stubs/settings_service_stub.py |  35 +++++++
+main.py                                     | 120 +++++++++++++++---------</div></td><td style="color:green;text-align:right">+433</td><td style="color:red;text-align:right">-184</td><td style="text-align:center">15</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">fix: Исправление импортов и моделей для соответствия libs/
+- Обновлены импорты: libs.domain_models.models -&gt; libs.domain_models
+- Исправлена модель Product в заглушках (убран id, addresses -&gt; address)
+- Обновлён Bootstrap: quick_bootstrap -&gt; BootstrapConfig + Bootstrap().run()
+- Бэкенд-часть проходит проверку импортов
+main.py                         | 9 ++++++---
+services/interfaces/__init__.py | 2 +-
+services/stubs/__init__.py      | 8 +++-----</div></td><td style="color:green;text-align:right">+10</td><td style="color:red;text-align:right">-9</td><td style="text-align:center">3</td></tr><tr><td>12.05.2026</td><td><div class="commit-msg">feat(gui): Этап 1 - Базовый каркас GUI с DI
+- Создана структура модулей gui/, services/
+- Реализованы интерфейсы сервисов (ISearchService, IProductRepository, IPrinterService, ISettingsService, IImageService, IInventoryService)
+- Реализованы заглушки сервисов (Stub*) для разработки без реальной бизнес-логики
+- Создан DI-контейнер для внедрения зависимостей
+- Главное окно (MainWindow) с ttk.Notebook и двумя вкладками
+- Вкладка 'Поиск | Адрес': детали товара, очередь печати, превью стикера
+- Вкладка 'Инвентаризация': заглушка с кнопками
+- SearchBar с debounce 300мс для асинхронного поиска
+- ProductDetails с readonly полями и диалогом редактирования
+- PrintQueue на базе ttk.Treeview с inline-редактированием
+- StickerPreview с генерацией превью через сервис
+- Диалоги: FieldEditor, StickerEditor, SettingsDialog
+- Интеграция с libs.core.Bootstrap для логирования
+- Python 3.13+ (match/case), гибридный CTk + ttk
+gui/__init__.py                 |   0
+gui/dialogs/__init__.py         |   0
+gui/dialogs/field_editor.py     | 124 +++++++++++++++++++
+gui/dialogs/settings_dialog.py  | 133 ++++++++++++++++++++
+gui/dialogs/sticker_editor.py   | 221 +++++++++++++++++++++++++++++++++
+gui/main_window.py              | 156 ++++++++++++++++++++++++
+gui/print_queue.py              | 264 ++++++++++++++++++++++++++++++++++++++++
+gui/product_details.py          | 215 ++++++++++++++++++++++++++++++++
+gui/search_bar.py               | 109 +++++++++++++++++
+gui/sticker_preview.py          | 151 +++++++++++++++++++++++
+gui/tabs/__init__.py            |   0
+gui/tabs/inventory_tab.py       | 110 +++++++++++++++++
+gui/tabs/search_address_tab.py  | 130 ++++++++++++++++++++
+gui/widgets/__init__.py         |   0
+gui/windows/__init__.py         |   0
+main.py                         |  60 +++++++++
+services/__init__.py            |   0
+services/di_container.py        | 101 +++++++++++++++
+services/interfaces/__init__.py | 166 +++++++++++++++++++++++++
+services/stubs/__init__.py      | 158 ++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+2098</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">20</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">docs: добавить README.md для всех новых модулей и обновить корневой README
+- Добавлены README.md для модулей: core, i18n, domain, repository, scanner_input, utils, printing, config, parsers
+- Обновлен корневой README.md с полной структурой проекта
+- Добавлены таблицы статусов для модулей первой и второй волны
+- Указаны ближайшие задачи развития проекта
+- Все README содержат примеры использования и списки зависимостей
+README.md                    | 158 +++++++++++++++++++++++++------------------
+libs/config/README.md        |  36 ++++++++++
+libs/core/README.md          |  38 +++++++++++
+libs/domain/README.md        |  32 +++++++++
+libs/i18n/README.md          |  39 +++++++++++
+libs/parsers/README.md       |  24 +++++++
+libs/printing/README.md      |  36 ++++++++++
+libs/repository/README.md    |  46 +++++++++++++
+libs/scanner_input/README.md |  53 +++++++++++++++
+libs/utils/README.md         |  53 +++++++++++++++</div></td><td style="color:green;text-align:right">+449</td><td style="color:red;text-align:right">-66</td><td style="text-align:center">10</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: добавить модули bootstrap и i18n
+- libs/core/bootstrap.py: инициализация приложения, логгер, обработчик исключений
+- libs/i18n/messages.py: централизованные сообщения с поддержкой ru/en
+- Полное разделение инфраструктурного кода от GUI
+libs/core/__init__.py  |  15 +++
+libs/core/bootstrap.py | 274 +++++++++++++++++++++++++++++++++++++++++++++++++
+libs/i18n/__init__.py  |  21 ++++
+libs/i18n/messages.py  | 265 +++++++++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+575</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">4</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: извлечение бизнес-логики в libs
+Новые модули:
+- libs/domain/discrepancy.py: Калькулятор расхождений (план/факт)
+- libs/utils/file_naming.py: Генератор имен файлов по шаблонам
+- libs/utils/fuzzy_search.py: Нечеткий поиск и фильтрация
+- libs/printing/sticker_generator.py: Генератор этикеток со штрих-кодами
+- libs/config/preset_manager.py: Менеджер пресетов печати
+Преимущества:
+- Изоляция бизнес-логики от GUI
+- Переиспользование в новых проектах
+- Упрощение тестирования
+- Соблюдение принципов SOLID
+libs/config/__init__.py            |   0
+libs/config/preset_manager.py      | 200 +++++++++++++++++++++++++
+libs/domain/__init__.py            |   0
+libs/domain/discrepancy.py         | 129 ++++++++++++++++
+libs/parsers/__init__.py           |   0
+libs/printing/__init__.py          |   0
+libs/printing/sticker_generator.py | 299 +++++++++++++++++++++++++++++++++++++
+libs/utils/__init__.py             |   0
+libs/utils/file_naming.py          | 119 +++++++++++++++
+libs/utils/fuzzy_search.py         | 175 ++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+922</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">10</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: добавить модуль scanner_input для работы со сканерами штрих-кодов
+- interfaces.py: абстрактный базовый класс ScannerProvider
+- hid_scanner.py: реализация для USB/Bluetooth HID-сканеров
+- camera_stub.py: заглушка для будущей камеры (OpenCV/ZBar)
+- buffer.py: буферизация ввода с защитой от дребезга и таймаутом
+- __init__.py: публичный API модуля
+Преимущества:
+- Независимость от GUI (логика вынесена из виджетов)
+- Поддержка стратегии (легкое переключение между HID и камерой)
+- Тестируемость (юнит-тесты без реального железа)
+- Типизация и документация
+libs/scanner_input/__init__.py    |  33 ++++++++++
+libs/scanner_input/buffer.py      | 126 ++++++++++++++++++++++++++++++++++++++
+libs/scanner_input/camera_stub.py |  92 ++++++++++++++++++++++++++++
+libs/scanner_input/hid_scanner.py |  99 ++++++++++++++++++++++++++++++
+libs/scanner_input/interfaces.py  |  68 ++++++++++++++++++++</div></td><td style="color:green;text-align:right">+418</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">5</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">refactor: вынести словари команд в отдельные файлы данных
+- Создан модуль libs/command_handler/data/ для хранения словарей команд
+- COMMANDS перенесены в data/commands.py с подробными комментариями
+- RUS_COMMANDS перенесены в data/rus_commands.py с подробными комментариями
+- core.py обновлён для импорта и объединения словарей
+- Упрощено редактирование и расширение списка команд
+- Сохранена обратная совместимость API
+libs/command_handler/core.py              |  9 ++++-
+libs/command_handler/data/__init__.py     | 10 +++++
+libs/command_handler/data/commands.py     | 59 +++++++++++++++++++++++++++
+libs/command_handler/data/rus_commands.py | 67 +++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+143</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">4</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: добавить слой репозиториев для доступа к данным
+- libs/repository/interfaces.py: абстрактные классы ProductRepository, InventoryRepository, AddressRepository, CountRepository
+- libs/repository/sqlite_impl.py: SQLite-реализации всех репозиториев
+- libs/domain_models/address.py: доменная модель адреса хранения
+- libs/domain_models/__init__.py: экспорт модели Address
+Основные изменения:
+- Реализован принцип инверсии зависимостей (DIP) через абстрактные репозитории
+- Создан контекстный менеджер для безопасной работы с БД
+- Добавлена автоматическая инициализация схемы БД
+- Поддержка транзакций и отката при ошибках
+libs/domain_models/__init__.py |   3 +-
+libs/domain_models/address.py  |  32 +++
+libs/repository/__init__.py    |  36 +++
+libs/repository/interfaces.py  | 318 ++++++++++++++++++++++++++
+libs/repository/sqlite_impl.py | 504 +++++++++++++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+892</td><td style="color:red;text-align:right">-1</td><td style="text-align:center">5</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: Complete module extraction for ScanHead Core
+New modules extracted from project_b GUI and core:
+- inventory_parser: Parse Excel inventory files with auto-detection
+- domain_models: InventoryItem, CountItem, Product dataclasses
+- data_exporters: ExcelExporter, CSVExporter for data export
+- command_handler: Scanner command processing service
+- ui_components: Accordion widget (tkinter-based)
+Improvements:
+- Added parse_inventory_file() convenience function
+- All modules follow separation of concerns principle
+- Type hints and docstrings added throughout
+- Zero dependencies on project-specific code
+Ready for use in new projects.
+.gitignore                            | 166 +++++++++++++++-----
+libs/command_handler/README.md        |  50 ++++++
+libs/command_handler/__init__.py      |   9 ++
+libs/command_handler/core.py          | 110 ++++++++++++++
+libs/data_exporters/README.md         |  52 +++++++
+libs/data_exporters/__init__.py       |   9 ++
+libs/data_exporters/csv_exporter.py   |  48 ++++++
+libs/data_exporters/excel_exporter.py |  51 +++++++
+libs/domain_models/README.md          |  76 ++++++++++
+libs/domain_models/__init__.py        |  10 ++
+libs/domain_models/count_item.py      |  32 ++++
+libs/domain_models/inventory_item.py  |  84 +++++++++++
+libs/domain_models/product.py         |  38 +++++
+libs/inventory_parser/README.md       |  68 +++++++++
+libs/inventory_parser/__init__.py     |  36 +++++
+libs/inventory_parser/core.py         | 276 ++++++++++++++++++++++++++++++++++
+libs/ui_components/README.md          |  45 ++++++
+libs/ui_components/__init__.py        |   8 +
+libs/ui_components/accordion.py       |  77 ++++++++++</div></td><td style="color:green;text-align:right">+1211</td><td style="color:red;text-align:right">-34</td><td style="text-align:center">19</td></tr><tr><td>08.05.2026</td><td><div class="commit-msg">feat: добавлены модули barcode_validator и barcode_generator
+README.md                          | 85 ++++++++++++++++++++++++++++++++++++++
+libs/barcode_generator/README.md   | 10 +++++
+libs/barcode_generator/__init__.py |  4 ++
+libs/barcode_generator/core.py     | 55 ++++++++++++++++++++++++
+libs/barcode_validator/README.md   | 11 +++++
+libs/barcode_validator/__init__.py |  4 ++
+libs/barcode_validator/core.py     | 49 ++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+218</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">7</td></tr><tr><td>07.05.2026</td><td><div class="commit-msg">update branch
+.gitignore                          |  42 ++--
+libs/article_normalizer/README.md   |  80 +++++++
+libs/article_normalizer/__init__.py |   9 +
+libs/article_normalizer/core.py     | 108 +++++++++
+libs/barcode_checker/README.md      | 102 +++++++++
+libs/barcode_checker/__init__.py    |   9 +
+libs/barcode_checker/core.py        | 168 ++++++++++++++
+libs/data_enricher/README.md        | 216 ++++++++++++++++++
+libs/data_enricher/__init__.py      |   9 +
+libs/data_enricher/core.py          | 219 ++++++++++++++++++
+libs/data_enricher/models.py        |   7 +
+libs/data_validator/README.md       | 234 ++++++++++++++++++++
+libs/data_validator/__init__.py     |   9 +
+libs/data_validator/core.py         | 212 ++++++++++++++++++
+libs/db_manager/README.md           | 169 ++++++++++++++
+libs/db_manager/__init__.py         |  10 +
+libs/db_manager/core.py             | 428 ++++++++++++++++++++++++++++++++++++
+libs/db_manager/models.py           | 102 +++++++++</div></td><td style="color:green;text-align:right">+2117</td><td style="color:red;text-align:right">-16</td><td style="text-align:center">18</td></tr><tr><td>07.05.2026</td><td><div class="commit-msg">feat: Add core library modules (config_manager, path_utils, article_normalizer, barcode_checker, db_manager, data_validator, data_enricher)
+.gitignore                      |  38 ++++++
+libs/config_manager/README.md   | 137 ++++++++++++++++++++++
+libs/config_manager/__init__.py |  15 +++
+libs/config_manager/core.py     | 254 ++++++++++++++++++++++++++++++++++++++++
+libs/path_utils/README.md       | 171 +++++++++++++++++++++++++++
+libs/path_utils/__init__.py     |  16 +++
+libs/path_utils/core.py         | 191 ++++++++++++++++++++++++++++++</div></td><td style="color:green;text-align:right">+822</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">7</td></tr><tr><td>07.05.2026</td><td><div class="commit-msg">chore: удалён неиспользуемый bug_tracker из проекта Б
+.../project_b/bug_tracker/25.03.2026_14_25.jpg     | Bin 195281 -&gt; 0 bytes
+.../project_b/bug_tracker/25.03.2026_14_28.jpg     | Bin 224106 -&gt; 0 bytes
+.../project_b/bug_tracker/26.03.2026_11_52.jpg     | Bin 111616 -&gt; 0 bytes
+...00\320\265\320\272\320\272\320\265\321\200.txt&quot; |  28 ----------
+...0\320\265\320\272\320\272\320\265\321\2002.txt&quot; |  42 --------------
+...0\320\265\320\272\320\272\320\265\321\2003.txt&quot; |  62 ---------------------
+...0\320\265\320\272\320\272\320\265\321\2004.txt&quot; |  18 ------
+...0\320\265\320\272\320\272\320\265\321\2005.txt&quot; |  28 ----------
+...0\320\265\320\272\320\272\320\265\321\2006.txt&quot; |  10 ----</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-188</td><td style="text-align:center">9</td></tr><tr><td>07.05.2026</td><td><div class="commit-msg">feat: инициализация структуры + проекты А и Б
+projects/project_a/gui/__init__.py                 |    0
+projects/project_a/gui/barcode_config.py           |    0
+projects/project_a/gui/help.txt                    |   51 +
+projects/project_a/gui/main_window.py              | 1407 ++++++++++++++++++++
+projects/project_a/gui/preview_tab.py              |    0
+projects/project_a/gui/scrollable_frame.py         |  115 ++
+projects/project_a/gui/settings_dialog.py          |    0
+projects/project_a/icon.ico                        |  Bin 0 -&gt; 432254 bytes
+projects/project_a/instruction.txt                 |  125 ++
+projects/project_a/main.py                         |   95 ++
+projects/project_a/modules/__init__.py             |    0
+projects/project_a/modules/address_manager.py      |  147 ++
+projects/project_a/modules/barcode_checker.py      |  129 ++
+projects/project_a/modules/config_manager.py       |  155 +++
+projects/project_a/modules/database_manager.py     |   47 +
+projects/project_a/modules/invoice_parser.py       |  376 ++++++
+projects/project_a/modules/nomenclature.py         |  289 ++++
+projects/project_a/modules/sticker_generator.py    |  247 ++++
+projects/project_a/requirements.txt                |   14 +
+projects/project_a/run.bat                         |    3 +
+projects/project_a/run_cli.bat                     |    6 +
+projects/project_a/run_gui.bat                     |    6 +
+projects/project_a/setup.bat                       |  113 ++
+projects/project_b/2.0.0                           |    1 +
+projects/project_b/3.1.0                           |    1 +
+projects/project_b/README.txt                      |   50 +
+.../project_b/bug_tracker/25.03.2026_14_25.jpg     |  Bin 0 -&gt; 195281 bytes
+.../project_b/bug_tracker/25.03.2026_14_28.jpg     |  Bin 0 -&gt; 224106 bytes
+.../project_b/bug_tracker/26.03.2026_11_52.jpg     |  Bin 0 -&gt; 111616 bytes
+...00\320\265\320\272\320\272\320\265\321\200.txt&quot; |   28 +
+...0\320\265\320\272\320\272\320\265\321\2002.txt&quot; |   42 +
+...0\320\265\320\272\320\272\320\265\321\2003.txt&quot; |   62 +
+...0\320\265\320\272\320\272\320\265\321\2004.txt&quot; |   18 +
+...0\320\265\320\272\320\272\320\265\321\2005.txt&quot; |   28 +
+...0\320\265\320\272\320\272\320\265\321\2006.txt&quot; |   10 +
+projects/project_b/commands.py                     |   61 +
+projects/project_b/config/__init__.py              |    1 +
+projects/project_b/config/settings.py              |  160 +++
+projects/project_b/core/__init__.py                |    1 +
+projects/project_b/core/address_manager.py         |   88 ++
+projects/project_b/core/inventory_parser.py        |  120 ++
+projects/project_b/core/nomenclature.py            |   89 ++
+projects/project_b/exporters/__init__.py           |    1 +
+projects/project_b/exporters/csv_exporter.py       |   28 +
+projects/project_b/exporters/excel_exporter.py     |   28 +
+projects/project_b/gui/__init__.py                 |    1 +
+projects/project_b/gui/main_window.py              |  122 ++
+projects/project_b/gui/settings_dialog.py          |  101 ++
+projects/project_b/gui/tabs/__init__.py            |    1 +
+.../gui/tabs/__pycache__/__init__.cpython-313.pyc  |  Bin 0 -&gt; 153 bytes
+.../gui/tabs/__pycache__/count_tab.cpython-313.pyc |  Bin 0 -&gt; 28166 bytes
+.../tabs/__pycache__/inventory_tab.cpython-313.pyc |  Bin 0 -&gt; 70051 bytes
+.../tabs/__pycache__/search_tab.cpython-313.pyc    |  Bin 0 -&gt; 28102 bytes
+projects/project_b/gui/tabs/count_tab.py           |  301 +++++
+projects/project_b/gui/tabs/inventory_tab.py       |  824 ++++++++++++
+projects/project_b/gui/tabs/search_tab.py          |  425 ++++++
+projects/project_b/gui/widgets/__init__.py         |    1 +
+.../widgets/__pycache__/__init__.cpython-313.pyc   |  Bin 0 -&gt; 156 bytes
+.../__pycache__/article_entry.cpython-313.pyc      |  Bin 0 -&gt; 12638 bytes
+projects/project_b/gui/widgets/article_entry.py    |  141 ++
+projects/project_b/icons/app.ico                   |  Bin 0 -&gt; 34234 bytes
+projects/project_b/icons/app.png                   |  Bin 0 -&gt; 40715 bytes
+projects/project_b/icons/app.png.ico               |  Bin 0 -&gt; 40715 bytes
+projects/project_b/main.py                         |   45 +
+projects/project_b/models/__init__.py              |    1 +
+projects/project_b/models/count_item.py            |   14 +
+projects/project_b/models/inventory_item.py        |   53 +
+projects/project_b/models/product.py               |   22 +
+projects/project_b/modules/__init__.py             |    0
+projects/project_b/modules/address_manager.py      |  147 ++
+projects/project_b/modules/barcode_checker.py      |  129 ++
+projects/project_b/modules/config_manager.py       |  155 +++
+projects/project_b/modules/sticker_generator.py    |  276 ++++
+projects/project_b/requirements.txt                |   10 +
+projects/project_b/run.bat                         |    3 +
+projects/project_b/utils/__init__.py               |    1 +
+projects/project_b/utils/article_normalizer.py     |   70 +
+projects/project_b/utils/path_utils.py             |   11 +</div></td><td style="color:green;text-align:right">+6996</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">78</td></tr></tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="footer">Обновлено: 15.07.2026 13:28:28 · Автоматическая генерация</div>
+    <div class="footer">Обновлено: 16.07.2026 09:41:01 · Автоматическая генерация</div>
 </div>
 
 <script>
-const labels = ['07.05.2026', '08.05.2026', '12.05.2026', '15.05.2026', '16.05.2026', '17.05.2026', '18.05.2026', '19.05.2026', '20.05.2026', '25.05.2026', '28.05.2026', '30.05.2026', '06.06.2026', '07.06.2026', '09.06.2026', '10.06.2026', '14.06.2026', '23.06.2026', '24.06.2026', '27.06.2026', '28.06.2026', '02.07.2026', '05.07.2026', '06.07.2026', '13.07.2026', '14.07.2026', '15.07.2026'];
+const labels = ['07.05.2026', '08.05.2026', '12.05.2026', '15.05.2026', '16.05.2026', '17.05.2026', '18.05.2026', '19.05.2026', '20.05.2026', '25.05.2026', '28.05.2026', '30.05.2026', '06.06.2026', '07.06.2026', '09.06.2026', '10.06.2026', '14.06.2026', '23.06.2026', '24.06.2026', '27.06.2026', '28.06.2026', '02.07.2026', '05.07.2026', '06.07.2026', '13.07.2026', '14.07.2026', '15.07.2026', '16.07.2026'];
 
 function createBarChart(id, label, data, color, bg, maxVal) {
     new Chart(document.getElementById(id), {
@@ -151,18 +1537,18 @@ function createBarChart(id, label, data, color, bg, maxVal) {
     });
 }
 
-createBarChart('commitsChart', 'Коммитов', [4, 8, 16, 5, 11, 26, 12, 18, 14, 20, 4, 3, 21, 4, 1, 8, 1, 2, 2, 1, 3, 2, 4, 10, 5, 1, 2], '#36A2EB', 'rgba(54,162,235,0.6)', 26);
-createBarChart('insertionsChart', 'Добавлено', [9935, 4828, 2906, 197, 431, 2118, 603, 1052, 1032, 765, 1028, 37, 1521, 234, 33, 1058, 101, 83, 130, 50, 532, 1542, 953, 2263, 2139, 92, 759], '#4BC0C0', 'rgba(75,192,192,0.6)', 9935);
-createBarChart('deletionsChart', 'Удалено', [204, 103, 267, 12, 378, 7270, 174, 1341, 245, 324, 77, 41, 653, 140, 2, 870, 47, 0, 455, 172, 645, 2252, 613, 2116, 2437, 43, 759], '#FF6384', 'rgba(255,99,132,0.6)', 7270);
-createBarChart('filesChart', 'Файлов', [112, 64, 65, 10, 32, 120, 23, 58, 29, 37, 11, 3, 31, 6, 2, 11, 2, 1, 8, 2, 5, 18, 24, 35, 14, 3, 23], '#FFCE56', 'rgba(255,206,86,0.6)', 120);
+createBarChart('commitsChart', 'Коммитов', [4, 8, 16, 5, 11, 26, 12, 18, 14, 20, 4, 3, 21, 4, 1, 8, 1, 2, 2, 1, 3, 2, 4, 10, 5, 1, 2, 2], '#36A2EB', 'rgba(54,162,235,0.6)', 26);
+createBarChart('insertionsChart', 'Добавлено', [9935, 4828, 2906, 197, 431, 2118, 603, 1052, 1032, 765, 1028, 37, 1521, 234, 33, 1058, 101, 83, 130, 50, 532, 1542, 953, 2263, 2139, 92, 759, 57], '#4BC0C0', 'rgba(75,192,192,0.6)', 9935);
+createBarChart('deletionsChart', 'Удалено', [204, 103, 267, 12, 378, 7270, 174, 1341, 245, 324, 77, 41, 653, 140, 2, 870, 47, 0, 455, 172, 645, 2252, 613, 2116, 2437, 43, 759, 12], '#FF6384', 'rgba(255,99,132,0.6)', 7270);
+createBarChart('filesChart', 'Файлов', [112, 64, 65, 10, 32, 120, 23, 58, 29, 37, 11, 3, 31, 6, 2, 11, 2, 1, 8, 2, 5, 18, 24, 35, 14, 3, 23, 1], '#FFCE56', 'rgba(255,206,86,0.6)', 120);
 
 new Chart(document.getElementById('cumulativeChart'), {
     type: 'line',
     data: {
         labels,
         datasets: [
-            { label: 'Добавлено (накоп.)', data: [9935, 14763, 17669, 17866, 18297, 20415, 21018, 22070, 23102, 23867, 24895, 24932, 26453, 26687, 26720, 27778, 27879, 27962, 28092, 28142, 28674, 30216, 31169, 33432, 35571, 35663, 36422], borderColor: '#4BC0C0', backgroundColor: 'rgba(75,192,192,0.1)', fill: true, tension: 0.2 },
-            { label: 'Удалено (накоп.)', data: [204, 307, 574, 586, 964, 8234, 8408, 9749, 9994, 10318, 10395, 10436, 11089, 11229, 11231, 12101, 12148, 12148, 12603, 12775, 13420, 15672, 16285, 18401, 20838, 20881, 21640], borderColor: '#FF6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: true, tension: 0.2 }
+            { label: 'Добавлено (накоп.)', data: [9935, 14763, 17669, 17866, 18297, 20415, 21018, 22070, 23102, 23867, 24895, 24932, 26453, 26687, 26720, 27778, 27879, 27962, 28092, 28142, 28674, 30216, 31169, 33432, 35571, 35663, 36422, 36479], borderColor: '#4BC0C0', backgroundColor: 'rgba(75,192,192,0.1)', fill: true, tension: 0.2 },
+            { label: 'Удалено (накоп.)', data: [204, 307, 574, 586, 964, 8234, 8408, 9749, 9994, 10318, 10395, 10436, 11089, 11229, 11231, 12101, 12148, 12148, 12603, 12775, 13420, 15672, 16285, 18401, 20838, 20881, 21640, 21652], borderColor: '#FF6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: true, tension: 0.2 }
         ]
     },
     options: {
