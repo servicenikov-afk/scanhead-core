@@ -18,7 +18,7 @@ def generate_progress_report():
     cmd = [
         "git", "log",
         f"--since={SINCE_DATE}",
-        "--pretty=format:### %s%n**%ad** | %an%n",
+        "--pretty=format:### %s%n**%ad** | %an%n%n%w(0,4,4)%b",
         "--date=short",
         "--stat"
     ]
@@ -50,12 +50,38 @@ def parse_progress_report(filepath: Path) -> list:
         if match:
             date_str = match.group(1)
             author = match.group(2).strip()
-            message = ""
+            
+            # ★★★ Собираем полное сообщение коммита ★★★
+            message_lines = []
             if i > 0:
                 prev_line = lines[i-1].strip()
                 if prev_line.startswith('### '):
-                    message = prev_line[4:].strip()
+                    message_lines.append(prev_line[4:].strip())
             
+            # Собираем тело коммита (если есть)
+            k = i + 1
+            body_lines = []
+            while k < len(lines):
+                next_line = lines[k].strip()
+                if not next_line:
+                    k += 1
+                    continue
+                if date_pattern.match(next_line) or next_line.startswith('### '):
+                    break
+                # Если строка начинается с цифр и содержит "files changed" - это статистика
+                if re.search(r'^\d+\s+files?\s+changed', next_line):
+                    break
+                # Добавляем строку тела коммита (с отступами)
+                if next_line:
+                    body_lines.append(next_line)
+                k += 1
+            
+            # Объединяем заголовок и тело
+            if body_lines:
+                message_lines.extend(body_lines)
+            full_message = '\n'.join(message_lines) if message_lines else ""
+            
+            # Парсим статистику
             insertions = deletions = files_changed = 0
             k = i + 1
             while k < len(lines):
@@ -73,11 +99,12 @@ def parse_progress_report(filepath: Path) -> list:
                     files_changed = int(stat_match.group(1))
                     insertions = int(stat_match.group(2) or 0)
                     deletions = int(stat_match.group(3) or 0)
+                    break
                 k += 1
             
-            if message:
+            if full_message:
                 commits.append({
-                    'message': message,
+                    'message': full_message,
                     'date': date_str,
                     'author': author,
                     'insertions': insertions,
@@ -86,7 +113,7 @@ def parse_progress_report(filepath: Path) -> list:
                 })
         i += 1
     
-    # ★★★ ИСКЛЮЧАЕМ КОММИТЫ ОТ БОТА ★★★
+    # ИСКЛЮЧАЕМ КОММИТЫ ОТ БОТА
     commits = [c for c in commits if c['author'] != 'github-actions[bot]']
     print(f"📊 Найдено коммитов (после исключения bot): {len(commits)}")
     
@@ -150,19 +177,20 @@ def generate_html(commits: list, output_path: Path):
     def esc(s):
         return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
 
+    # Для топ-10 показываем только первую строку
     top_rows = ''.join(
         f'<tr><td>{format_date_rus(c["date"])}</td>'
-        f'<td>{esc(c["message"])}</td>'
+        f'<td>{esc(c["message"].splitlines()[0] if c["message"] else "")}</td>'
         f'<td style="color:green;text-align:right">+{c["insertions"]}</td>'
         f'<td style="color:red;text-align:right">-{c["deletions"]}</td></tr>'
         for c in top_commits
     )
 
-    # ★★★ Генерация всех коммитов для аккордеона ★★★
+    # ★★★ Для аккордеона показываем полное сообщение ★★★
     all_commits_sorted = sorted(commits, key=lambda x: x['date'], reverse=True)
     all_rows = ''.join(
         f'<tr><td>{format_date_rus(c["date"])}</td>'
-        f'<td>{esc(c["message"])}</td>'
+        f'<td><div class="commit-msg">{esc(c["message"])}</div></td>'
         f'<td style="color:green;text-align:right">+{c["insertions"]}</td>'
         f'<td style="color:red;text-align:right">-{c["deletions"]}</td>'
         f'<td style="text-align:center">{c["files_changed"]}</td></tr>'
@@ -194,9 +222,26 @@ def generate_html(commits: list, output_path: Path):
         .card h3 {{ margin-bottom: 15px; color: #555; }}
         .card .chart-container {{ height: 250px; }}
         table {{ width: 100%; border-collapse: collapse; }}
-        th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }}
+        th, td {{ padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; vertical-align: top; }}
         th {{ background: #f0f0f0; font-weight: 600; }}
         .footer {{ text-align: center; color: #999; font-size: 0.8em; margin-top: 30px; }}
+        
+        /* ★★★ Стили для сообщений коммитов ★★★ */
+        .commit-msg {{
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }}
+        .commit-msg .subject {{
+            font-weight: 600;
+            color: #1a1a2e;
+        }}
+        .commit-msg .body {{
+            color: #555;
+            font-size: 0.95em;
+        }}
         
         /* ★★★ Стили для аккордеона ★★★ */
         .accordion {{ background: #f8f9fa; border-radius: 5px; margin-top: 10px; }}
@@ -289,7 +334,7 @@ def generate_html(commits: list, output_path: Path):
         </table>
     </div>
 
-    <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ ★★★ -->
+    <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ (ПОЛНЫЕ СООБЩЕНИЯ) ★★★ -->
     <div class="card">
         <h3>📋 Все коммиты <span class="badge">{total_commits}</span></h3>
         <div class="accordion">
@@ -300,7 +345,7 @@ def generate_html(commits: list, output_path: Path):
             <div class="accordion-body">
                 <div class="table-container">
                     <table>
-                        <thead><tr><th>Дата</th><th>Сообщение</th><th style="text-align:right">+</th><th style="text-align:right">-</th><th style="text-align:center">Файлы</th></tr></thead>
+                        <thead><tr><th style="min-width:100px;">Дата</th><th>Сообщение</th><th style="text-align:right;min-width:60px;">+</th><th style="text-align:right;min-width:60px;">-</th><th style="text-align:center;min-width:50px;">Файлы</th></tr></thead>
                         <tbody>{all_rows}</tbody>
                     </table>
                 </div>
