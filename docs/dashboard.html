@@ -85,10 +85,10 @@
     <h1>📊 ScanHead Core — Прогресс разработки</h1>
 
     <div class="stats">
-        <div class="stat-box"><div class="num">210</div><div class="label">Всего коммитов</div></div>
-        <div class="stat-box"><div class="num">+36,479</div><div class="label">Строк добавлено</div></div>
-        <div class="stat-box"><div class="num">-21,652</div><div class="label">Строк удалено</div></div>
-        <div class="stat-box"><div class="num">750</div><div class="label">Изменений файлов</div></div>
+        <div class="stat-box"><div class="num">211</div><div class="label">Всего коммитов</div></div>
+        <div class="stat-box"><div class="num">+36,482</div><div class="label">Строк добавлено</div></div>
+        <div class="stat-box"><div class="num">-21,654</div><div class="label">Строк удалено</div></div>
+        <div class="stat-box"><div class="num">752</div><div class="label">Изменений файлов</div></div>
     </div>
 
     <p style="color:#666;margin-bottom:20px;">
@@ -132,7 +132,7 @@
 
     <!-- ★★★ АККОРДЕОН СО ВСЕМИ КОММИТАМИ (ПОЛНЫЕ СООБЩЕНИЯ) ★★★ -->
     <div class="card">
-        <h3>📋 Все коммиты <span class="badge">210</span></h3>
+        <h3>📋 Все коммиты <span class="badge">211</span></h3>
         <div class="accordion">
             <div class="accordion-header" onclick="toggleAccordion(this)">
                 <span>📜 Показать все коммиты</span>
@@ -142,7 +142,9 @@
                 <div class="table-container">
                     <table>
                         <thead><tr><th style="min-width:100px;">Дата</th><th>Сообщение</th><th style="text-align:right;min-width:60px;">+</th><th style="text-align:right;min-width:60px;">-</th><th style="text-align:center;min-width:50px;">Файлы</th></tr></thead>
-                        <tbody><tr><td>16.07.2026</td><td><div class="commit-msg">Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>16.07.2026</td><td><div class="commit-msg">✨ feat(dashboard): отображение полных сообщений коммитов в аккордеоне
+                        <tbody><tr><td>16.07.2026</td><td><div class="commit-msg">feat(docs): небольшая корректировка в todo
+config/app_config.json | 4 ++--
+todo.md                | 1 +</div></td><td style="color:green;text-align:right">+3</td><td style="color:red;text-align:right">-2</td><td style="text-align:center">2</td></tr><tr><td>16.07.2026</td><td><div class="commit-msg">Merge branch 'main' of github.com:servicenikov-afk/scanhead-core</div></td><td style="color:green;text-align:right">+0</td><td style="color:red;text-align:right">-0</td><td style="text-align:center">0</td></tr><tr><td>16.07.2026</td><td><div class="commit-msg">✨ feat(dashboard): отображение полных сообщений коммитов в аккордеоне
 📝 Что сделано:
 • Изменен формат git log для включения тела коммита (%b)
 • Парсинг теперь собирает полное многострочное сообщение
@@ -1518,7 +1520,7 @@ projects/project_b/utils/path_utils.py             |   11 +</div></td><td style=
         </div>
     </div>
 
-    <div class="footer">Обновлено: 16.07.2026 09:41:01 · Автоматическая генерация</div>
+    <div class="footer">Обновлено: 16.07.2026 10:20:42 · Автоматическая генерация</div>
 </div>
 
 <script>
@@ -1537,18 +1539,18 @@ function createBarChart(id, label, data, color, bg, maxVal) {
     });
 }
 
-createBarChart('commitsChart', 'Коммитов', [4, 8, 16, 5, 11, 26, 12, 18, 14, 20, 4, 3, 21, 4, 1, 8, 1, 2, 2, 1, 3, 2, 4, 10, 5, 1, 2, 2], '#36A2EB', 'rgba(54,162,235,0.6)', 26);
-createBarChart('insertionsChart', 'Добавлено', [9935, 4828, 2906, 197, 431, 2118, 603, 1052, 1032, 765, 1028, 37, 1521, 234, 33, 1058, 101, 83, 130, 50, 532, 1542, 953, 2263, 2139, 92, 759, 57], '#4BC0C0', 'rgba(75,192,192,0.6)', 9935);
-createBarChart('deletionsChart', 'Удалено', [204, 103, 267, 12, 378, 7270, 174, 1341, 245, 324, 77, 41, 653, 140, 2, 870, 47, 0, 455, 172, 645, 2252, 613, 2116, 2437, 43, 759, 12], '#FF6384', 'rgba(255,99,132,0.6)', 7270);
-createBarChart('filesChart', 'Файлов', [112, 64, 65, 10, 32, 120, 23, 58, 29, 37, 11, 3, 31, 6, 2, 11, 2, 1, 8, 2, 5, 18, 24, 35, 14, 3, 23, 1], '#FFCE56', 'rgba(255,206,86,0.6)', 120);
+createBarChart('commitsChart', 'Коммитов', [4, 8, 16, 5, 11, 26, 12, 18, 14, 20, 4, 3, 21, 4, 1, 8, 1, 2, 2, 1, 3, 2, 4, 10, 5, 1, 2, 3], '#36A2EB', 'rgba(54,162,235,0.6)', 26);
+createBarChart('insertionsChart', 'Добавлено', [9935, 4828, 2906, 197, 431, 2118, 603, 1052, 1032, 765, 1028, 37, 1521, 234, 33, 1058, 101, 83, 130, 50, 532, 1542, 953, 2263, 2139, 92, 759, 60], '#4BC0C0', 'rgba(75,192,192,0.6)', 9935);
+createBarChart('deletionsChart', 'Удалено', [204, 103, 267, 12, 378, 7270, 174, 1341, 245, 324, 77, 41, 653, 140, 2, 870, 47, 0, 455, 172, 645, 2252, 613, 2116, 2437, 43, 759, 14], '#FF6384', 'rgba(255,99,132,0.6)', 7270);
+createBarChart('filesChart', 'Файлов', [112, 64, 65, 10, 32, 120, 23, 58, 29, 37, 11, 3, 31, 6, 2, 11, 2, 1, 8, 2, 5, 18, 24, 35, 14, 3, 23, 3], '#FFCE56', 'rgba(255,206,86,0.6)', 120);
 
 new Chart(document.getElementById('cumulativeChart'), {
     type: 'line',
     data: {
         labels,
         datasets: [
-            { label: 'Добавлено (накоп.)', data: [9935, 14763, 17669, 17866, 18297, 20415, 21018, 22070, 23102, 23867, 24895, 24932, 26453, 26687, 26720, 27778, 27879, 27962, 28092, 28142, 28674, 30216, 31169, 33432, 35571, 35663, 36422, 36479], borderColor: '#4BC0C0', backgroundColor: 'rgba(75,192,192,0.1)', fill: true, tension: 0.2 },
-            { label: 'Удалено (накоп.)', data: [204, 307, 574, 586, 964, 8234, 8408, 9749, 9994, 10318, 10395, 10436, 11089, 11229, 11231, 12101, 12148, 12148, 12603, 12775, 13420, 15672, 16285, 18401, 20838, 20881, 21640, 21652], borderColor: '#FF6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: true, tension: 0.2 }
+            { label: 'Добавлено (накоп.)', data: [9935, 14763, 17669, 17866, 18297, 20415, 21018, 22070, 23102, 23867, 24895, 24932, 26453, 26687, 26720, 27778, 27879, 27962, 28092, 28142, 28674, 30216, 31169, 33432, 35571, 35663, 36422, 36482], borderColor: '#4BC0C0', backgroundColor: 'rgba(75,192,192,0.1)', fill: true, tension: 0.2 },
+            { label: 'Удалено (накоп.)', data: [204, 307, 574, 586, 964, 8234, 8408, 9749, 9994, 10318, 10395, 10436, 11089, 11229, 11231, 12101, 12148, 12148, 12603, 12775, 13420, 15672, 16285, 18401, 20838, 20881, 21640, 21654], borderColor: '#FF6384', backgroundColor: 'rgba(255,99,132,0.1)', fill: true, tension: 0.2 }
         ]
     },
     options: {
