@@ -69,7 +69,6 @@ class SearchAddressTab(ctk.CTkFrame):
 	def _create_bottom_panel(self) -> None:
 		self._print_queue = PrintQueue(
 			self,
-			product_repo=self._container.get(IProductRepository),
 			printer_service=self._container.get(IPrinterService),
 			settings_service=self._container.get(ISettingsService)
 		)

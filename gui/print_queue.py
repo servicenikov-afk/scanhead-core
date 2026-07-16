@@ -1,17 +1,16 @@
 # --- gui/print_queue.py ---
 # ⚠️ Minified code — DO NOT reformat or deobfuscate until beta.
 import logging
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 import customtkinter as ctk
 from tkinter import ttk
-from services.interfaces import IProductRepository, IPrinterService, ISettingsService
+import tkinter as tk
+from services.interfaces import IPrinterService, ISettingsService
 from libs.domain_models import Product
 logger = logging.getLogger(__name__)
 class PrintQueue(ctk.CTkFrame):
-	_theme_applied = False
-	def __init__(self, master: Any, product_repo: IProductRepository, printer_service: IPrinterService, settings_service: ISettingsService):
+	def __init__(self, master: Any, printer_service: IPrinterService, settings_service: ISettingsService):
 		super().__init__(master)
-		self._product_repo = product_repo
 		self._printer_service = printer_service
 		self._settings_service = settings_service
 		self._products: List[Product] = []
@@ -27,48 +26,49 @@ class PrintQueue(ctk.CTkFrame):
 		ctk.CTkButton(header_frame, text="⋮ Столбцы", width=80, command=self._toggle_column_menu).pack(side="right", padx=5)
 		ctk.CTkButton(header_frame, text="📥 Импорт", width=90, command=self._import_from_file).pack(side="right", padx=5)
 		ctk.CTkButton(header_frame, text="🖨️ Печать", width=80, command=self._print_all).pack(side="right", padx=5)
+		btn_clear = ctk.CTkButton(header_frame, text="❌", width=40, height=28, fg_color="#d32f2f", hover_color="#b71c1c", command=self._clear_all)
+		btn_clear.pack(side="right", padx=5)
 		self._column_menu = ctk.CTkFrame(header_frame, fg_color="#2b2b2b")
 	def _apply_treeview_theme(self) -> None:
-		if PrintQueue._theme_applied:
-			return
 		try:
 			style = ttk.Style()
 			if 'clam' in style.theme_names():
 				style.theme_use('clam')
 			style.configure("Treeview",
 				background="white", foreground="black", fieldbackground="white",
-				borderwidth=1, relief="solid", rowheight=28, font=("Arial", 10))
+				borderwidth=1, relief="solid", rowheight=32, font=("Arial", 12))
 			style.configure("Treeview.Heading",
-				borderwidth=1, relief="solid", background="#E0E0E0", font=("Arial", 9, "bold"))
+				borderwidth=1, relief="solid", background="#E0E0E0", font=("Arial", 11, "bold"))
 			style.map("Treeview",
-				background=[('selected', '#0078D7')],
+				background=[('selected', 'grey')],
 				foreground=[('selected', 'white')])
-			PrintQueue._theme_applied = True
 			logger.debug("[PrintQueue] Тема clam применена для Treeview")
 		except Exception as e:
 			logger.warning(f"[PrintQueue] Не удалось применить тему clam: {e}")
 	def _create_table(self) -> None:
 		table_frame = ctk.CTkFrame(self)
 		table_frame.pack(fill="both", expand=True, padx=3, pady=3)
-		columns = ("delete", "num", "copies", "article", "article2", "name", "address")
+		columns = ("delete", "num", "decrease", "copies", "article", "article2", "name", "address")
 		self._tree = ttk.Treeview(table_frame, columns=columns, show="headings", selectmode="browse")
 		self._apply_treeview_theme()
 		self._tree.tag_configure('oddrow', background='#FFFFFF')
 		self._tree.tag_configure('evenrow', background='#F5F5F5')
 		self._tree.heading("delete", text="")
 		self._tree.heading("num", text="№")
+		self._tree.heading("decrease", text=" ")
 		self._tree.heading("copies", text="Копии")
 		self._tree.heading("article", text="Артикул")
 		self._tree.heading("article2", text="Артикул 2")
 		self._tree.heading("name", text="Наименование")
 		self._tree.heading("address", text="Адрес")
-		self._tree.column("delete", width=30, minwidth=30, anchor="center", stretch=False)
-		self._tree.column("num", width=30, minwidth=30, anchor="center", stretch=False)
-		self._tree.column("copies", width=40, minwidth=40, anchor="center")
-		self._tree.column("article", width=67, minwidth=60)
-		self._tree.column("article2", width=67, minwidth=60)
-		self._tree.column("name", width=300, minwidth=150)
-		self._tree.column("address", width=100, minwidth=80)
+		self._tree.column("delete", width=35, minwidth=30, anchor="center", stretch=False)
+		self._tree.column("num", width=40, minwidth=40, anchor="center", stretch=False)
+		self._tree.column("decrease", width=20, minwidth=20, anchor="center", stretch=False)
+		self._tree.column("copies", width=35, minwidth=35, anchor="center", stretch=False)
+		self._tree.column("article", width=200, minwidth=150, stretch=False)
+		self._tree.column("article2", width=200, minwidth=150, stretch=False)
+		self._tree.column("name", width=550, minwidth=400, stretch=True)
+		self._tree.column("address", width=200, minwidth=150, stretch=False)
 		v_scroll = ttk.Scrollbar(table_frame, orient="vertical", command=self._tree.yview)
 		h_scroll = ttk.Scrollbar(table_frame, orient="horizontal", command=self._tree.xview)
 		self._tree.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
@@ -78,17 +78,7 @@ class PrintQueue(ctk.CTkFrame):
 		table_frame.grid_rowconfigure(0, weight=1)
 		table_frame.grid_columnconfigure(0, weight=1)
 		self._tree.bind("<Double-1>", self._on_double_click)
-		self._tree.bind("<Configure>", self._on_tree_resize)
-	def _on_tree_resize(self, event) -> None:
-		table_width = event.width - 20
-		if table_width < 100: return
-		self._tree.column("delete", width=int(table_width * 0.03))
-		self._tree.column("num", width=int(table_width * 0.03))
-		self._tree.column("copies", width=int(table_width * 0.04))
-		self._tree.column("article", width=int(table_width * 0.09))
-		self._tree.column("article2", width=int(table_width * 0.09))
-		self._tree.column("name", width=int(table_width * 0.42))
-		self._tree.column("address", width=int(table_width * 0.30))
+		self._tree.bind("<Button-1>", self._on_tree_click)
 	def _load_column_settings(self) -> None:
 		config = self._settings_service.get_column_config()
 		if config:
@@ -98,14 +88,32 @@ class PrintQueue(ctk.CTkFrame):
 		logger.info("[PrintQueue] Переключение меню колонок")
 	def _apply_column_visibility(self) -> None:
 		visible = self._column_config.get('visible', [])
-		self._tree.column("delete", width=30, minwidth=30, anchor="center")
-		self._tree.column("num", width=30, minwidth=30, anchor="center")
-		self._tree.column("copies", width=40, minwidth=40, anchor="center")
-		for col in ["article", "article2", "name", "address"]:
+		self._tree.column("delete", width=35, minwidth=30, anchor="center")
+		self._tree.column("num", width=40, minwidth=40, anchor="center")
+		self._tree.column("decrease", width=20, minwidth=20, anchor="center")
+		self._tree.column("copies", width=35, minwidth=35, anchor="center")
+		for col in ["article", "article2", "address"]:
 			if col in visible:
-				self._tree.column(col, width=100, minwidth=80)
+				self._tree.column(col, width=150, minwidth=90)
 			else:
 				self._tree.column(col, width=0, minwidth=0, stretch=False)
+	def _on_tree_click(self, event) -> None:
+		rel_x = event.x
+		rel_y = event.y
+		selection = self._tree.selection()
+		if not selection:
+			return
+		item_id = selection[0]
+		if not self._is_item_valid(item_id):
+			return
+		column_id = self._tree.identify("column", rel_x, rel_y)
+		column = self._column_id_to_name(column_id)
+		if column == "delete":
+			self._delete_item(item_id)
+		elif column == "decrease":
+			self._decrease_copy_count(item_id)
+		elif column == "copies":
+			self._increase_copy_count(item_id)
 	def _on_double_click(self, event) -> None:
 		abs_x = event.widget.winfo_rootx() + event.x
 		abs_y = event.widget.winfo_rooty() + event.y
@@ -118,7 +126,7 @@ class PrintQueue(ctk.CTkFrame):
 		if region != "cell": return
 		column_id = self._tree.identify("column", rel_x, rel_y)
 		column = self._column_id_to_name(column_id)
-		if column in ("#0", "delete", "num", "copies", ""): return
+		if column in ("#0", "delete", "num", "decrease", "copies", ""): return
 		values = self._tree.item(item_id, "values")
 		column_index = self._get_column_index(column)
 		if column_index == -1: return
@@ -136,7 +144,7 @@ class PrintQueue(ctk.CTkFrame):
 		except (ValueError, IndexError): pass
 		return column_id
 	def _get_column_index(self, column: str) -> int:
-		columns = ["delete", "num", "copies", "article", "article2", "name", "address"]
+		columns = ["delete", "num", "decrease", "copies", "article", "article2", "name", "address"]
 		return columns.index(column) if column in columns else -1
 	def _start_inline_edit(self, item_id: str, column: str, value: str) -> None:
 		bbox = self._tree.bbox(item_id, column)
@@ -200,50 +208,36 @@ class PrintQueue(ctk.CTkFrame):
 				product.storage_locations = []
 				product.address = None
 			logger.debug(f"[PrintQueue] Обновлён address: {new_value}")
-	def _create_copy_counter(self, item_id: str) -> None:
-		bbox = self._tree.bbox(item_id, "copies")
-		if not bbox: return
-		x, y, width, height = bbox
-		counter_frame = ctk.CTkFrame(self._tree, fg_color="transparent", width=width, height=height)
-		counter_frame.place(x=x, y=y)
-		counter_frame.bind("<Double-1>", lambda e: self._on_double_click(e))
-		btn_minus = ctk.CTkButton(counter_frame, text="<", width=15, height=height-2, command=lambda: self._decrease_copy_count(item_id))
-		btn_minus.place(x=0, y=1)
-		btn_minus.bind("<Double-1>", lambda e: self._on_double_click(e))
-		count = self._copy_counts.get(item_id, 1)
-		lbl_count = ctk.CTkLabel(counter_frame, text=str(count), width=width-32, anchor="center")
-		lbl_count.place(x=16, y=1)
-		lbl_count.bind("<Double-1>", lambda e: self._on_double_click(e))
-		if hasattr(lbl_count, '_canvas'):
-			lbl_count._canvas.bind("<Double-1>", lambda e: self._on_double_click(e))
-		btn_plus = ctk.CTkButton(counter_frame, text=">", width=15, height=height-2, command=lambda: self._increase_copy_count(item_id))
-		btn_plus.place(x=width-17, y=1)
-		btn_plus.bind("<Double-1>", lambda e: self._on_double_click(e))
-		self._tree.set(item_id, "copies", f"{count}")
+	def _is_item_valid(self, item_id: str) -> bool:
+		try:
+			return item_id in self._tree.get_children()
+		except Exception:
+			return False
 	def _increase_copy_count(self, item_id: str) -> None:
+		if not self._is_item_valid(item_id):
+			return
 		current = self._copy_counts.get(item_id, 1)
-		self._copy_counts[item_id] = current + 1
-		self._refresh_copy_counter(item_id)
+		new_count = current + 1
+		self._copy_counts[item_id] = new_count
+		values = list(self._tree.item(item_id, "values"))
+		if len(values) > 3:
+			values[3] = str(new_count)
+			self._tree.item(item_id, values=values)
 	def _decrease_copy_count(self, item_id: str) -> None:
+		if not self._is_item_valid(item_id):
+			return
 		current = self._copy_counts.get(item_id, 1)
 		if current > 1:
-			self._copy_counts[item_id] = current - 1
-			self._refresh_copy_counter(item_id)
-	def _refresh_copy_counter(self, item_id: str) -> None:
-		count = self._copy_counts.get(item_id, 1)
-		self._tree.set(item_id, "copies", str(count))
-		self.after(10, lambda: self._create_copy_counter(item_id))
-	def _create_delete_button(self, item_id: str) -> None:
-		bbox = self._tree.bbox(item_id, "delete")
-		if not bbox: return
-		x, y, width, height = bbox
-		btn_delete = ctk.CTkButton(self._tree, text="X", width=width-2, height=height-2, fg_color="transparent", hover_color="#ff6666", text_color="#cc0000", font=("Arial", 12, "bold"), command=lambda iid=item_id: self._delete_item(iid))
-		btn_delete.place(x=x+1, y=y+1)
+			new_count = current - 1
+			self._copy_counts[item_id] = new_count
+			values = list(self._tree.item(item_id, "values"))
+			if len(values) > 3:
+				values[3] = str(new_count)
+				self._tree.item(item_id, values=values)
 	def _delete_item(self, item_id: str) -> None:
+		if not self._is_item_valid(item_id):
+			return
 		logger.info(f"[PrintQueue] Удаление позиции {item_id}")
-		for widget in self._tree.winfo_children():
-			try: widget.destroy()
-			except: pass
 		items_before = self._tree.get_children()
 		item_position = -1
 		for idx, iid in enumerate(items_before):
@@ -258,17 +252,18 @@ class PrintQueue(ctk.CTkFrame):
 		self.after(50, self._rebuild_queue)
 	def _rebuild_queue(self) -> None:
 		items = self._tree.get_children()
-		for widget in self._tree.winfo_children():
-			try: widget.destroy()
-			except: pass
 		for new_num, item_id in enumerate(items, start=1):
+			if not self._is_item_valid(item_id):
+				continue
 			values = list(self._tree.item(item_id, "values"))
 			if len(values) > 1:
 				values[1] = str(new_num)
+				values[2] = "⟨"
+				count = self._copy_counts.get(item_id, 1)
+				values[3] = str(count)
+				values[0] = "❌"
 				tag = 'oddrow' if new_num % 2 else 'evenrow'
 				self._tree.item(item_id, values=values, tags=(tag,))
-			self._create_delete_button(item_id)
-			self._create_copy_counter(item_id)
 	def add_item(self, product: Product) -> None:
 		logger.info(f"[PrintQueue] Добавление товара {product.article} в очередь")
 		item_id = str(self._next_item_id)
@@ -282,12 +277,10 @@ class PrintQueue(ctk.CTkFrame):
 			address_val = ", ".join(product.storage_locations)
 		current_num = len(self._products) + 1
 		tag = 'oddrow' if current_num % 2 else 'evenrow'
-		values = ("", str(current_num), "1", product.article, article2_val, product.name, address_val)
+		values = ("❌", str(current_num), "⟨", "1", product.article, article2_val, product.name, address_val)
 		self._tree.insert("", "end", iid=item_id, values=values, tags=(tag,))
 		self._products.append(product)
 		self._copy_counts[item_id] = 1
-		self.after(10, lambda iid=item_id: self._create_delete_button(iid))
-		self.after(10, lambda iid=item_id: self._create_copy_counter(iid))
 	def set_products(self, products: List[Product]) -> None:
 		self._products = products
 		self._copy_counts.clear()
@@ -306,11 +299,9 @@ class PrintQueue(ctk.CTkFrame):
 			item_id = str(self._next_item_id)
 			self._next_item_id += 1
 			tag = 'oddrow' if i % 2 else 'evenrow'
-			values = ("", str(i), "1", product.article, article2_val, product.name, address_val)
+			values = ("❌", str(i), "⟨", "1", product.article, article2_val, product.name, address_val)
 			self._tree.insert("", "end", iid=item_id, values=values, tags=(tag,))
 			self._copy_counts[item_id] = 1
-			self.after(10, lambda iid=item_id: self._create_delete_button(iid))
-			self.after(10, lambda iid=item_id: self._create_copy_counter(iid))
 	def clear(self) -> None:
 		self._products = []
 		self._copy_counts.clear()
@@ -318,6 +309,10 @@ class PrintQueue(ctk.CTkFrame):
 		for item in self._tree.get_children():
 			self._tree.delete(item)
 		logger.debug("[PrintQueue] Очередь очищена")
+	def _clear_all(self) -> None:
+		if self._products:
+			self.clear()
+			logger.info("[PrintQueue] Вся очередь очищена пользователем")
 	def _print_all(self) -> None:
 		logger.info("[PrintQueue] Печать всех товаров")
 		products_to_print = []
