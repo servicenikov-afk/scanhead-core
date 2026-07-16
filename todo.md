@@ -164,6 +164,7 @@ TODO.md — План рефакторинга ScanHead Core v0.3.0
 [ ] Чистка DEBUG_TEMP-логов
 [ ] Удаление "хардкод"-путей (замена на `libs.path_utils`)
 [ ] Чистка "мёртвого кода"
+[ ] Приведение кода к PEP 8 (на этапе v0.8-v0.9)
 [ ] Чек DIP (Dependency Inversion Principle)
 [ ] Чек SRP (Single Responsibility Principle)
 [ ] Чек нарушений потокобезопасности
