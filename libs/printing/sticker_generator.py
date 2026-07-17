@@ -78,6 +78,7 @@ class StickerGenerator:
 		if current_line: lines.append(' '.join(current_line))
 		return lines
 	def generate(self, article: str, name: str, address: Optional[str] = None, quantity: Optional[Union[int, float]] = None, unit: str = "шт", barcode_type: str = "code128", preset: Optional[Dict[str, Any]] = None) -> Image.Image:
+		barcode_type = str(barcode_type).strip().lower()
 		old_config = self.config.copy() if self.config else {}
 		if preset: self.config.update(preset)
 		try:
@@ -189,7 +190,11 @@ class StickerGenerator:
 							draw.text((text_x, text_y), clean_article, fill='black', font=text_font)
 				except Exception as barcode_error:
 					logger.error(f"Barcode generation failed: {barcode_error}", exc_info=True)
-					draw.text((padding, height - 15), "[Barcode Error]", fill='red', font=self._get_font(6))
+					if barcode_type in ('auto', 'code128', 'ean13'):
+						logger.info("[StickerGenerator] Fallback: генерация QR вместо линейного кода")
+						show_qr = True
+					else:
+						draw.text((padding, height - 15), "[Barcode Error]", fill='red', font=self._get_font(6))
 			if show_qr:
 				qr_size_mm = barcode_cfg.get('qr_size_mm', 16)
 				qr_size = self._mm_to_pixels(qr_size_mm)

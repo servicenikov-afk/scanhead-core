@@ -16,19 +16,15 @@ class PrintQueue(ctk.CTkFrame):
 		self._products: List[Product] = []
 		self._copy_counts: Dict[str, int] = {}
 		self._next_item_id = 1
-		self._column_config = {'visible': ['article', 'article2', 'name', 'address'], 'order': ['article', 'article2', 'name', 'address']}
 		self._create_header()
 		self._create_table()
-		self._load_column_settings()
 	def _create_header(self) -> None:
 		header_frame = ctk.CTkFrame(self, fg_color="transparent")
 		header_frame.pack(fill="x", padx=3, pady=3)
-		ctk.CTkButton(header_frame, text="⋮ Столбцы", width=80, command=self._toggle_column_menu).pack(side="right", padx=5)
 		ctk.CTkButton(header_frame, text="📥 Импорт", width=90, command=self._import_from_file).pack(side="right", padx=5)
 		ctk.CTkButton(header_frame, text="🖨️ Печать", width=80, command=self._print_all).pack(side="right", padx=5)
 		btn_clear = ctk.CTkButton(header_frame, text="❌", width=40, height=28, fg_color="#d32f2f", hover_color="#b71c1c", command=self._clear_all)
 		btn_clear.pack(side="right", padx=5)
-		self._column_menu = ctk.CTkFrame(header_frame, fg_color="#2b2b2b")
 	def _apply_treeview_theme(self) -> None:
 		try:
 			style = ttk.Style()
@@ -79,24 +75,6 @@ class PrintQueue(ctk.CTkFrame):
 		table_frame.grid_columnconfigure(0, weight=1)
 		self._tree.bind("<Double-1>", self._on_double_click)
 		self._tree.bind("<Button-1>", self._on_tree_click)
-	def _load_column_settings(self) -> None:
-		config = self._settings_service.get_column_config()
-		if config:
-			self._column_config = config
-			self._apply_column_visibility()
-	def _toggle_column_menu(self) -> None:
-		logger.info("[PrintQueue] Переключение меню колонок")
-	def _apply_column_visibility(self) -> None:
-		visible = self._column_config.get('visible', [])
-		self._tree.column("delete", width=35, minwidth=30, anchor="center")
-		self._tree.column("num", width=40, minwidth=40, anchor="center")
-		self._tree.column("decrease", width=20, minwidth=20, anchor="center")
-		self._tree.column("copies", width=35, minwidth=35, anchor="center")
-		for col in ["article", "article2", "address"]:
-			if col in visible:
-				self._tree.column(col, width=150, minwidth=90)
-			else:
-				self._tree.column(col, width=0, minwidth=0, stretch=False)
 	def _on_tree_click(self, event) -> None:
 		rel_x = event.x
 		rel_y = event.y

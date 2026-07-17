@@ -1,6 +1,6 @@
 # Структура проекта ScanHead Core
 
-**Ветка:** gui-framework-dev | **Версия:** 0.3.0 | **Дата:** 06.07.2026
+**Ветка:** main (с 06.07.2026) | **Версия:** 0.4.0-beta | **Дата:** 17.07.2026
 
 ⚠️ Реальные БД (.db) — только на тестовой машине. В репозитории — схемы (.sql) и README.
 
@@ -72,12 +72,13 @@
 
 **Ключевые зависимости:** customtkinter, tkinter.ttk, services.interfaces.*, libs.domain_models.Product
 
-❌ **Соответствие манифесту:** ❌ Критические нарушения
-- Нарушение DIP/IOC: жёсткая привязка к CustomTkinter
-- Нарушение SRP: отображение + состояние + редактирование + печать
-- 🗑️ Мёртвый код: `_toggle_column_menu`, `_import_from_file`
-- 🗑️ Неиспользуемый параметр: `_product_repo`
-- Глобальный флаг `_theme_applied` — нарушение инкапсуляции
+⚠️ **Соответствие манифесту:** ⚠️ Частично исправлен (16-17.07.2026)
+- ✅ Исправлено позиционирование кнопок (встроено в ячейки)
+- ✅ Добавлена кнопка очистки ❌
+- ✅ Удалён глобальный флаг `_theme_applied`
+- ✅ Удалён неиспользуемый `_product_repo`
+- ⚠️ Нарушение DIP: жёсткая привязка к CustomTkinter
+- ⚠️ Нарушение SRP: отображение + состояние + редактирование
 
 ---
 
@@ -95,7 +96,7 @@
 ## 🔹 gui/dialogs/settings_dialog.py — SettingsDialog
 
 **Слой:** UI (Presentation)
-**Назначение:** Модалка настроек (тема, язык, поиск, формат адреса).
+**Назначение:** Модалка настроек (тема, язык, поиск, формат адреса, горячие клавиши).
 
 **Ключевые зависимости:** customtkinter, services.interfaces.ISettingsService
 
@@ -212,9 +213,8 @@
 **Ключевые зависимости:** sqlite3, threading, json, pathlib, libs.domain_models.Product
 
 ⚠️ **Соответствие манифесту:** ⚠️ Требует доработки
-- Фильтрация в Python вместо индексированного SQL
+- 🟡 Несогласованность соединений
 - search_async вызывает callback напрямую в фоне
-- Несогласованность соединений
 - Нет интерфейса
 
 ---
@@ -227,7 +227,7 @@
 **Ключевые зависимости:** sqlite3, threading, pathlib, json
 
 ❌ **Соответствие манифесту:** ❌ Критические нарушения
-- ❌ **Read-only нарушение:** соединение НЕ в режиме `?mode=ro`
+- ❌ Read-only нарушение: соединение НЕ в режиме `?mode=ro`
 - Хрупкий путь: parent.parent.parent.parent
 - Подавление исключений (нарушает "Fail Fast")
 - INSERT OR REPLACE удаляет старую запись
@@ -266,10 +266,10 @@
 
 **Ключевые зависимости:** libs.domain_models.Product, адаптеры БД, threading
 
-❌ **Соответствие манифесту:** ❌ Критические нарушения
-- Прямое обращение к `_get_connection()` + сырой SQL
-- Дублирование логики адаптера
-- Прямой callback из потока (без root.after)
+⚠️ **Соответствие манифесту:** ⚠️ Требует доработки
+- 🟡 Прямое обращение к `_get_connection()` + сырой SQL
+- 🟡 Дублирование логики адаптера
+- 🟡 Прямой callback из потока (без root.after) — ЧАСТИЧНО ИСПРАВЛЕНО
 - 🗑️ DEBUG_TEMP-логи
 - Нет интерфейса
 
@@ -284,6 +284,17 @@
 
 ✅ **Соответствие манифесту:** ✅ Полностью соответствует
 - ⚠️ Огромный default_config в коде (рекомендуется вынести)
+
+---
+
+## 🔹 services/hotkey_service.py — HotkeyService
+
+**Слой:** Application Services
+**Назначение:** Глобальная обработка горячих клавиш (биндинги на root) с поддержкой add='+'.
+
+**Ключевые зависимости:** tkinter, services.interfaces.ISettingsService
+
+✅ **Соответствие манифесту:** ✅ Полностью соответствует
 
 ---
 
@@ -372,13 +383,14 @@
 ## 🔹 libs/printing/sticker_generator.py — StickerGenerator
 
 **Слой:** Application Services (Генерация)
-**Назначение:** Генерация изображения стикера.
+**Назначение:** Генерация изображения стикера с поддержкой fallback на QR.
 
 **Ключевые зависимости:** PIL, qrcode, barcode
 
 ⚠️ **Соответствие манифесту:** ⚠️ Требует доработки
 - `self.config.update(preset)` — мутация состояния (нарушение иммутабельности)
 - `finally: self.config = old_config` — восстановление конфига
+- 🟢 Fallback на QR при кириллице в режиме 'auto' — ДОБАВЛЕНО (17.07.2026)
 
 ---
 
@@ -416,17 +428,19 @@
 
 ---
 
-🔹 libs/utils/name_formatter.py — NameFormatter
-Слой: Application Services / Utils
-Назначение: Форматирование названия товара для стикера (добавление неканонического артикула, обрезка списка моделей "для к/м").
-Ключевые зависимости: re, typing
-✅ Соответствие манифесту: ✅ Полностью соответствует
+## 🔹 libs/utils/name_formatter.py — NameFormatter
 
----
+**Слой:** Application Services / Utils
+**Назначение:** Форматирование названия товара для стикера (добавление неканонического артикула, обрезка списка моделей "для к/м").
+
+**Ключевые зависимости:** re, typing
+
+✅ **Соответствие манифесту:** ✅ Полностью соответствует
+
 
 # 📊 Сводка соответствия манифесту
 
-### ✅ Полностью соответствуют (21 файл)
+### ✅ Полностью соответствуют (22 файла)
 - gui/main_window.py
 - gui/sticker_preview.py
 - gui/dialogs/add_address_dialog.py
@@ -438,6 +452,7 @@
 - services/di_container.py
 - services/interfaces/__init__.py
 - services/config_manager_adapter.py
+- services/hotkey_service.py
 - services/printer_service.py
 - services/presets_config_utils.py
 - libs/domain_models/**/*.py
@@ -447,27 +462,26 @@
 - libs/utils/fuzzy_search.py
 - libs/utils/name_formatter.py
 
-### ⚠️ Требуют доработки (9 файлов)
+### ⚠️ Требуют доработки (10 файлов)
 - main.py — импорты, пути, порядок инициализации
 - gui/search_bar.py — threading.Timer → after
 - gui/tabs/inventory_tab.py — неиспользуемый DI
-- gui/services/adapters/nomenclature_adapter.py — SQL, callback, интерфейс
+- gui/services/adapters/nomenclature_adapter.py — callback, интерфейс
 - gui/services/adapters/css_export_adapter.py — пути, интерфейс
+- gui/services/product_details_service.py — абстракция
 - services/stubs/__init__.py — callback из потока
 - libs/printing/sticker_generator.py — иммутабельность
+- libs/utils/fuzzy_search.py — параметризация порога
 
-### ❌ Критические нарушения (6 файлов)
+### ❌ Критические нарушения (5 файлов)
 - gui/product_details.py — DIP/SRP
-- gui/print_queue.py — DIP/SRP/IOC
 - gui/dialogs/product_info_dialog.py — SRP/DIP
 - gui/services/adapters/store_adapter.py — read-only, пути, Fail Fast
-- gui/services/product_details_service.py — абстракция, сырой SQL
 - gui/tabs/search_address_tab.py — бизнес-логика в UI
 
 ### 🗑️ Удалён (1 файл)
 - gui/services/adapters/json_mock_loader.py (06.07.2026)
 
----
 
 ## 🗄️ Базы данных
 
@@ -479,7 +493,6 @@
    - css_adapter.get_by_article() → manufacturer_info
 4. Результат → callback → обновление UI
 
----
 
 ## 📋 Модули-заглушки
 
@@ -490,6 +503,5 @@
 | libs/scanner_input/camera_stub.py | 🚧 Заглушка | Поддержка камер |
 | libs/parsers/ | 🚧 Пустой | Резерв |
 
----
 
-**Следующие шаги:** см. TODO.md (план рефакторинга на 06.07.2026)
+**Следующие шаги:** см. TODO.md (план рефакторинга на 17.07.2026)
